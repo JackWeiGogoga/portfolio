@@ -86,7 +86,3 @@ portfolio-vite/
 ## License
 
 MIT
-
-## Author
-
-Jack Wei - djsecret123@gmail.com
