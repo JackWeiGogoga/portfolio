@@ -244,8 +244,8 @@ export function NavMenu() {
           </div>
 
           <div className="flex items-center justify-between py-4 px-6.5 text-xs text-graytext bg-card-background rounded-b-lg font-mono">
-            <a href="mailto:djsecret123@gmail.com" className="no-underline">
-              djsecret123@gmail.com
+            <a href="mailto:jackweigogoga@gmail.com" className="no-underline">
+              jackweigogoga@gmail.com
             </a>
             <div className="flex items-center gap-2">
               <span>Close</span>

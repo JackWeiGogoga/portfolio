@@ -21,7 +21,7 @@ const data = [
   },
   {
     label: "Email",
-    value: "djsecret123@gmail.com",
+    value: "jackweigogoga@gmail.com",
     icon: <MdEmail className="text-gray-600" />,
   },
   {

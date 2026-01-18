@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FaHardHat } from "react-icons/fa";
+import { FaHardHat, FaJava, FaPython, FaReact } from "react-icons/fa";
 import { SiOpenzeppelin, SiSolidity, SiWagmi } from "react-icons/si";
 import { ROUTES } from "@/config/constants";
 
@@ -16,6 +16,28 @@ export type SideProject = {
 };
 
 export const SIDE_PROJECTS: SideProject[] = [
+  {
+    title: "Flowlet - Visual Workflow Orchestration",
+    description:
+      "A lightweight drag-and-drop workflow system for building and running data-processing pipelines with LLM and API nodes.",
+    type: "Full-stack",
+    tags: [
+      {
+        name: "Java",
+        icon: <FaJava />,
+      },
+      {
+        name: "Python",
+        icon: <FaPython />,
+      },
+      {
+        name: "React",
+        icon: <FaReact />,
+      },
+    ],
+    link: ROUTES.WORK_FLOWLET,
+    date: "Dec '25 - Jan '26",
+  },
   {
     title: "Crowdfunding - Tier-based & Custom Funding",
     description:

@@ -8,6 +8,7 @@ const resumeContent = {
     headerInfo: [
       { label: "Phone", value: "+86 18500151385" },
       { label: "Email", value: "jackweigogoga@gmail.com" },
+      { label: "Telegram", value: "@jackweigogoga" },
       { label: "Location", value: "Beijing, China" },
       { label: "ENS", value: "gogoga.eth" },
       { label: "Github", value: "https://github.com/JackWeiGogoga" },
@@ -182,7 +183,7 @@ const resumeContent = {
       },
       {
         category: "AI / Machine Learning",
-        items: ["LLM Fine-tuning", "AI Agent", "Data Cleaning"],
+        items: ["LLM Fine-tuning", "AI Agent", "Langchain"],
       },
       {
         category: "Tooling",
@@ -198,7 +199,8 @@ const resumeContent = {
     name: "魏东军",
     headerInfo: [
       { label: "手机号", value: "+86 18500151385" },
-      { label: "邮箱", value: "djsecret123@gmail.com" },
+      { label: "邮箱", value: "jackweigogoga@gmail.com" },
+      { label: "Telegram", value: "@jackweigogoga" },
       { label: "位置", value: "中国 北京" },
       { label: "个人网站", value: "https://gogoga.eth.limo/" },
       { label: "Github", value: "https://github.com/JackWeiGogoga" },
@@ -281,7 +283,8 @@ const resumeContent = {
           "使用 React 搭建前端页面，支持表格、条形图、折线图、饼图等多种数据展示形式。",
         ],
         impact: [
-          "使用 AI Agent 代替数据分析师完成日常数据分析工作，提升了产品、运营效率 30%，并申请了国家专利。",
+          "使用 AI Agent 代替数据分析师完成日常数据分析工作，提升了产品、运营效率 30%。",
+          "已申请国家专利。",
         ],
       },
       {
@@ -357,11 +360,11 @@ const resumeContent = {
     skills: [
       {
         category: "语言",
-        items: ["Java", "TypeScript", "Python", "SQL"],
+        items: ["Java", "TypeScript", "Python", "Solidity"],
       },
       {
         category: "后端",
-        items: ["Spring Boot", "REST API", "Kafka", "MySQL"],
+        items: ["Spring Boot", "Redis", "Kafka", "MySQL"],
       },
       {
         category: "前端",
@@ -369,20 +372,21 @@ const resumeContent = {
       },
       {
         category: "Web3",
-        items: ["Solidity", "Hardhat", "Wagmi", "IPFS"],
+        items: ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"],
       },
       {
         category: "AI / 机器学习",
-        items: ["LLM 微调", "AI Agent", "数据清洗"],
+        items: ["LLM 微调", "AI Agent", "Langchain", "Dify"],
       },
       {
         category: "工程工具",
-        items: ["Git", "Codex", "Docker"],
+        items: ["Git", "Docker", "Codex"],
       },
     ],
     summary: [
-      "努力认真，勤学肯干，虚心上进，积极思考；善于沟通，待人真诚，开朗大方，勇于实践。",
-      "对互联网技术、Web3 技术、AI 有着浓厚的兴趣。",
+      "拥有 10 年经验的资深服务端工程师，具备扎实的软件工程基础，注重代码质量和架构设计，具备一定的全栈开发能力。",
+      "在项目中主动承担责任，具备良好的沟通能力和团队合作精神，重视知识分享。善于主动发现业务瓶颈，具备一定的产品思维。",
+      "对互联网技术、Web3 技术、AI 有着浓厚的兴趣，保持持续学习的热情，紧跟行业发展趋势，善于从开源项目中学习最佳实践。",
     ],
   },
 };
@@ -396,13 +400,13 @@ export default function Resume() {
 
   return (
     <Layout variant="resume">
-      <div className="mx-auto w-full max-w-[794px] box-border px-5 py-6 sm:px-8 sm:py-8">
+      <div className="mx-auto w-full max-w-[794px] text-xs box-border px-5 py-6 sm:px-8 sm:py-8">
         <div className="grid items-end gap-20 sm:grid-cols-[1fr_auto]">
           <div className="text-center sm:text-left">
             <h1 className="text-2xl font-semibold leading-tight font-mono">
               {content.name}
             </h1>
-            <div className="mt-2 grid gap-y-1 text-xs text-graytext sm:grid-cols-2">
+            <div className="mt-2 grid gap-y-1 text-graytext sm:grid-cols-2">
               {content.headerInfo.map((item) => (
                 <div key={item.label} className="flex items-center gap-2">
                   <span className="min-w-13 text-graytext">{item.label}:</span>
@@ -420,7 +424,7 @@ export default function Resume() {
           <h2 className={sectionTitleClass}>
             {content.sectionTitles.education}
           </h2>
-          <div className="mt-2 rounded-sm border border-outline bg-background px-4 py-2.5 text-sm">
+          <div className="mt-2 rounded-sm border border-outline bg-background px-4 py-2.5">
             <div className="divide-y divide-outline">
               {content.education.map((item) => (
                 <div
@@ -444,39 +448,37 @@ export default function Resume() {
 
         <section className="pt-5">
           <h2 className={sectionTitleClass}>{content.sectionTitles.work}</h2>
-          <div className="mt-2 space-y-1 text-sm">
+          <div className="mt-2 space-y-1">
             {content.workExperience.map((work) => (
               <div
                 key={work.project}
-                className="rounded-sm border border-outline px-4 py-2.5"
+                className="rounded-sm border border-outline px-4 py-2.5 space-y-2"
               >
                 <div className="grid grid-cols-1 gap-1 sm:grid-cols-[minmax(0,3fr)_minmax(0,1fr)_minmax(110px,140px)] sm:items-start sm:gap-2">
-                  <div className="min-w-0 font-medium">
-                    {work.project}({work.role})
-                  </div>
+                  <div className="min-w-0 font-medium">{work.project}</div>
                   <div className="min-w-0 text-graytext">{work.company}</div>
                   <div className="text-graytext font-mono whitespace-nowrap sm:text-right">
                     {work.time}
                   </div>
                 </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <div className="text-xs font-mono uppercase text-graytext">
+                <div className="flex items-center gap-2">
+                  <div className="font-mono uppercase text-graytext">
                     {content.metaLabels.tech}:
                   </div>
-                  <div className="flex flex-wrap gap-2 text-xs">
+                  <div className="flex flex-wrap gap-1">
                     {work.tech.map((item) => (
                       <span
                         key={item}
-                        className="rounded-full border border-outline bg-background px-2 py-0.5"
+                        className="rounded-full border border-outline bg-background px-2 py-0.5 text-[10px] font-mono"
                       >
                         {item}
                       </span>
                     ))}
                   </div>
                 </div>
-                <div className="mt-3 gap-3">
+                <div className="gap-3">
                   <div>
-                    <div className="text-xs font-mono uppercase text-graytext">
+                    <div className="font-mono uppercase text-graytext">
                       {content.metaLabels.responsibilities}:
                     </div>
                     <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -486,15 +488,13 @@ export default function Resume() {
                     </ul>
                   </div>
                 </div>
-                <div className="mt-3 gap-3">
-                  <div className="text-xs font-mono uppercase text-graytext">
+                <div className="gap-3">
+                  <div className="font-mono uppercase text-graytext">
                     {content.metaLabels.impact}:
                   </div>
                   <ul className="mt-2 list-disc space-y-1 pl-5">
                     {work.impact.map((item) => (
-                      <li key={item} className="font-medium">
-                        {item}
-                      </li>
+                      <li key={item}>{item}</li>
                     ))}
                   </ul>
                 </div>
@@ -507,11 +507,11 @@ export default function Resume() {
           <h2 className={sectionTitleClass}>
             {content.sectionTitles.projects}
           </h2>
-          <div className="mt-2 space-y-1 text-sm">
+          <div className="mt-2 space-y-1">
             {content.personalProjects.map((project) => (
               <div
                 key={project.project}
-                className="rounded-sm border border-outline px-4 py-2.5"
+                className="rounded-sm border border-outline px-4 py-2.5 space-y-2"
               >
                 <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(110px,140px)] sm:items-start sm:gap-4">
                   <div className="font-medium">{project.project}</div>
@@ -522,22 +522,22 @@ export default function Resume() {
                     {project.time}
                   </div>
                 </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <div className="text-xs font-mono uppercase text-graytext">
+                <div className="flex items-center gap-2">
+                  <div className="font-mono uppercase text-graytext">
                     {content.metaLabels.tech}:
                   </div>
-                  <div className="flex flex-wrap gap-2 text-xs">
+                  <div className="flex flex-wrap gap-1">
                     {project.tech.map((item) => (
                       <span
                         key={item}
-                        className="rounded-full border border-outline bg-background px-2 py-0.5"
+                        className="rounded-full border border-outline bg-background px-2 py-0.5 text-[10px] font-mono"
                       >
                         {item}
                       </span>
                     ))}
                   </div>
                 </div>
-                <ul className="mt-3 list-disc space-y-1 pl-5">
+                <ul className="list-disc space-y-1 pl-5">
                   {project.highlights.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -549,20 +549,20 @@ export default function Resume() {
 
         <section className="pt-5">
           <h2 className={sectionTitleClass}>{content.sectionTitles.skills}</h2>
-          <div className="mt-2 grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
+          <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
             {content.skills.map((skill) => (
               <div
                 key={skill.category}
                 className="rounded-sm border border-outline bg-background px-4 py-2.5"
               >
-                <div className="text-xs font-mono uppercase text-graytext">
+                <div className="font-mono uppercase text-graytext">
                   {skill.category}
                 </div>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                <div className="mt-2 flex flex-wrap gap-1">
                   {skill.items.map((item) => (
                     <span
                       key={item}
-                      className="rounded-full border border-outline bg-card-background px-2 py-0.5"
+                      className="rounded-full border border-outline bg-card-background px-2 py-0.5 text-[10px] font-mono"
                     >
                       {item}
                     </span>
@@ -575,7 +575,7 @@ export default function Resume() {
 
         <section className="pt-5">
           <h2 className={sectionTitleClass}>{content.sectionTitles.summary}</h2>
-          <div className="mt-2 rounded-sm border border-outline px-4 py-2.5 text-sm">
+          <div className="mt-2 rounded-sm border border-outline px-4 py-2.5">
             <ul className="list-disc space-y-1 pl-5">
               {content.summary.map((item) => (
                 <li key={item}>{item}</li>

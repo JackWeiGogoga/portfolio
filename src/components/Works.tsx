@@ -1,18 +1,13 @@
 import React from "react";
-import { FaGithub, FaJava, FaPython } from "react-icons/fa";
+import { FaGithub, FaJava, FaPython, FaReact } from "react-icons/fa";
 import { GoArrowUpRight } from "react-icons/go";
-import {
-  SiApachekafka,
-  SiHuggingface,
-  SiMysql,
-  SiSpring,
-} from "react-icons/si";
+import { SiApachekafka, SiHuggingface, SiSpring } from "react-icons/si";
 
 const works = [
   {
-    title: "Content Moderation Model - SFT and GRPO Fine-tuning",
+    title: "Content Moderation LLM Fine-tuning",
     description:
-      "Fine-tuning a pre-trained model using supervised fine-tuning (SFT) and GRPO.",
+      "Led fine-tuning of a moderation-focused LLM to improve precision and recall, with SFT and GRPO for business-specific standards.",
     type: "AI",
     tags: [
       {
@@ -32,9 +27,9 @@ const works = [
     date: "June '25 - Aug '25",
   },
   {
-    title: "Apollo - A Content Audit and Process Platform",
+    title: "Content Moderation Efficiency Initiative",
     description:
-      "Fine-tuning a pre-trained model using supervised fine-tuning (SFT) and.",
+      "Led a machine moderation strategy and LLM platform to reduce manual review, improve throughput, and raise review quality.",
     type: "Backend",
     tags: [
       {
@@ -42,20 +37,38 @@ const works = [
         icon: <FaJava />,
       },
       {
-        name: "Spring",
-        icon: <SiSpring />,
-      },
-      {
-        name: "MySQL",
-        icon: <SiMysql />,
-      },
-      {
         name: "Kafka",
         icon: <SiApachekafka />,
       },
+      {
+        name: "Spring",
+        icon: <SiSpring />,
+      },
     ],
-    link: "/#/works/flowlet",
-    date: "Jun '25 - Aug '25",
+    link: "/#/resume",
+    date: "Jun '21 - Jun '25",
+  },
+  {
+    title: "LLM-Powered Data Analysis Agent",
+    description:
+      "Built an LLM agent that answers questions, generates SQL, runs queries, and renders rich visualizations.",
+    type: "AI",
+    tags: [
+      {
+        name: "Python",
+        icon: <FaPython />,
+      },
+      {
+        name: "React",
+        icon: <FaReact />,
+      },
+      {
+        name: "LLM",
+        icon: <SiHuggingface />,
+      },
+    ],
+    link: "/#/resume",
+    date: "Oct '23 - Nov '23",
   },
 ];
 
