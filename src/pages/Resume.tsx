@@ -10,7 +10,7 @@ const resumeContent = {
       { label: "Email", value: "jackweigogoga@gmail.com" },
       { label: "Telegram", value: "@jackweigogoga" },
       { label: "Location", value: "Beijing, China" },
-      { label: "ENS", value: "gogoga.eth" },
+      { label: "Website", value: "https://gogoga.eth.limo/" },
       { label: "Github", value: "https://github.com/JackWeiGogoga" },
     ],
     sectionTitles: {
@@ -38,7 +38,7 @@ const resumeContent = {
       },
       {
         school: "Northeastern University",
-        major: "Computer Technology",
+        major: "Computer Science and Technology",
         degree: "Bachelor of Engineering",
         time: "2009.09-2013.06",
       },
@@ -66,7 +66,7 @@ const resumeContent = {
         time: "2021.06-2025.06",
         role: "Project Lead, Backend Engineer",
         company: "NetEase",
-        tech: ["Java", "Agents", "BI", "Kafka"],
+        tech: ["Java", "Agent", "BI", "Kafka"],
         responsibilities: [
           "Led the design of a machine moderation strategy to reduce manual review while ensuring safety and quality.",
           "Instrumented and analyzed the moderation pipeline to identify bottlenecks; designed and shipped 30+ automated rules covering 6+ business types.",
@@ -99,7 +99,7 @@ const resumeContent = {
         time: "2019.06-2021.06",
         role: "Backend Engineer",
         company: "NetEase",
-        tech: ["Spring Boot", "MyBatis", "Redis", "Sentinel", "Hystrix"],
+        tech: ["SpringBoot", "Mybatis", "Redis", "Sentinel", "Hystrix"],
         responsibilities: [
           "Worked on the content distribution platform, contributing to Zhifou Q&A, recommendation integration, and dual-feed publishing.",
           "Optimized the publishing flow with unified video upload IDs and centralized processing to reduce complexity.",
@@ -114,7 +114,7 @@ const resumeContent = {
         time: "2016.11-2018.12",
         role: "Backend Engineer",
         company: "NetEase",
-        tech: ["Spring Boot", "RabbitMQ", "FFmpeg"],
+        tech: ["SpringBoot", "RabbitMQ", "Ffmpeg"],
         responsibilities: [
           "Supported a live streaming product with PK, short video, replay, quizzes, and tasks across mobile SDK, PC OBS, and third-party relay pipelines.",
           "Built core backend services, designed live streaming workflows, integrated third-party services, and delivered real-name verification, resume streaming, push/pull switching, recording adaptation, and stream reuse.",
@@ -130,7 +130,7 @@ const resumeContent = {
         time: "2015.07-2016.04",
         role: "Backend Engineer",
         company: "Qunar",
-        tech: ["Spring MVC", "MyBatis", "Dozer"],
+        tech: ["SpringMVC", "Mybatis", "Dozer"],
         responsibilities: [
           "Developed the TTS system to integrate supplier workflows, handling booking form, order placement, and order details to improve system completeness.",
           "Optimized order center data synchronization, fixed order loss issues, and supported production troubleshooting and maintenance.",
@@ -167,11 +167,11 @@ const resumeContent = {
     skills: [
       {
         category: "Languages",
-        items: ["Java", "TypeScript", "Python", "SQL"],
+        items: ["Java", "TypeScript", "Python", "Solidity"],
       },
       {
         category: "Backend",
-        items: ["Spring Boot", "REST APIs", "Kafka", "MySQL"],
+        items: ["Spring Boot", "Redis", "Kafka", "MySQL"],
       },
       {
         category: "Frontend",
@@ -179,11 +179,11 @@ const resumeContent = {
       },
       {
         category: "Web3",
-        items: ["Solidity", "Hardhat", "Wagmi", "IPFS"],
+        items: ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"],
       },
       {
         category: "AI / Machine Learning",
-        items: ["LLM Fine-tuning", "AI Agent", "Langchain"],
+        items: ["LLM Fine-tuning", "AI Agent", "Langchain", "Dify"],
       },
       {
         category: "Tooling",
@@ -191,8 +191,9 @@ const resumeContent = {
       },
     ],
     summary: [
-      "Diligent, proactive, and eager to learn; communicate clearly and execute hands-on with integrity.",
-      "Strong interest in internet technologies, Web3, and AI.",
+      "Senior backend engineer with 10 years of experience, strong software engineering fundamentals, and a focus on code quality and architecture with solid full-stack capability.",
+      "Proactive, accountable, and collaborative; communicates well, values knowledge sharing, and identifies business bottlenecks with product thinking.",
+      "Strong interest in internet technologies, Web3, and AI, with continuous learning and a habit of adopting best practices from open-source projects.",
     ],
   },
   zh: {
@@ -340,8 +341,7 @@ const resumeContent = {
         tech: ["Java", "Python", "React Flow"],
         url: "https://flowlet.gogoga.top/",
         highlights: [
-          "Flowlet 是一款轻量级的可视化流程编排系统，支持通过拖拽方式设计和执行数据处理流程。",
-          "支持LLM 调用、API 调用、Kafka 异步处理、敏感词匹配、向量化存储等节点能力。",
+          "用 Java/Python 搭建流程编排引擎，React Flow 做可视化；节点覆盖 LLM/API/Kafka/向量库，支持拖拽配置与运行态校验、异步执行与重试；沉淀可插拔节点与观测思路，理解编排平台工程化实践。",
         ],
       },
       {
@@ -350,10 +350,10 @@ const resumeContent = {
         tech: ["Solidity", "Hardhat", "OpenZeppelin", "Wagmi"],
         url: "https://gogoga.eth.limo/#/side-projects",
         highlights: [
-          "众筹系统：支持多档位与自定义出资，失败退款流程完备。",
-          "Gogoga Token：带售卖逻辑、可增发与限购的 ERC20 代币。",
-          "Gogoga NFT：支持 EIP-2981 版税与批量铸造的 ERC721 合约。",
-          "投票系统：候选人与投票人注册，支持暂停与结果统计。",
+          "众筹系统：多档位与自定义出资，失败退款与目标达成提现；采用状态机与 CEI，结合 Pausable/Ownable 保障安全，理解资金流与合约风控。",
+          "Gogoga Token：基于 ERC20 扩展售卖、铸造与限购，配套 Sale/Airdrop/Faucet 合约；空投使用 Merkle Tree 白名单校验，掌握代币发行与运营实践。",
+          "Gogoga NFT：ERC721 预设/自定义双铸造，IPFS 元数据与版税策略；通过批量铸造、URI 管理和暂停机制优化体验，熟悉 NFT 标准与内容管理流程。",
+          "投票系统：候选人与投票人注册、时间窗投票与结果统计；提供批量注册与查询接口，理解链上治理流程与可审计性设计；通过自定义 error 降低 gas 费。",
         ],
       },
     ],
@@ -384,7 +384,7 @@ const resumeContent = {
       },
     ],
     summary: [
-      "拥有 10 年经验的资深服务端工程师，具备扎实的软件工程基础，注重代码质量和架构设计，具备一定的全栈开发能力。",
+      "拥有 11 年经验的资深服务端工程师，具备扎实的软件工程基础，注重代码质量和架构设计，具备一定的全栈开发能力。",
       "在项目中主动承担责任，具备良好的沟通能力和团队合作精神，重视知识分享。善于主动发现业务瓶颈，具备一定的产品思维。",
       "对互联网技术、Web3 技术、AI 有着浓厚的兴趣，保持持续学习的热情，紧跟行业发展趋势，善于从开源项目中学习最佳实践。",
     ],
