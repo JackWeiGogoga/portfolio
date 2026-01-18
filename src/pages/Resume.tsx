@@ -99,7 +99,7 @@ const resumeContent = {
         time: "2019.06-2021.06",
         role: "Backend Engineer",
         company: "NetEase",
-        tech: ["SpringBoot", "Mybatis", "Redis", "Sentinel", "Hystrix"],
+        tech: ["SpringBoot", "MyBatis", "Redis", "Sentinel", "Hystrix"],
         responsibilities: [
           "Worked on the content distribution platform, contributing to Zhifou Q&A, recommendation integration, and dual-feed publishing.",
           "Optimized the publishing flow with unified video upload IDs and centralized processing to reduce complexity.",
@@ -114,7 +114,7 @@ const resumeContent = {
         time: "2016.11-2018.12",
         role: "Backend Engineer",
         company: "NetEase",
-        tech: ["SpringBoot", "RabbitMQ", "Ffmpeg"],
+        tech: ["SpringBoot", "RabbitMQ", "FFmpeg"],
         responsibilities: [
           "Supported a live streaming product with PK, short video, replay, quizzes, and tasks across mobile SDK, PC OBS, and third-party relay pipelines.",
           "Built core backend services, designed live streaming workflows, integrated third-party services, and delivered real-name verification, resume streaming, push/pull switching, recording adaptation, and stream reuse.",
@@ -130,7 +130,7 @@ const resumeContent = {
         time: "2015.07-2016.04",
         role: "Backend Engineer",
         company: "Qunar",
-        tech: ["SpringMVC", "Mybatis", "Dozer"],
+        tech: ["SpringMVC", "MyBatis", "Dozer"],
         responsibilities: [
           "Developed the TTS system to integrate supplier workflows, handling booking form, order placement, and order details to improve system completeness.",
           "Optimized order center data synchronization, fixed order loss issues, and supported production troubleshooting and maintenance.",
@@ -157,10 +157,10 @@ const resumeContent = {
         tech: ["Solidity", "Hardhat", "OpenZeppelin", "Wagmi"],
         url: "https://gogoga.eth.limo/#/side-projects",
         highlights: [
-          "Crowdfunding: tier-based & custom funding flows with refunds for failed campaigns.",
-          "Gogoga Token: ERC20 token with sale logic, minting, and purchase limits.",
-          "Gogoga NFT: ERC721 collection with EIP-2981 royalties and batch minting.",
-          "Voting System: on-chain voting with registration, pausable controls, and result tallying.",
+          "Crowdfunding: tiered and custom contributions, refunds on failure, withdrawals on goal reached; applied state machine + CEI with Pausable/Ownable for safety and fund-risk control.",
+          "Gogoga Token: ERC20 extensions for sale, minting, and purchase limits with Sale/Airdrop/Faucet contracts; airdrop uses Merkle Tree whitelist validation for token issuance ops.",
+          "Gogoga NFT: ERC721 preset/custom minting, IPFS metadata, and royalty strategy; batch minting, URI management, and pausing improve UX and content ops.",
+          "Voting System: candidate/voter registration, time-window voting, and result tallying; batch registration and query APIs, on-chain governance auditability; custom errors reduce gas.",
         ],
       },
     ],
@@ -191,7 +191,7 @@ const resumeContent = {
       },
     ],
     summary: [
-      "Senior backend engineer with 10 years of experience, strong software engineering fundamentals, and a focus on code quality and architecture with solid full-stack capability.",
+      "Senior backend engineer with 11 years of experience, strong software engineering fundamentals, and a focus on code quality and architecture with solid full-stack capability.",
       "Proactive, accountable, and collaborative; communicates well, values knowledge sharing, and identifies business bottlenecks with product thinking.",
       "Strong interest in internet technologies, Web3, and AI, with continuous learning and a habit of adopting best practices from open-source projects.",
     ],
@@ -293,7 +293,7 @@ const resumeContent = {
         time: "2019.06-2021.06",
         role: "服务端开发",
         company: "网易",
-        tech: ["SpringBoot", "Mybatis", "Redis", "Sentinel", "Hystrix"],
+        tech: ["SpringBoot", "MyBatis", "Redis", "Sentinel", "Hystrix"],
         responsibilities: [
           "网易新闻是网易旗下的一款内容分发平台，并提供类似社区的资源整合，倡导用户抒发观点。作为服务端开发，参与了知否问答、推荐系统接入、双列表发布等功能。",
           "梳理并优化发布流程，用户上传视频同步获取id，统一系统中的视频处理，降低逻辑复杂度。",
@@ -308,7 +308,7 @@ const resumeContent = {
         time: "2016.11-2018.12",
         role: "服务端开发",
         company: "网易",
-        tech: ["SpringBoot", "RabbitMQ", "Ffmpeg"],
+        tech: ["SpringBoot", "RabbitMQ", "FFmpeg"],
         responsibilities: [
           "薄荷直播是一款秀场类的直播产品，包括直播、PK、短视频、回放、答题、任务等玩法功能，涵盖了移动端SDK推流、PC端游戏OBS推流和转推第三方直播等主流直播途径。",
           "参与项目后台服务搭建，技术选型和直播流程设计，针对不同SDK梳理直播流程，对接第三方服务，实现主播芝麻认证、断线重连续播、推拉流切换、直播录制适配、直播链路复用等功能。",
@@ -324,7 +324,7 @@ const resumeContent = {
         time: "2015.07-2016.04",
         role: "服务端开发",
         company: "去哪儿网",
-        tech: ["SpringMVC", "Mybatis", "Dozer"],
+        tech: ["SpringMVC", "MyBatis", "Dozer"],
         responsibilities: [
           "去哪儿网无线酒店 TTS 系统负责整合各种供应商的业务逻辑，提供统一的接口服务。作为服务端开发，负责 TTS 系统的迭代开发，处理填单、下单、订单详情等操作，完善系统功能。",
           "无线订单中心数据同步优化，修复订单数据丢失问题。参与线上问题排查与系统维护。",
@@ -341,7 +341,8 @@ const resumeContent = {
         tech: ["Java", "Python", "React Flow"],
         url: "https://flowlet.gogoga.top/",
         highlights: [
-          "用 Java/Python 搭建流程编排引擎，React Flow 做可视化；节点覆盖 LLM/API/Kafka/向量库，支持拖拽配置与运行态校验、异步执行与重试；沉淀可插拔节点与观测思路，理解编排平台工程化实践。",
+          "Flowlet 是一款轻量级的可视化流程编排系统，支持通过拖拽方式设计和执行数据处理流程。",
+          "支持LLM 调用、API 调用、Kafka 异步处理、敏感词匹配、向量化存储等节点能力。",
         ],
       },
       {
