@@ -65,8 +65,20 @@ export default function JvmLessonPage() {
   const [isStackFloating, setIsStackFloating] = useState(false);
   const [hasManualSize, setHasManualSize] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(800);
-  const [floatingPosition, setFloatingPosition] = useState({ x: 32, y: 64 });
-  const [floatingSize, setFloatingSize] = useState({ width: 420, height: 600 });
+  const defaultFloatingWidth = 420;
+  const defaultFloatingHeight = 600;
+  const defaultFloatingY = 64;
+  const [floatingPosition, setFloatingPosition] = useState(() => {
+    if (typeof window === "undefined") {
+      return { x: 32, y: defaultFloatingY };
+    }
+    const rightX = Math.max(16, window.innerWidth - defaultFloatingWidth - 16);
+    return { x: rightX, y: defaultFloatingY };
+  });
+  const [floatingSize, setFloatingSize] = useState({
+    width: defaultFloatingWidth,
+    height: defaultFloatingHeight,
+  });
   const dragStateRef = useRef({
     mode: "none" as "none" | "move" | "resize",
     offsetX: 0,
@@ -112,13 +124,6 @@ export default function JvmLessonPage() {
     positionRef.current = floatingPosition;
   }, [floatingPosition]);
 
-  useEffect(() => {
-    if (positionRef.current.x !== 32 || positionRef.current.y !== 64) {
-      return;
-    }
-    const rightX = Math.max(16, window.innerWidth - floatingSize.width - 16);
-    setFloatingPosition((prev) => ({ ...prev, x: rightX }));
-  }, [floatingSize.width]);
 
   useEffect(() => {
     sizeRef.current = {
