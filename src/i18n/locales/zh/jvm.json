@@ -38,7 +38,7 @@
   "runtimeAreas": [
     {
       "id": "heap",
-      "name": "Heap",
+      "name": "堆",
       "stored": "对象实例、数组",
       "ownership": "线程共享",
       "notes": ["对象分配的主要区域", "回收由 GC 驱动"],
@@ -46,7 +46,7 @@
     },
     {
       "id": "stack",
-      "name": "Java Stack",
+      "name": "Java 栈",
       "stored": "栈帧：局部变量表、操作数栈、返回地址",
       "ownership": "线程私有",
       "notes": ["方法调用入栈/出栈", "栈深度影响稳定性"],
@@ -54,7 +54,7 @@
     },
     {
       "id": "method-area",
-      "name": "Method Area",
+      "name": "方法区",
       "stored": "类元数据、常量池、静态变量",
       "ownership": "线程共享",
       "notes": ["类级信息集中管理", "可被回收/卸载"],
@@ -62,7 +62,7 @@
     },
     {
       "id": "pc",
-      "name": "PC Register",
+      "name": "程序计数器",
       "stored": "下一条字节码指令地址",
       "ownership": "线程私有",
       "notes": ["执行后更新", "线程切换可恢复"],
@@ -70,7 +70,7 @@
     },
     {
       "id": "native-stack",
-      "name": "Native Method Stack",
+      "name": "本地方法栈",
       "stored": "本地方法栈帧",
       "ownership": "线程私有",
       "notes": ["JNI 调用支撑", "与 OS 栈关联"],
@@ -296,7 +296,7 @@
     "emptyStack": "栈已清空",
     "topFrame": "栈顶帧",
     "frameLabel": "栈帧",
-    "pc": "PC",
+    "pc": "程序计数器",
     "dynamicLink": "动态链接",
     "methodExit": "方法出口",
     "locals": "局部变量表",
