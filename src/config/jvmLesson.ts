@@ -294,6 +294,27 @@ export const exampleMappings = [
   },
 ];
 
+export const sourceLineTooltips: Record<number, string> = {
+  0: "类定义：类元数据加载到方法区（JDK8+ 为元空间），方法信息与常量池也在此维护。",
+  1: "staticField 存在方法区的类元数据中，初始化在 <clinit> 执行时通过常量入栈，再 putstatic 写入。",
+  2: "instanceField 写入在 <init> 中完成：iconst_2 先入操作数栈，再通过 putfield 写入堆中对象实例字段。",
+  4: "method1 定义：方法字节码与符号引用存放在方法区，调用时创建新的栈帧。",
+  11: "method2 定义：方法信息在方法区，调用时压入新栈帧并绑定参数 d。",
+  22: "main 定义：类加载后可作为入口方法调用。",
+  5: "int m = 3：iconst_3 入操作数栈，再 istore_1 存入局部变量表 slot1。",
+  6: "int n = 4：iconst_4 入操作数栈，再 istore_2 存入局部变量表 slot2。",
+  7: "m+n：先 iload_1/iload_2 从局部变量表压栈，再 iadd，结果在操作数栈，随后 istore_3。",
+  8: "return k：iload_3 将局部变量表里的 k 压栈，ireturn 返回并弹栈帧。",
+  12: "method1 调用：通过栈帧的动态链接在运行时常量池解析符号引用，aload_0 压入 this，再 invokevirtual；返回值先进操作数栈，再 istore_2。",
+  13: "int j = 5：iconst_5 入操作数栈，再 istore_3 写入局部变量表。",
+  15: "int k = 6 / d：bipush 6 与 iload_1 进入操作数栈，idiv 运算后 istore 4。",
+  17: "j = 7：bipush 7 先入操作数栈，再 istore_3 覆盖局部变量表。",
+  18: "e.printStackTrace：aload 4 将异常引用入栈，再 invokevirtual 调用。",
+  23: "new App：类加载校验通过后在堆分配对象内存，初始化对象头/默认值；构造完成后引用先入操作数栈，再 astore_1 存入局部变量表。",
+  24: "parseInt(args[0])：aload_0 与 iconst_0 入栈，aaload 取值，invokestatic 返回值入栈，再 istore_2。",
+  25: "obj.method2(d)：aload_1/iload_2 先入操作数栈，再 invokevirtual 调用。",
+};
+
 export const sourceLines = [
   "class App {",
   "  static int staticField = 1;",

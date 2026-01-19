@@ -11,7 +11,6 @@ import {
 import { ROUTES } from "@/config/constants";
 import {
   bytecodeLines,
-  exampleMappings,
   executionStepsException,
   executionStepsNormal,
   flowSteps,
@@ -19,6 +18,7 @@ import {
   getOpcodeFromLine,
   runtimeAreaDetails,
   runtimeAreas,
+  sourceLineTooltips,
   sourceLines,
 } from "@/config/jvmLesson";
 
@@ -135,7 +135,6 @@ export default function JvmLessonPage() {
   useEffect(() => {
     positionRef.current = floatingPosition;
   }, [floatingPosition]);
-
 
   useEffect(() => {
     sizeRef.current = {
@@ -506,6 +505,14 @@ export default function JvmLessonPage() {
                     Class Loader
                   </div>
                   <div className="text-sm mt-2">加载 .class、链接、初始化</div>
+                  <div className="mt-3 rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-graytext">
+                    <div>
+                      双亲委派：先委派给父加载器，父找不到才由子加载器加载。
+                    </div>
+                    <div className="mt-1">
+                      Bootstrap → Platform/Extension → Application
+                    </div>
+                  </div>
                 </div>
                 <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
                   <div className="text-xs font-mono text-graytext">
@@ -674,86 +681,6 @@ export default function JvmLessonPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-[1.2fr_1fr]">
-          <div className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-              示例：一段代码在 JVM 中去哪了？
-            </div>
-            <div className="p-4 grid gap-4">
-              <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-sm">
-                <div className="text-xs font-mono text-graytext mb-2">
-                  Example.java
-                </div>
-                <pre className="text-xs leading-6 text-text overflow-x-auto">
-                  {`class A {
-  static int count = 1;
-  int x = 2;
-  void foo(int y) {
-    A obj = new A();
-  }
-}`}
-                </pre>
-              </div>
-              <div className="grid gap-2 text-sm">
-                {exampleMappings.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex flex-col gap-1 rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-2"
-                  >
-                    <div className="flex items-center justify-between text-xs text-graytext">
-                      <span>{item.label}</span>
-                      <span className="rounded-full border border-gray-300 dark:border-white/20 px-2 py-0.5">
-                        {item.location}
-                      </span>
-                    </div>
-                    <div className="text-sm">{item.detail}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-              类加载器双亲委派
-            </div>
-            <div className="p-4 text-sm text-graytext space-y-3">
-              <div>核心规则：先委派给父加载器，父找不到才由子加载器加载。</div>
-              <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-2">
-                <div className="text-xs font-mono text-graytext mb-2">
-                  Delegation Path
-                </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-graytext">1</span>
-                    Bootstrap ClassLoader（核心类库）
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-graytext">2</span>
-                    Platform / Extension ClassLoader
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-graytext">3</span>
-                    Application ClassLoader
-                  </div>
-                </div>
-              </div>
-              <div>作用：保证核心类库优先加载，避免类被重复或篡改。</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-            记住这三点
-          </div>
-          <div className="p-4 text-sm text-graytext space-y-2">
-            <div>1. JVM = 类加载 + 运行时数据区 + 执行引擎 + JNI。</div>
-            <div>2. 线程私有：PC/栈/本地栈；线程共享：堆/方法区。</div>
-            <div>3. 性能优化常从“对象分配与 GC”入手。</div>
-          </div>
-        </section>
-
         <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
           <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
             字节码执行动画：逐条执行与栈帧变化
@@ -768,10 +695,9 @@ export default function JvmLessonPage() {
                   {sourceLines.map((line, index) => {
                     const targetStepIndex = sourceLineToStep.get(index);
                     const isClickable = targetStepIndex !== undefined;
-                    return (
+                    const tooltipText = sourceLineTooltips[index];
+                    const lineNode = (
                       <div
-                        key={`${line}-${index}`}
-                        title={line}
                         onClick={() => {
                           if (!isClickable) {
                             return;
@@ -788,8 +714,32 @@ export default function JvmLessonPage() {
                         <span className="inline-block w-6 text-graytext">
                           {String(index + 1).padStart(2, "0")}
                         </span>
-                        {line}
+                        {tooltipText ? (
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{line}</span>
+                          </TooltipTrigger>
+                        ) : (
+                          <span>{line}</span>
+                        )}
                       </div>
+                    );
+
+                    if (!tooltipText) {
+                      return <div key={`${line}-${index}`}>{lineNode}</div>;
+                    }
+
+                    return (
+                      <Tooltip key={`${line}-${index}`}>
+                        {lineNode}
+                        <TooltipContent
+                          side="top"
+                          align="start"
+                          sideOffset={6}
+                          className="max-w-xs whitespace-pre-line"
+                        >
+                          {tooltipText}
+                        </TooltipContent>
+                      </Tooltip>
                     );
                   })}
                 </div>
