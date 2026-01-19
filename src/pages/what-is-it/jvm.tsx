@@ -17,6 +17,7 @@ import {
   flowSteps,
   getBytecodeTooltip,
   getOpcodeFromLine,
+  runtimeAreaDetails,
   runtimeAreas,
   sourceLines,
 } from "@/config/jvmLesson";
@@ -57,8 +58,19 @@ const parseExceptionTable = (exceptionTable: string) => {
 
 export default function JvmLessonPage() {
   const [activeAreaId, setActiveAreaId] = useState(runtimeAreas[0].id);
+  const [activeDetailTabId, setActiveDetailTabId] = useState(() => {
+    const firstAreaId = runtimeAreas[0]?.id;
+    const firstTab = firstAreaId
+      ? runtimeAreaDetails[firstAreaId]?.tabs[0]?.id
+      : undefined;
+    return firstTab || "overview";
+  });
   const activeArea =
     runtimeAreas.find((area) => area.id === activeAreaId) || runtimeAreas[0];
+  const activeAreaDetail = runtimeAreaDetails[activeAreaId];
+  const activeDetailTab =
+    activeAreaDetail?.tabs.find((tab) => tab.id === activeDetailTabId) ||
+    activeAreaDetail?.tabs[0];
   const [runMode, setRunMode] = useState<"normal" | "exception">("normal");
   const [stepIndex, setStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -514,7 +526,14 @@ export default function JvmLessonPage() {
                         <button
                           key={area.id}
                           type="button"
-                          onClick={() => setActiveAreaId(area.id)}
+                          onClick={() => {
+                            setActiveAreaId(area.id);
+                            const defaultTab =
+                              runtimeAreaDetails[area.id]?.tabs[0]?.id;
+                            if (defaultTab) {
+                              setActiveDetailTabId(defaultTab);
+                            }
+                          }}
                           aria-pressed={isActive}
                           className={`w-full text-left rounded-md border px-3 py-2 text-sm transition ${
                             isActive
@@ -581,12 +600,54 @@ export default function JvmLessonPage() {
               </div>
               <div className="text-xs text-graytext space-y-2">
                 <div>作用域：{activeArea.ownership}</div>
+                {activeAreaDetail?.summary ? (
+                  <div>{activeAreaDetail.summary}</div>
+                ) : null}
                 <ul className="list-disc pl-4">
                   {activeArea.notes.map((note) => (
                     <li key={note}>{note}</li>
                   ))}
                 </ul>
               </div>
+              {activeAreaDetail?.tabs?.length ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {activeAreaDetail.tabs.map((tab) => {
+                      const isActive = tab.id === activeDetailTab?.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveDetailTabId(tab.id)}
+                          className={`rounded-md border px-2 py-1 text-xs ${
+                            isActive
+                              ? "border-gray-500 bg-accent text-text"
+                              : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {activeDetailTab ? (
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-3">
+                      {activeDetailTab.diagram ? (
+                        <pre className="text-[11px] leading-5 text-text font-mono whitespace-pre">
+                          {activeDetailTab.diagram.join("\n")}
+                        </pre>
+                      ) : null}
+                      {activeDetailTab.items ? (
+                        <ul className="list-disc pl-4 space-y-1">
+                          {activeDetailTab.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="text-xs text-graytext">
                 Tip：堆负责“对象”，栈负责“方法执行上下文”。
               </div>

@@ -19,13 +19,25 @@ export type ExecutionStep = {
   stack: FrameState[];
 };
 
+type DetailTab = {
+  id: string;
+  label: string;
+  items?: string[];
+  diagram?: string[];
+};
+
+type RuntimeAreaDetail = {
+  summary: string;
+  tabs: DetailTab[];
+};
+
 export const runtimeAreas = [
   {
     id: "heap",
     name: "Heap",
     stored: "对象实例、数组",
     ownership: "线程共享",
-    notes: ["GC 管理", "新生代/老年代"],
+    notes: ["对象分配的主要区域", "回收由 GC 驱动"],
     scopeTag: "Shared",
   },
   {
@@ -33,7 +45,7 @@ export const runtimeAreas = [
     name: "Java Stack",
     stored: "栈帧：局部变量表、操作数栈、返回地址",
     ownership: "线程私有",
-    notes: ["方法调用/返回", "栈深度影响 StackOverflow"],
+    notes: ["方法调用入栈/出栈", "栈深度影响稳定性"],
     scopeTag: "Private",
   },
   {
@@ -41,15 +53,15 @@ export const runtimeAreas = [
     name: "Method Area",
     stored: "类元数据、常量池、静态变量",
     ownership: "线程共享",
-    notes: ["JDK 8+ 元空间", "类卸载"],
+    notes: ["类级信息集中管理", "可被回收/卸载"],
     scopeTag: "Shared",
   },
   {
     id: "pc",
     name: "PC Register",
-    stored: "当前线程字节码行号",
+    stored: "下一条字节码指令地址",
     ownership: "线程私有",
-    notes: ["控制执行流", "线程切换后可恢复"],
+    notes: ["执行后更新", "线程切换可恢复"],
     scopeTag: "Private",
   },
   {
@@ -57,10 +69,189 @@ export const runtimeAreas = [
     name: "Native Method Stack",
     stored: "本地方法栈帧",
     ownership: "线程私有",
-    notes: ["JNI 调用", "可能与 OS 栈对接"],
+    notes: ["JNI 调用支撑", "与 OS 栈关联"],
     scopeTag: "Private",
   },
 ];
+
+export const runtimeAreaDetails: Record<string, RuntimeAreaDetail> = {
+  heap: {
+    summary: "线程共享的主要内存区，负责对象与数组的分配与回收。",
+    tabs: [
+      {
+        id: "overview",
+        label: "概览",
+        items: [
+          "分代管理：新生代/老年代，GC 主要发生在新生代。",
+          "字符串常量池：JDK 7 起迁移到堆内，与方法区分离。",
+          "对象分配：TLAB 优化线程内分配，失败后走共享分配。",
+        ],
+      },
+      {
+        id: "structure",
+        label: "结构",
+        diagram: [
+          "Young Gen",
+          "  ├─ Eden",
+          "  ├─ S0 (From)",
+          "  └─ S1 (To)",
+          "Old Gen",
+          "  └─ Tenured",
+        ],
+        items: ["对象优先进入 Eden，存活对象在 Survivor 之间复制。"],
+      },
+      {
+        id: "versions",
+        label: "版本差异",
+        items: [
+          "JDK 6/7: 字符串常量池在永久代/方法区。",
+          "JDK 7+: 字符串常量池迁移到堆，减少永久代压力。",
+        ],
+      },
+      {
+        id: "config",
+        label: "配置",
+        items: [
+          "-Xms/-Xmx：堆初始/最大大小",
+          "-Xmn：新生代大小",
+          "-XX:NewRatio：新生代与老年代比例",
+          "-XX:SurvivorRatio：Eden 与 Survivor 比例",
+          "-XX:MaxTenuringThreshold：晋升年龄",
+        ],
+      },
+      {
+        id: "exceptions",
+        label: "异常",
+        items: [
+          "OutOfMemoryError: Java heap space",
+          "GC overhead limit exceeded",
+        ],
+      },
+    ],
+  },
+  "method-area": {
+    summary: "方法区是 JVM 规范的概念，存储类元数据与运行时常量。",
+    tabs: [
+      {
+        id: "overview",
+        label: "概览",
+        items: [
+          "存储：类元数据、运行时常量池、静态变量、即时编译代码。",
+          "与堆不同：主要存放类级别数据，线程共享。",
+        ],
+      },
+      {
+        id: "versions",
+        label: "版本实现",
+        items: [
+          "PermGen (<= JDK 7): 位于堆内，易 OOM，大小固定。",
+          "Metaspace (JDK 8+): 位于本地内存，按需扩展。",
+          "替换原因：类元数据大小难预测，PermGen 调优成本高。",
+        ],
+      },
+      {
+        id: "structure",
+        label: "简图",
+        diagram: [
+          "Method Area",
+          "  ├─ Class Metadata",
+          "  ├─ Runtime Constant Pool",
+          "  └─ Static Variables",
+          "",
+          "JDK 8+: Metaspace (Native Memory)",
+        ],
+      },
+      {
+        id: "config",
+        label: "配置",
+        items: [
+          "-XX:MetaspaceSize/-XX:MaxMetaspaceSize (JDK 8+)",
+          "-XX:PermSize/-XX:MaxPermSize (JDK 7-)",
+        ],
+      },
+      {
+        id: "exceptions",
+        label: "异常",
+        items: ["OutOfMemoryError: Metaspace", "PermGen space (JDK 7-)"],
+      },
+    ],
+  },
+  pc: {
+    summary: "线程私有寄存器，保存下一条将执行的字节码地址。",
+    tabs: [
+      {
+        id: "overview",
+        label: "说明",
+        items: [
+          "执行字节码后会更新，线程切换可恢复执行。",
+          "执行本地方法时，PC 值不定义。",
+        ],
+      },
+    ],
+  },
+  stack: {
+    summary: "线程私有，保存方法调用时创建的栈帧。",
+    tabs: [
+      {
+        id: "overview",
+        label: "栈帧内容",
+        items: [
+          "局部变量表：保存方法参数与局部变量。",
+          "操作数栈：执行指令时的临时数据区。",
+          "动态链接：指向运行时常量池的方法引用。",
+          "方法出口：正常/异常返回地址。",
+          "异常表：catch 处理器区间与跳转位置。",
+        ],
+      },
+      {
+        id: "structure",
+        label: "简图",
+        diagram: [
+          "Stack (Thread)",
+          "  ├─ Frame N",
+          "  │   ├─ Local Vars",
+          "  │   ├─ Operand Stack",
+          "  │   ├─ Dynamic Link",
+          "  │   └─ Return/Exception",
+          "  └─ Frame 1",
+        ],
+      },
+      {
+        id: "config",
+        label: "配置",
+        items: ["-Xss：每个线程栈大小"],
+      },
+      {
+        id: "exceptions",
+        label: "异常",
+        items: ["StackOverflowError", "OutOfMemoryError: unable to create new native thread"],
+      },
+    ],
+  },
+  "native-stack": {
+    summary: "为 JVM 调用本地方法（JNI）提供栈空间。",
+    tabs: [
+      {
+        id: "overview",
+        label: "用途",
+        items: [
+          "执行 C/C++ 等本地方法调用。",
+          "与 OS 线程栈关联，具体实现依赖 JVM 与平台。",
+        ],
+      },
+      {
+        id: "config",
+        label: "配置",
+        items: ["-Xss：影响本地方法栈大小（依实现）"],
+      },
+      {
+        id: "exceptions",
+        label: "异常",
+        items: ["StackOverflowError", "OutOfMemoryError"],
+      },
+    ],
+  },
+};
 
 export const flowSteps = [
   "Java 源码编译成 .class 字节码",
