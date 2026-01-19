@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "location": "北京",
+    "pages": "页面",
+    "info": "信息",
+    "close": "关闭",
+    "lightsOn": "开灯",
+    "lightsOff": "关灯",
+    "items": {
+      "home": "主页",
+      "resume": "简历",
+      "about": "关于",
+      "bookshelf": "书架",
+      "sideProjects": "业余项目",
+      "whatIsIt": "What is it",
+      "notes": "笔记",
+      "colophon": "设计说明",
+      "now": "近况"
+    },
+    "language": {
+      "en": "EN",
+      "zh": "中文"
+    }
+  }
+}

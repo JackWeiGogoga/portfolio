@@ -1,0 +1,195 @@
+{
+  "content": {
+    "name": "魏东军",
+    "headerInfo": [
+      { "label": "手机号", "value": "+86 18500151385" },
+      { "label": "邮箱", "value": "jackweigogoga@gmail.com" },
+      { "label": "Telegram", "value": "@jackweigogoga" },
+      { "label": "位置", "value": "中国 北京" },
+      { "label": "个人网站", "value": "https://gogoga.eth.limo/" },
+      { "label": "Github", "value": "https://github.com/JackWeiGogoga" }
+    ],
+    "sectionTitles": {
+      "personal": "个人信息",
+      "education": "教育经历",
+      "work": "工作经历",
+      "projects": "个人项目",
+      "skills": "专业技能",
+      "summary": "个人总结"
+    },
+    "metaLabels": {
+      "role": "角色",
+      "company": "所属公司",
+      "tech": "主要技术",
+      "responsibilities": "主要职责",
+      "impact": "收益",
+      "highlights": "要点"
+    },
+    "education": [
+      {
+        "school": "东北大学",
+        "major": "计算机技术",
+        "degree": "工程硕士",
+        "time": "2013.09-2015.07"
+      },
+      {
+        "school": "东北大学",
+        "major": "计算机科学与技术",
+        "degree": "工学学士",
+        "time": "2009.09-2013.06"
+      }
+    ],
+    "workExperience": [
+      {
+        "project": "审核大模型微调",
+        "time": "2025.06-2026.01",
+        "role": "项目负责人",
+        "company": "网易",
+        "tech": ["Python", "SFT", "LlamaFactory"],
+        "responsibilities": [
+          "作为项目负责人主导审核大模型微调，提升审核垂类领域的精确率与召回率。",
+          "分析人工审核尺度，梳理风险标签体系；使用 RAG 与 few-shot 增强提示词质量。",
+          "采用大模型预标注与 AI 辅助编程搭建标注平台，标注效率提升 40%。",
+          "基于 SFT + GRPO 微调 Qwen3，提升通用模型对业务尺度的审核能力。",
+          "面向简单场景微调小参数模型降低硬件成本（如 BERT 识别 AI 写稿与垃圾广告），准确率 90%+。"
+        ],
+        "impact": [
+          "风险识别准确率从 60% 提升到 80%，召回率从 20% 提升到 70%。"
+        ]
+      },
+      {
+        "project": "内容审核提效",
+        "time": "2021.06-2025.06",
+        "role": "项目负责人，服务端开发",
+        "company": "网易",
+        "tech": ["Java", "Agent", "BI", "Kafka"],
+        "responsibilities": [
+          "主导设计机器审核策略，在保证安全与质量的前提下降低人工审核成本。",
+          "对审核链路埋点分析并定位瓶颈，落地 30+ 自动规则，覆盖 6+ 业务类型。",
+          "搭建 LLM 审核平台，支持多 Agent 配置、模型切换与提示词调优，覆盖约 100 项审核尺度。",
+          "重构人工审核派单流程，审单效率提升 15%，高价值内容审核时长下降 20%。",
+          "重构审核控制台并引入 AI 辅助编程，降低单条审核时长 18%。"
+        ],
+        "impact": [
+          "人工审核成本降低 83%，积压率从 20% 降至 0，审核时长下降 40%。"
+        ]
+      },
+      {
+        "project": "LLM 驱动的数据分析 Agent",
+        "time": "2023.10-2023.11",
+        "role": "项目负责人，全栈工程师",
+        "company": "网易",
+        "tech": ["Python", "LangChain", "React"],
+        "responsibilities": [
+          "构建支持自然语言提问的数据分析 Agent，生成 SQL、执行查询并渲染多种可视化图表。",
+          "基于 LangChain 实现 ReAct Agent，将可见表结构自动注入 Prompt，并用 RAG 引入领域知识。",
+          "实现用户记忆机制（Redis）以支持多轮分析。",
+          "开发前端界面，支持表格、柱状图、折线图与饼图展示。"
+        ],
+        "impact": [
+          "替代部分日常分析工作，产品与运营效率提升 30%，并申请国家专利。"
+        ]
+      },
+      {
+        "project": "网易新闻",
+        "time": "2019.06-2021.06",
+        "role": "服务端开发",
+        "company": "网易",
+        "tech": ["SpringBoot", "MyBatis", "Redis", "Sentinel", "Hystrix"],
+        "responsibilities": [
+          "负责内容分发平台开发，涉及知否问答、推荐系统对接与双 feed 发布。",
+          "优化发布流程，统一视频上传 ID 与处理流程，降低业务复杂度。",
+          "引入 Sentinel 与 Hystrix 完成流量控制与熔断，保障系统稳定性。"
+        ],
+        "impact": [
+          "使用 CompletableFuture 并发优化推荐聚合，接口延迟下降 20%。"
+        ]
+      },
+      {
+        "project": "网易薄荷直播",
+        "time": "2016.11-2018.12",
+        "role": "服务端开发",
+        "company": "网易",
+        "tech": ["SpringBoot", "RabbitMQ", "FFmpeg"],
+        "responsibilities": [
+          "支持直播产品 PK、短视频、回放、答题、任务等功能，覆盖移动端 SDK、PC OBS、第三方转推。",
+          "建设核心后台服务，设计直播流程并对接第三方服务，交付实名认证、简历直播、推拉流切换、录制转码与复用。",
+          "基于 RabbitMQ 死信队列实现延迟队列，搭建机器人与红包服务。",
+          "主导 Winner 直播答题项目，设计结算算法并推进端到端流程，保障无重大事故。"
+        ],
+        "impact": [
+          "从 0 到 1 搭建直播后台，Winner 项目在 3 天内完成结算设计、2 周内落地上线。"
+        ]
+      },
+      {
+        "project": "去哪儿网移动酒店项目",
+        "time": "2015.07-2016.04",
+        "role": "服务端开发",
+        "company": "去哪儿网",
+        "tech": ["SpringMVC", "MyBatis", "Dozer"],
+        "responsibilities": [
+          "开发 TTS 系统对接供应商流程，覆盖下单表单、订单提交与详情展示，完善业务闭环。",
+          "优化订单中心数据同步，修复丢单问题，支持线上故障排查与维护。"
+        ],
+        "impact": [
+          "构建低耦合管道与热更新配置体系，实现功能开关与运维成本下降。"
+        ]
+      }
+    ],
+    "personalProjects": [
+      {
+        "project": "Flowlet",
+        "time": "2025.12-2026.01",
+        "tech": ["Java", "Python", "React Flow"],
+        "url": "https://flowlet.gogoga.top/",
+        "highlights": [
+          "Flowlet 是轻量可视化流程编排系统，可通过拖拽设计并运行数据处理管道。",
+          "提供 LLM 调用、API 调用、Kafka 异步处理、敏感词匹配与向量存储等节点。"
+        ]
+      },
+      {
+        "project": "Web3 业余项目",
+        "time": "2025.09-2025.10",
+        "tech": ["Solidity", "Hardhat", "OpenZeppelin", "Wagmi"],
+        "url": "https://gogoga.eth.limo/#/side-projects",
+        "highlights": [
+          "Crowdfunding：分层/自定义捐赠、失败退款、达标提现；使用状态机 + CEI 与 Pausable/Ownable 控制资金风险。",
+          "Gogoga Token：ERC20 扩展支持售卖、铸造、购买限额；空投使用 Merkle Tree 白名单校验。",
+          "Gogoga NFT：ERC721 预设/自定义铸造、IPFS 元数据、版税策略；批量铸造、URI 管理与暂停优化体验。",
+          "Voting System：候选人/投票人注册、时间窗投票、结果统计；批量注册与查询 API，链上治理可审计。"
+        ]
+      }
+    ],
+    "skills": [
+      {
+        "category": "编程语言",
+        "items": ["Java", "TypeScript", "Python", "Solidity"]
+      },
+      {
+        "category": "后端",
+        "items": ["Spring Boot", "Redis", "Kafka", "MySQL"]
+      },
+      {
+        "category": "前端",
+        "items": ["React", "Vite", "Tailwind", "Ant Design"]
+      },
+      {
+        "category": "Web3",
+        "items": ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"]
+      },
+      {
+        "category": "AI / 机器学习",
+        "items": ["LLM 微调", "AI Agent", "Langchain", "Dify"]
+      },
+      {
+        "category": "工程工具",
+        "items": ["Git", "Codex", "Docker"]
+      }
+    ],
+    "summary": [
+      "拥有 11 年经验的资深服务端工程师，具备扎实的软件工程基础，注重代码质量与架构设计，具备一定的全栈能力。",
+      "主动负责、协作高效，重视知识分享与跨团队沟通，善于发现业务瓶颈并以产品视角优化流程。",
+      "对互联网技术、Web3 与 AI 保持浓厚兴趣，持续学习并从开源项目吸收最佳实践。"
+    ]
+  }
+}

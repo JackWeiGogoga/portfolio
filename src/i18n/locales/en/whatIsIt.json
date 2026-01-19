@@ -1,0 +1,18 @@
+{
+  "title": "What is it",
+  "description": "A collection of teaching pages that explain one concept with a web interface.",
+  "lessonMeta": {
+    "updated": "Updated"
+  },
+  "lessons": [
+    {
+      "id": "jvm",
+      "title": "JVM Runtime World",
+      "description": "A visual guide to JVM components, runtime areas, and execution flow.",
+      "tags": ["Java", "JVM", "Runtime"],
+      "level": "Beginner",
+      "duration": "8-12 min",
+      "updated": "2026.02"
+    }
+  ]
+}

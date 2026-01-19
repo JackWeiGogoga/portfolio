@@ -1,0 +1,423 @@
+{
+  "page": {
+    "back": "返回 What is it",
+    "title": "JVM 运行时世界",
+    "subtitle": "目标：理解 JVM 的组成、运行时数据区存储内容与执行流程。"
+  },
+  "sections": {
+    "runtimeDiagram": "JVM 组成示意图（点击运行时数据区查看细节）",
+    "runtimeDetails": "运行时数据区细节",
+    "flow": "JVM 执行流程（缩略版）",
+    "execution": "字节码执行动画：逐条执行与栈帧变化"
+  },
+  "diagram": {
+    "classLoader": {
+      "title": "类加载器",
+      "desc": "加载 .class、链接、初始化",
+      "delegation": "双亲委派：先委派给父加载器，父找不到才由子加载器加载。",
+      "delegationChain": "Bootstrap → Platform/Extension → Application"
+    },
+    "runtimeDataAreas": {
+      "title": "运行时数据区",
+      "scopeShared": "Shared = 线程共享",
+      "scopePrivate": "Private = 线程私有"
+    },
+    "executionEngine": {
+      "title": "执行引擎",
+      "desc": "解释执行、JIT 编译、GC 协同"
+    },
+    "jni": {
+      "title": "本地接口（JNI）",
+      "desc": "Java 与本地方法桥接"
+    },
+    "nativeLibraries": {
+      "title": "本地库",
+      "desc": "OS / C / C++ 库调用"
+    }
+  },
+  "runtimeAreas": [
+    {
+      "id": "heap",
+      "name": "Heap",
+      "stored": "对象实例、数组",
+      "ownership": "线程共享",
+      "notes": ["对象分配的主要区域", "回收由 GC 驱动"],
+      "scopeTag": "Shared"
+    },
+    {
+      "id": "stack",
+      "name": "Java Stack",
+      "stored": "栈帧：局部变量表、操作数栈、返回地址",
+      "ownership": "线程私有",
+      "notes": ["方法调用入栈/出栈", "栈深度影响稳定性"],
+      "scopeTag": "Private"
+    },
+    {
+      "id": "method-area",
+      "name": "Method Area",
+      "stored": "类元数据、常量池、静态变量",
+      "ownership": "线程共享",
+      "notes": ["类级信息集中管理", "可被回收/卸载"],
+      "scopeTag": "Shared"
+    },
+    {
+      "id": "pc",
+      "name": "PC Register",
+      "stored": "下一条字节码指令地址",
+      "ownership": "线程私有",
+      "notes": ["执行后更新", "线程切换可恢复"],
+      "scopeTag": "Private"
+    },
+    {
+      "id": "native-stack",
+      "name": "Native Method Stack",
+      "stored": "本地方法栈帧",
+      "ownership": "线程私有",
+      "notes": ["JNI 调用支撑", "与 OS 栈关联"],
+      "scopeTag": "Private"
+    }
+  ],
+  "runtimeAreaDetails": {
+    "heap": {
+      "summary": "线程共享的主要内存区，负责对象与数组的分配与回收。",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "概览",
+          "items": [
+            "分代管理：新生代/老年代，GC 主要发生在新生代。",
+            "字符串常量池：JDK 7 起迁移到堆内，与方法区分离。",
+            "对象分配：TLAB 优化线程内分配，失败后走共享分配。"
+          ]
+        },
+        {
+          "id": "structure",
+          "label": "结构",
+          "diagram": [
+            "Young Gen",
+            "  ├─ Eden",
+            "  ├─ S0 (From)",
+            "  └─ S1 (To)",
+            "Old Gen",
+            "  └─ Tenured"
+          ],
+          "items": ["对象优先进入 Eden，存活对象在 Survivor 之间复制。"]
+        },
+        {
+          "id": "versions",
+          "label": "版本差异",
+          "items": [
+            "JDK 6/7: 字符串常量池在永久代/方法区。",
+            "JDK 7+: 字符串常量池迁移到堆，减少永久代压力。"
+          ]
+        },
+        {
+          "id": "config",
+          "label": "配置",
+          "items": [
+            "-Xms/-Xmx：堆初始/最大大小",
+            "-Xmn：新生代大小",
+            "-XX:NewRatio：新生代与老年代比例",
+            "-XX:SurvivorRatio：Eden 与 Survivor 比例",
+            "-XX:MaxTenuringThreshold：晋升年龄"
+          ]
+        },
+        {
+          "id": "exceptions",
+          "label": "异常",
+          "items": [
+            "OutOfMemoryError: Java heap space",
+            "GC overhead limit exceeded"
+          ]
+        }
+      ]
+    },
+    "method-area": {
+      "summary": "方法区是 JVM 规范的概念，存储类元数据与运行时常量。",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "概览",
+          "items": [
+            "存储：类元数据、运行时常量池、静态变量、即时编译代码。",
+            "与堆不同：主要存放类级别数据，线程共享。"
+          ]
+        },
+        {
+          "id": "versions",
+          "label": "版本实现",
+          "items": [
+            "PermGen (<= JDK 7): 位于堆内，易 OOM，大小固定。",
+            "Metaspace (JDK 8+): 位于本地内存，按需扩展。",
+            "替换原因：类元数据大小难预测，PermGen 调优成本高。"
+          ]
+        },
+        {
+          "id": "structure",
+          "label": "简图",
+          "diagram": [
+            "Method Area",
+            "  ├─ Class Metadata",
+            "  ├─ Runtime Constant Pool",
+            "  └─ Static Variables",
+            "",
+            "JDK 8+: Metaspace (Native Memory)"
+          ]
+        },
+        {
+          "id": "config",
+          "label": "配置",
+          "items": [
+            "-XX:MetaspaceSize/-XX:MaxMetaspaceSize (JDK 8+)",
+            "-XX:PermSize/-XX:MaxPermSize (JDK 7-)"
+          ]
+        },
+        {
+          "id": "exceptions",
+          "label": "异常",
+          "items": ["OutOfMemoryError: Metaspace", "PermGen space (JDK 7-)"]
+        }
+      ]
+    },
+    "pc": {
+      "summary": "线程私有寄存器，保存下一条将执行的字节码地址。",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "说明",
+          "items": [
+            "执行字节码后会更新，线程切换可恢复执行。",
+            "执行本地方法时，PC 值不定义。"
+          ]
+        }
+      ]
+    },
+    "stack": {
+      "summary": "线程私有，保存方法调用时创建的栈帧。",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "栈帧内容",
+          "items": [
+            "局部变量表：保存方法参数与局部变量。",
+            "操作数栈：执行指令时的临时数据区。",
+            "动态链接：指向运行时常量池的方法引用。",
+            "方法出口：正常/异常返回地址。",
+            "异常表：catch 处理器区间与跳转位置。"
+          ]
+        },
+        {
+          "id": "structure",
+          "label": "简图",
+          "diagram": [
+            "Stack (Thread)",
+            "  ├─ Frame N",
+            "  │   ├─ Local Vars",
+            "  │   ├─ Operand Stack",
+            "  │   ├─ Dynamic Link",
+            "  │   └─ Return/Exception",
+            "  └─ Frame 1"
+          ]
+        },
+        {
+          "id": "config",
+          "label": "配置",
+          "items": ["-Xss：每个线程栈大小"]
+        },
+        {
+          "id": "exceptions",
+          "label": "异常",
+          "items": [
+            "StackOverflowError",
+            "OutOfMemoryError: unable to create new native thread"
+          ]
+        }
+      ]
+    },
+    "native-stack": {
+      "summary": "为 JVM 调用本地方法（JNI）提供栈空间。",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "用途",
+          "items": [
+            "执行 C/C++ 等本地方法调用。",
+            "与 OS 线程栈关联，具体实现依赖 JVM 与平台。"
+          ]
+        },
+        {
+          "id": "config",
+          "label": "配置",
+          "items": ["-Xss：影响本地方法栈大小（依实现）"]
+        },
+        {
+          "id": "exceptions",
+          "label": "异常",
+          "items": ["StackOverflowError", "OutOfMemoryError"]
+        }
+      ]
+    }
+  },
+  "runtimeDetailMeta": {
+    "scopeLabel": "作用域",
+    "tip": "提示：堆负责“对象”，栈负责“方法执行上下文”。"
+  },
+  "flowSteps": [
+    "Java 源码编译成 .class 字节码",
+    "类加载器完成加载、验证、准备、解析、初始化",
+    "运行时数据区为代码执行提供内存与元数据",
+    "执行引擎解释/编译字节码并协同 GC",
+    "JNI 调用本地库与 OS 交互"
+  ],
+  "execution": {
+    "sourceLabel": "App.java (源代码)",
+    "bytecodeLabel": "javap -c (节选)",
+    "currentInstruction": "当前指令",
+    "instructionNote": "说明：支持正常与异常路径，逐条展示字节码的执行过程。",
+    "runModeLabel": "运行路径",
+    "runMode": {
+      "normal": "正常",
+      "exception": "异常"
+    },
+    "controls": {
+      "play": "播放",
+      "pause": "暂停",
+      "step": "单步",
+      "back": "回退",
+      "reset": "重置",
+      "dockStack": "停靠栈",
+      "floatStack": "悬浮栈",
+      "dock": "停靠",
+      "stackTitle": "调用栈"
+    }
+  },
+  "stack": {
+    "titleHint": "调用栈（上方为栈顶，返回时弹栈）",
+    "emptyStack": "栈已清空",
+    "topFrame": "栈顶帧",
+    "frameLabel": "栈帧",
+    "pc": "PC",
+    "dynamicLink": "动态链接",
+    "methodExit": "方法出口",
+    "locals": "局部变量表",
+    "operandStack": "操作数栈",
+    "exceptionTable": "异常表",
+    "empty": "空",
+    "none": "无",
+    "top": "TOP",
+    "table": {
+      "slot": "槽位",
+      "value": "值",
+      "label": "标签",
+      "startPc": "开始 PC",
+      "endPc": "结束 PC",
+      "handlerPc": "跳转 PC"
+    }
+  },
+  "bytecodeTooltip": {
+    "opcode": "指令",
+    "meaning": "含义"
+  },
+  "opcodeDescriptions": {
+    "new": "在堆中分配对象内存，压入未初始化引用。",
+    "dup": "复制操作数栈顶元素。",
+    "invokespecial": "调用实例初始化方法或私有方法。",
+    "invokevirtual": "调用虚方法（动态分派）。",
+    "invokestatic": "调用静态方法。",
+    "aload_0": "将局部变量表 slot0 引用压栈。",
+    "aload_1": "将局部变量表 slot1 引用压栈。",
+    "aload": "将指定 slot 的引用压栈。",
+    "iload_1": "将局部变量表 slot1 int 压栈。",
+    "iload_2": "将局部变量表 slot2 int 压栈。",
+    "iconst_0": "将 int 常量 0 压栈。",
+    "iconst_2": "将 int 常量 2 压栈。",
+    "iconst_3": "将 int 常量 3 压栈。",
+    "iconst_4": "将 int 常量 4 压栈。",
+    "iconst_5": "将 int 常量 5 压栈。",
+    "bipush": "将一个字节常量压栈。",
+    "putfield": "将栈顶值写入对象实例字段。",
+    "putstatic": "将栈顶值写入类静态字段。",
+    "istore_1": "将栈顶 int 保存到 slot1。",
+    "istore_2": "将栈顶 int 保存到 slot2。",
+    "istore_3": "将栈顶 int 保存到 slot3。",
+    "istore": "将栈顶 int 保存到指定 slot。",
+    "iload_3": "将局部变量表 slot3 int 压栈。",
+    "iadd": "弹出两个 int 相加后压栈。",
+    "idiv": "弹出两个 int 相除后压栈（可能抛异常）。",
+    "aaload": "从引用数组中取元素并压栈。",
+    "astore": "将栈顶引用保存到指定 slot。",
+    "return": "从 void 方法返回。",
+    "ireturn": "返回 int 并弹出当前栈帧。",
+    "goto": "无条件跳转到指定偏移。"
+  },
+  "sourceLineTooltips": {
+    "0": "类定义：类元数据加载到方法区（JDK8+ 为元空间），方法信息与常量池也在此维护。",
+    "1": "staticField 存在方法区的类元数据中，初始化在 <clinit> 执行时通过常量入栈，再 putstatic 写入。",
+    "2": "instanceField 写入在 <init> 中完成：iconst_2 先入操作数栈，再通过 putfield 写入堆中对象实例字段。",
+    "4": "method1 定义：方法字节码与符号引用存放在方法区，调用时创建新的栈帧。",
+    "11": "method2 定义：方法信息在方法区，调用时压入新栈帧并绑定参数 d。",
+    "22": "main 定义：类加载后可作为入口方法调用。",
+    "5": "int m = 3：iconst_3 入操作数栈，再 istore_1 存入局部变量表 slot1。",
+    "6": "int n = 4：iconst_4 入操作数栈，再 istore_2 存入局部变量表 slot2。",
+    "7": "m+n：先 iload_1/iload_2 从局部变量表压栈，再 iadd，结果在操作数栈，随后 istore_3。",
+    "8": "return k：iload_3 将局部变量表里的 k 压栈，ireturn 返回并弹栈帧。",
+    "12": "method1 调用：通过栈帧的动态链接在运行时常量池解析符号引用，aload_0 压入 this，再 invokevirtual；返回值先进操作数栈，再 istore_2。",
+    "13": "int j = 5：iconst_5 入操作数栈，再 istore_3 写入局部变量表。",
+    "15": "int k = 6 / d：bipush 6 与 iload_1 进入操作数栈，idiv 运算后 istore 4。",
+    "17": "j = 7：bipush 7 先入操作数栈，再 istore_3 覆盖局部变量表。",
+    "18": "e.printStackTrace：aload 4 将异常引用入栈，再 invokevirtual 调用。",
+    "23": "new App：类加载校验通过后在堆分配对象内存，初始化对象头/默认值；构造完成后引用先入操作数栈，再 astore_1 存入局部变量表。",
+    "24": "parseInt(args[0])：aload_0 与 iconst_0 入栈，aaload 取值，invokestatic 返回值入栈，再 istore_2。",
+    "25": "obj.method2(d)：aload_1/iload_2 先入操作数栈，再 invokevirtual 调用。"
+  },
+  "stepTitles": {
+    "main-0": "进入 main",
+    "main-1": "复制栈顶引用",
+    "main-2": "调用构造函数",
+    "init-0": "构造函数加载 this",
+    "init-1": "调用父类构造",
+    "init-2": "再次加载 this",
+    "init-3": "压入常量 2",
+    "init-4": "写入 instanceField",
+    "init-5": "构造返回，弹栈",
+    "main-3": "保存对象引用",
+    "main-4": "加载参数数组",
+    "main-5": "压入索引 0",
+    "main-6": "读取 args[0]",
+    "main-7": "parseInt 转换",
+    "main-8": "保存 d 到局部变量",
+    "main-9": "加载 obj 引用",
+    "main-10": "加载参数 d",
+    "main-11": "调用 method2，压栈",
+    "m2-0": "加载 this",
+    "m2-1": "调用 method1",
+    "m1-0": "压入常量 3",
+    "m1-1": "保存 m",
+    "m1-2": "压入常量 4",
+    "m1-3": "保存 n",
+    "m1-4": "加载 m",
+    "m1-5": "加载 n",
+    "m1-6": "执行加法",
+    "m1-7": "保存 k",
+    "m1-8": "加载 k",
+    "m1-9": "method1 返回",
+    "m2-2": "保存 i",
+    "m2-3": "压入常量 5",
+    "m2-4": "保存 j",
+    "m2-5": "压入常量 6",
+    "m2-6": "加载 d",
+    "m2-7": "执行除法",
+    "m2-8": "保存 k",
+    "m2-9": "跳转 return",
+    "m2-10": "method2 正常返回",
+    "main-12": "main 返回",
+    "m2x-0": "除法抛出异常",
+    "m2x-1": "进入 catch，保存异常引用",
+    "m2x-2": "压入常量 7",
+    "m2x-3": "catch 中更新 j",
+    "m2x-4": "加载异常引用",
+    "m2x-5": "打印异常栈",
+    "m2x-6": "method2 返回",
+    "main-12x": "main 返回"
+  }
+}

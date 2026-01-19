@@ -1,0 +1,18 @@
+{
+  "title": "What is it",
+  "description": "教学页面合集，用前端网页把一个知识点讲清楚。",
+  "lessonMeta": {
+    "updated": "更新于"
+  },
+  "lessons": [
+    {
+      "id": "jvm",
+      "title": "JVM 运行时世界",
+      "description": "用图形化方式理解 JVM 组成、运行时数据区与执行引擎的职责分工。",
+      "tags": ["Java", "JVM", "Runtime"],
+      "level": "入门",
+      "duration": "8-12 min",
+      "updated": "2026.02"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "content": {
+    "name": "Jack Wei",
+    "headerInfo": [
+      { "label": "Phone", "value": "+86 18500151385" },
+      { "label": "Email", "value": "jackweigogoga@gmail.com" },
+      { "label": "Telegram", "value": "@jackweigogoga" },
+      { "label": "Location", "value": "Beijing, China" },
+      { "label": "Website", "value": "https://gogoga.eth.limo/" },
+      { "label": "Github", "value": "https://github.com/JackWeiGogoga" }
+    ],
+    "sectionTitles": {
+      "personal": "Personal Info",
+      "education": "Education",
+      "work": "Work Experience",
+      "projects": "Personal Projects",
+      "skills": "Professional Skills",
+      "summary": "Summary"
+    },
+    "metaLabels": {
+      "role": "Role",
+      "company": "Company",
+      "tech": "Tech Stack",
+      "responsibilities": "Responsibilities",
+      "impact": "Impact",
+      "highlights": "Highlights"
+    },
+    "education": [
+      {
+        "school": "Northeastern University",
+        "major": "Computer Technology",
+        "degree": "Master of Engineering",
+        "time": "2013.09-2015.07"
+      },
+      {
+        "school": "Northeastern University",
+        "major": "Computer Science and Technology",
+        "degree": "Bachelor of Engineering",
+        "time": "2009.09-2013.06"
+      }
+    ],
+    "workExperience": [
+      {
+        "project": "Content Moderation LLM Fine-tuning",
+        "time": "2025.06-2026.01",
+        "role": "Project Lead",
+        "company": "NetEase",
+        "tech": ["Python", "SFT", "LlamaFactory"],
+        "responsibilities": [
+          "Led fine-tuning of a moderation-focused LLM to improve domain precision and recall, raising overall review quality.",
+          "Analyzed human review standards and defined a risk taxonomy; enhanced prompts with RAG and few-shot context to improve prompt quality.",
+          "Used LLMs for data pre-labeling and built an annotation platform with AI-assisted coding, increasing labeling efficiency by 40%.",
+          "Fine-tuned the Qwen3 model via SFT + GRPO to improve moderation accuracy on business-specific standards.",
+          "Fine-tuned small-parameter models for simple scenarios to reduce hardware cost (e.g., BERT for AI-written copy and spam ads) with 90%+ accuracy."
+        ],
+        "impact": [
+          "Risk identification accuracy improved from 60% to 80%; recall improved from 20% to 70%."
+        ]
+      },
+      {
+        "project": "Content Moderation Efficiency Initiative",
+        "time": "2021.06-2025.06",
+        "role": "Project Lead, Backend Engineer",
+        "company": "NetEase",
+        "tech": ["Java", "Agent", "BI", "Kafka"],
+        "responsibilities": [
+          "Led the design of a machine moderation strategy to reduce manual review while ensuring safety and quality.",
+          "Instrumented and analyzed the moderation pipeline to identify bottlenecks; designed and shipped 30+ automated rules covering 6+ business types.",
+          "Built an LLM moderation platform with multi-agent configuration, model switching, and prompt tuning; covered ~100 policy scales.",
+          "Refactored the manual review dispatch workflow, improving reviewer efficiency by 15% and reducing high-value content review time by 20%.",
+          "Refactored the moderation console with AI-assisted coding to improve content presentation and interaction, cutting per-item review time by 18%."
+        ],
+        "impact": [
+          "Manual review cost down 83%, backlog rate reduced from 20% to 0, and review time reduced by 40%."
+        ]
+      },
+      {
+        "project": "LLM-Powered Data Analysis Agent",
+        "time": "2023.10-2023.11",
+        "role": "Project Lead, Full-Stack Engineer",
+        "company": "NetEase",
+        "tech": ["Python", "LangChain", "React"],
+        "responsibilities": [
+          "Built an LLM-based data analysis agent that answers natural-language questions, generates SQL, executes queries, and renders multiple visualization formats.",
+          "Implemented a ReAct agent with LangChain; auto-ingested visible schemas into prompts and used RAG to inject domain knowledge.",
+          "Implemented user memory with Redis to support multi-turn analysis.",
+          "Developed a React UI with tables, bar charts, line charts, and pie charts."
+        ],
+        "impact": [
+          "Replaced routine analyst tasks with an AI agent, improving product and operations efficiency by 30%, and filed a national patent."
+        ]
+      },
+      {
+        "project": "NetEase News",
+        "time": "2019.06-2021.06",
+        "role": "Backend Engineer",
+        "company": "NetEase",
+        "tech": ["SpringBoot", "MyBatis", "Redis", "Sentinel", "Hystrix"],
+        "responsibilities": [
+          "Worked on the content distribution platform, contributing to Zhifou Q&A, recommendation integration, and dual-feed publishing.",
+          "Optimized the publishing flow with unified video upload IDs and centralized processing to reduce complexity.",
+          "Implemented traffic control with Sentinel and circuit breaking with Hystrix to ensure system stability."
+        ],
+        "impact": [
+          "Reduced API latency by 20% by optimizing recommendation integration with CompletableFuture concurrency."
+        ]
+      },
+      {
+        "project": "Mint Live",
+        "time": "2016.11-2018.12",
+        "role": "Backend Engineer",
+        "company": "NetEase",
+        "tech": ["SpringBoot", "RabbitMQ", "FFmpeg"],
+        "responsibilities": [
+          "Supported a live streaming product with PK, short video, replay, quizzes, and tasks across mobile SDK, PC OBS, and third-party relay pipelines.",
+          "Built core backend services, designed live streaming workflows, integrated third-party services, and delivered real-name verification, resume streaming, push/pull switching, recording adaptation, and stream reuse.",
+          "Implemented delayed queues with RabbitMQ dead-letter queues; built bot and red packet services.",
+          "Led the NetEase Winner live quiz project, designing the settlement algorithm and guiding end-to-end streaming, quiz, and settlement flows without major incidents."
+        ],
+        "impact": [
+          "Built the live backend from 0 to 1 and delivered the NetEase Winner quiz in 2 weeks after a 3-day settlement algorithm design."
+        ]
+      },
+      {
+        "project": "Qunar Mobile Hotel Project",
+        "time": "2015.07-2016.04",
+        "role": "Backend Engineer",
+        "company": "Qunar",
+        "tech": ["SpringMVC", "MyBatis", "Dozer"],
+        "responsibilities": [
+          "Developed the TTS system to integrate supplier workflows, handling booking form, order placement, and order details to improve system completeness.",
+          "Optimized order center data synchronization, fixed order loss issues, and supported production troubleshooting and maintenance."
+        ],
+        "impact": [
+          "Built a low-coupling pipeline with hot-reloadable configurations to control feature flags and reduce maintenance cost."
+        ]
+      }
+    ],
+    "personalProjects": [
+      {
+        "project": "Flowlet",
+        "time": "2025.12-2026.01",
+        "tech": ["Java", "Python", "React Flow"],
+        "url": "https://flowlet.gogoga.top/",
+        "highlights": [
+          "Flowlet is a lightweight visual workflow orchestration system that lets you design and run data-processing pipelines via drag-and-drop.",
+          "Provides nodes for LLM calls, API calls, Kafka async processing, sensitive word matching, and vector storage."
+        ]
+      },
+      {
+        "project": "Web3 Side Projects",
+        "time": "2025.09-2025.10",
+        "tech": ["Solidity", "Hardhat", "OpenZeppelin", "Wagmi"],
+        "url": "https://gogoga.eth.limo/#/side-projects",
+        "highlights": [
+          "Crowdfunding: tiered and custom contributions, refunds on failure, withdrawals on goal reached; applied state machine + CEI with Pausable/Ownable for safety and fund-risk control.",
+          "Gogoga Token: ERC20 extensions for sale, minting, and purchase limits with Sale/Airdrop/Faucet contracts; airdrop uses Merkle Tree whitelist validation for token issuance ops.",
+          "Gogoga NFT: ERC721 preset/custom minting, IPFS metadata, and royalty strategy; batch minting, URI management, and pausing improve UX and content ops.",
+          "Voting System: candidate/voter registration, time-window voting, and result tallying; batch registration and query APIs, on-chain governance auditability; custom errors reduce gas."
+        ]
+      }
+    ],
+    "skills": [
+      {
+        "category": "Languages",
+        "items": ["Java", "TypeScript", "Python", "Solidity"]
+      },
+      {
+        "category": "Backend",
+        "items": ["Spring Boot", "Redis", "Kafka", "MySQL"]
+      },
+      {
+        "category": "Frontend",
+        "items": ["React", "Vite", "Tailwind", "Ant Design"]
+      },
+      {
+        "category": "Web3",
+        "items": ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"]
+      },
+      {
+        "category": "AI / Machine Learning",
+        "items": ["LLM Fine-tuning", "AI Agent", "Langchain", "Dify"]
+      },
+      {
+        "category": "Tooling",
+        "items": ["Git", "Codex", "Docker"]
+      }
+    ],
+    "summary": [
+      "Senior backend engineer with 11 years of experience, strong software engineering fundamentals, and a focus on code quality and architecture with solid full-stack capability.",
+      "Proactive, accountable, and collaborative; communicates well, values knowledge sharing, and identifies business bottlenecks with product thinking.",
+      "Strong interest in internet technologies, Web3, and AI, with continuous learning and a habit of adopting best practices from open-source projects."
+    ]
+  }
+}

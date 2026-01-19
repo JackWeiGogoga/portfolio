@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import Layout from "@/components/Layout";
 import {
   Tooltip,
@@ -13,12 +14,7 @@ import {
   bytecodeLines,
   executionStepsException,
   executionStepsNormal,
-  flowSteps,
-  getBytecodeTooltip,
   getOpcodeFromLine,
-  runtimeAreaDetails,
-  runtimeAreas,
-  sourceLineTooltips,
   sourceLines,
 } from "@/config/jvmLesson";
 
@@ -56,8 +52,45 @@ const parseExceptionTable = (exceptionTable: string) => {
   ];
 };
 
+type RuntimeArea = {
+  id: string;
+  name: string;
+  stored: string;
+  ownership: string;
+  notes: string[];
+  scopeTag: string;
+};
+
+type DetailTab = {
+  id: string;
+  label: string;
+  items?: string[];
+  diagram?: string[];
+};
+
+type RuntimeAreaDetail = {
+  summary: string;
+  tabs: DetailTab[];
+};
+
 export default function JvmLessonPage() {
-  const [activeAreaId, setActiveAreaId] = useState(runtimeAreas[0].id);
+  const { t } = useTranslation("jvm");
+  const runtimeAreas = t("runtimeAreas", {
+    returnObjects: true,
+  }) as RuntimeArea[];
+  const runtimeAreaDetails = t("runtimeAreaDetails", {
+    returnObjects: true,
+  }) as Record<string, RuntimeAreaDetail>;
+  const flowSteps = t("flowSteps", { returnObjects: true }) as string[];
+  const sourceLineTooltips = t("sourceLineTooltips", {
+    returnObjects: true,
+  }) as Record<string, string>;
+  const opcodeDescriptions = t("opcodeDescriptions", {
+    returnObjects: true,
+  }) as Record<string, string>;
+  const [activeAreaId, setActiveAreaId] = useState(
+    runtimeAreas[0]?.id ?? "heap"
+  );
   const [activeDetailTabId, setActiveDetailTabId] = useState(() => {
     const firstAreaId = runtimeAreas[0]?.id;
     const firstTab = firstAreaId
@@ -105,6 +138,7 @@ export default function JvmLessonPage() {
   const steps =
     runMode === "normal" ? executionStepsNormal : executionStepsException;
   const currentStep = steps[stepIndex];
+  const currentStepTitle = t(currentStep.titleKey);
   const sourceLineToStep = useMemo(() => {
     const map = new Map<number, number>();
     steps.forEach((step, index) => {
@@ -114,6 +148,19 @@ export default function JvmLessonPage() {
     });
     return map;
   }, [steps]);
+  const getBytecodeTooltip = (line: string) => {
+    const opcode = getOpcodeFromLine(line);
+    if (!opcode) {
+      return line;
+    }
+    const desc = opcodeDescriptions[opcode];
+    if (!desc) {
+      return `${line}\n${t("bytecodeTooltip.opcode")}: ${opcode}`;
+    }
+    return `${line}\n${t("bytecodeTooltip.opcode")}: ${opcode}\n${t(
+      "bytecodeTooltip.meaning"
+    )}: ${desc}`;
+  };
   const bytecodeLineToStep = useMemo(() => {
     const map = new Map<number, number>();
     steps.forEach((step, index) => {
@@ -263,12 +310,10 @@ export default function JvmLessonPage() {
 
   const callStackContent = (
     <div className="grid gap-3">
-      <div className="text-xs text-graytext">
-        调用栈（上方为栈顶，返回时弹栈）
-      </div>
+      <div className="text-xs text-graytext">{t("stack.titleHint")}</div>
       {currentStep.stack.length === 0 ? (
         <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-6 text-center text-sm text-graytext">
-          栈已清空
+          {t("stack.emptyStack")}
         </div>
       ) : (
         [...currentStep.stack].reverse().map((frame, index) => {
@@ -284,22 +329,30 @@ export default function JvmLessonPage() {
             >
               <div className="flex items-center justify-between text-xs text-graytext">
                 <span className="font-mono">{frame.method}</span>
-                <span>{isTop ? "Top Frame" : "Frame"}</span>
+                <span>
+                  {isTop ? t("stack.topFrame") : t("stack.frameLabel")}
+                </span>
               </div>
               <div className="mt-2 grid gap-2 text-xs text-graytext">
                 <div className="grid gap-2 md:grid-cols-3">
                   <div>
-                    <div className="text-[11px] uppercase">PC</div>
+                    <div className="text-[11px] uppercase">
+                      {t("stack.pc")}
+                    </div>
                     <div className="text-[10px] text-text">{frame.pc}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase">Dynamic Link</div>
+                    <div className="text-[11px] uppercase">
+                      {t("stack.dynamicLink")}
+                    </div>
                     <div className="text-[10px] text-text">
                       {frame.dynamicLink}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase">Method Exit</div>
+                    <div className="text-[11px] uppercase">
+                      {t("stack.methodExit")}
+                    </div>
                     <div className="text-[10px] text-text">
                       {frame.returnAddress}
                     </div>
@@ -307,14 +360,20 @@ export default function JvmLessonPage() {
                 </div>
                 <div className="grid gap-2 md:grid-cols-2">
                   <div>
-                    <div className="text-[11px] uppercase">Locals</div>
+                    <div className="text-[11px] uppercase">
+                      {t("stack.locals")}
+                    </div>
                     <div className="rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background text-xs text-text">
                       {frame.locals.length > 0 ? (
                         <table className="w-full border-collapse">
                           <thead>
                             <tr className="text-graytext text-[10px] uppercase">
-                              <th className="text-left px-2 py-1">Slot</th>
-                              <th className="text-left px-2 py-1">Value</th>
+                              <th className="text-left px-2 py-1">
+                                {t("stack.table.slot")}
+                              </th>
+                              <th className="text-left px-2 py-1">
+                                {t("stack.table.value")}
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
@@ -330,12 +389,16 @@ export default function JvmLessonPage() {
                           </tbody>
                         </table>
                       ) : (
-                        <div className="px-2 py-2 text-graytext">empty</div>
+                        <div className="px-2 py-2 text-graytext">
+                          {t("stack.empty")}
+                        </div>
                       )}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase">Operand Stack</div>
+                    <div className="text-[11px] uppercase">
+                      {t("stack.operandStack")}
+                    </div>
                     <div className="rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-text min-h-11">
                       {frame.stack.length > 0 ? (
                         <div className="flex flex-col gap-1">
@@ -347,29 +410,39 @@ export default function JvmLessonPage() {
                               <span>{item}</span>
                               {itemIndex === 0 ? (
                                 <span className="text-[10px] text-graytext">
-                                  TOP
+                                  {t("stack.top")}
                                 </span>
                               ) : null}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="text-graytext">empty</div>
+                        <div className="text-graytext">{t("stack.empty")}</div>
                       )}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] uppercase">Exception Table</div>
+                  <div className="text-[11px] uppercase">
+                    {t("stack.exceptionTable")}
+                  </div>
                   <div className="rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background text-xs text-text">
                     {parseExceptionTable(frame.exceptionTable).length > 0 ? (
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="text-graytext text-[10px] uppercase">
-                            <th className="text-left px-2 py-1">Label</th>
-                            <th className="text-left px-2 py-1">Start PC</th>
-                            <th className="text-left px-2 py-1">End PC</th>
-                            <th className="text-left px-2 py-1">Handler PC</th>
+                            <th className="text-left px-2 py-1">
+                              {t("stack.table.label")}
+                            </th>
+                            <th className="text-left px-2 py-1">
+                              {t("stack.table.startPc")}
+                            </th>
+                            <th className="text-left px-2 py-1">
+                              {t("stack.table.endPc")}
+                            </th>
+                            <th className="text-left px-2 py-1">
+                              {t("stack.table.handlerPc")}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -389,7 +462,9 @@ export default function JvmLessonPage() {
                         </tbody>
                       </table>
                     ) : (
-                      <div className="px-2 py-2 text-graytext">none</div>
+                      <div className="px-2 py-2 text-graytext">
+                        {t("stack.none")}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -404,7 +479,7 @@ export default function JvmLessonPage() {
     <div className="flex flex-wrap items-center gap-2">
       {!isStackFloating ? (
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-graytext">运行路径</span>
+          <span className="text-graytext">{t("execution.runModeLabel")}</span>
           <button
             type="button"
             onClick={() => handleRunModeChange("normal")}
@@ -414,7 +489,7 @@ export default function JvmLessonPage() {
                 : "border-gray-300 dark:border-white/20 hover:bg-muted"
             }`}
           >
-            正常
+            {t("execution.runMode.normal")}
           </button>
           <button
             type="button"
@@ -425,7 +500,7 @@ export default function JvmLessonPage() {
                 : "border-gray-300 dark:border-white/20 hover:bg-muted"
             }`}
           >
-            异常
+            {t("execution.runMode.exception")}
           </button>
         </div>
       ) : null}
@@ -434,7 +509,7 @@ export default function JvmLessonPage() {
         onClick={() => setIsPlaying((prev) => !prev)}
         className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
       >
-        {isPlaying ? "Pause" : "Play"}
+        {isPlaying ? t("execution.controls.pause") : t("execution.controls.play")}
       </button>
       <button
         type="button"
@@ -443,14 +518,14 @@ export default function JvmLessonPage() {
         }
         className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
       >
-        Step
+        {t("execution.controls.step")}
       </button>
       <button
         type="button"
         onClick={() => setStepIndex((prev) => (prev > 0 ? prev - 1 : prev))}
         className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
       >
-        Back
+        {t("execution.controls.back")}
       </button>
       <button
         type="button"
@@ -460,14 +535,16 @@ export default function JvmLessonPage() {
         }}
         className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
       >
-        Reset
+        {t("execution.controls.reset")}
       </button>
       <button
         type="button"
         onClick={() => setIsStackFloating((prev) => !prev)}
         className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
       >
-        {isStackFloating ? "Dock Stack" : "Float Stack"}
+        {isStackFloating
+          ? t("execution.controls.dockStack")
+          : t("execution.controls.floatStack")}
       </button>
       <div className="text-xs text-graytext">
         {stepIndex + 1}/{steps.length}
@@ -483,47 +560,43 @@ export default function JvmLessonPage() {
           className="inline-flex items-center gap-2 text-xs text-graytext hover:text-text no-underline"
         >
           <ArrowLeft className="w-4 h-4" />
-          返回 What is it
+          {t("page.back")}
         </Link>
 
         <header className="space-y-2">
-          <h1 className="text-2xl font-semibold">JVM 运行时世界</h1>
-          <p className="text-sm text-graytext">
-            目标：理解 JVM 的组成、运行时数据区存储内容与执行流程。
-          </p>
+          <h1 className="text-2xl font-semibold">{t("page.title")}</h1>
+          <p className="text-sm text-graytext">{t("page.subtitle")}</p>
         </header>
 
         <section className="grid gap-4 md:grid-cols-[2fr_1fr]">
           <div className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
             <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-              JVM 组成示意图（点击运行时数据区查看细节）
+              {t("sections.runtimeDiagram")}
             </div>
             <div className="p-4 grid gap-4">
               <div className="grid gap-3 md:grid-cols-[1fr_2fr_1fr]">
                 <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
                   <div className="text-xs font-mono text-graytext">
-                    Class Loader
+                    {t("diagram.classLoader.title")}
                   </div>
-                  <div className="text-sm mt-2">加载 .class、链接、初始化</div>
+                  <div className="text-sm mt-2">{t("diagram.classLoader.desc")}</div>
                   <div className="mt-3 rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-graytext">
-                    <div>
-                      双亲委派：先委派给父加载器，父找不到才由子加载器加载。
-                    </div>
+                    <div>{t("diagram.classLoader.delegation")}</div>
                     <div className="mt-1">
-                      Bootstrap → Platform/Extension → Application
+                      {t("diagram.classLoader.delegationChain")}
                     </div>
                   </div>
                 </div>
                 <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
                   <div className="text-xs font-mono text-graytext">
-                    Runtime Data Areas
+                    {t("diagram.runtimeDataAreas.title")}
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-graytext">
                     <span className="rounded-full border border-gray-300 dark:border-white/20 px-2 py-0.5">
-                      Shared = 线程共享
+                      {t("diagram.runtimeDataAreas.scopeShared")}
                     </span>
                     <span className="rounded-full border border-gray-300 dark:border-white/20 px-2 py-0.5">
-                      Private = 线程私有
+                      {t("diagram.runtimeDataAreas.scopePrivate")}
                     </span>
                   </div>
                   <div className="mt-3 grid gap-2">
@@ -570,25 +643,27 @@ export default function JvmLessonPage() {
                 </div>
                 <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
                   <div className="text-xs font-mono text-graytext">
-                    Execution Engine
+                    {t("diagram.executionEngine.title")}
                   </div>
                   <div className="text-sm mt-2">
-                    解释执行、JIT 编译、GC 协同
+                    {t("diagram.executionEngine.desc")}
                   </div>
                 </div>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
                   <div className="text-xs font-mono text-graytext">
-                    Native Interface (JNI)
+                    {t("diagram.jni.title")}
                   </div>
-                  <div className="text-sm mt-2">Java 与本地方法桥接</div>
+                  <div className="text-sm mt-2">{t("diagram.jni.desc")}</div>
                 </div>
                 <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
                   <div className="text-xs font-mono text-graytext">
-                    Native Libraries
+                    {t("diagram.nativeLibraries.title")}
                   </div>
-                  <div className="text-sm mt-2">OS / C / C++ 库调用</div>
+                  <div className="text-sm mt-2">
+                    {t("diagram.nativeLibraries.desc")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -596,7 +671,7 @@ export default function JvmLessonPage() {
 
           <div className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
             <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-              运行时数据区细节
+              {t("sections.runtimeDetails")}
             </div>
             <div className="p-4 space-y-3">
               <div>
@@ -606,7 +681,9 @@ export default function JvmLessonPage() {
                 </div>
               </div>
               <div className="text-xs text-graytext space-y-2">
-                <div>作用域：{activeArea.ownership}</div>
+                <div>
+                  {t("runtimeDetailMeta.scopeLabel")}：{activeArea.ownership}
+                </div>
                 {activeAreaDetail?.summary ? (
                   <div>{activeAreaDetail.summary}</div>
                 ) : null}
@@ -656,7 +733,7 @@ export default function JvmLessonPage() {
                 </div>
               ) : null}
               <div className="text-xs text-graytext">
-                Tip：堆负责“对象”，栈负责“方法执行上下文”。
+                {t("runtimeDetailMeta.tip")}
               </div>
             </div>
           </div>
@@ -664,7 +741,7 @@ export default function JvmLessonPage() {
 
         <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
           <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-            JVM 执行流程（缩略版）
+            {t("sections.flow")}
           </div>
           <div className="p-4 grid gap-2 text-sm">
             {flowSteps.map((step, index) => (
@@ -683,19 +760,19 @@ export default function JvmLessonPage() {
 
         <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
           <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-            字节码执行动画：逐条执行与栈帧变化
+            {t("sections.execution")}
           </div>
           <div className="p-4 grid gap-4">
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
                 <div className="text-xs font-mono text-graytext mb-2">
-                  App.java (源代码)
+                  {t("execution.sourceLabel")}
                 </div>
                 <div className="text-xs leading-6 text-text overflow-x-auto font-mono whitespace-pre">
                   {sourceLines.map((line, index) => {
                     const targetStepIndex = sourceLineToStep.get(index);
                     const isClickable = targetStepIndex !== undefined;
-                    const tooltipText = sourceLineTooltips[index];
+                    const tooltipText = sourceLineTooltips[String(index)];
                     const lineNode = (
                       <div
                         onClick={() => {
@@ -746,7 +823,7 @@ export default function JvmLessonPage() {
               </div>
               <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
                 <div className="text-xs font-mono text-graytext mb-2">
-                  javap -c (节选)
+                  {t("execution.bytecodeLabel")}
                 </div>
                 <div className="text-xs leading-6 text-text overflow-x-auto font-mono whitespace-pre">
                   {bytecodeLines.map((line, index) => {
@@ -817,12 +894,14 @@ export default function JvmLessonPage() {
 
             {!isStackFloating ? (
               <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-sm">
-                <div className="text-xs font-mono text-graytext">当前指令</div>
+                <div className="text-xs font-mono text-graytext">
+                  {t("execution.currentInstruction")}
+                </div>
                 <div className="mt-1 font-mono text-sm">
                   {currentStep.bytecode}
                 </div>
                 <div className="mt-1 text-xs text-graytext">
-                  {currentStep.title}
+                  {currentStepTitle}
                 </div>
               </div>
             ) : null}
@@ -830,7 +909,7 @@ export default function JvmLessonPage() {
             {!isStackFloating ? callStackContent : null}
 
             <div className="text-xs text-graytext">
-              说明：支持正常与异常路径，逐条展示字节码的执行过程。
+              {t("execution.instructionNote")}
             </div>
           </div>
         </section>
@@ -850,24 +929,26 @@ export default function JvmLessonPage() {
             className="flex items-center justify-between px-3 py-2 text-xs text-graytext border-b border-gray-200 dark:border-white/10 cursor-move"
             onPointerDown={handleDragStart}
           >
-            <span>调用栈</span>
+            <span>{t("execution.controls.stackTitle")}</span>
             <button
               type="button"
               onClick={() => setIsStackFloating(false)}
               className="rounded-md border border-gray-300 dark:border-white/20 px-2 py-0.5 text-[10px] hover:bg-muted"
             >
-              Dock
+              {t("execution.controls.dock")}
             </button>
           </div>
           <div className="h-[calc(100%-36px)] overflow-auto p-3 space-y-3">
             {controlsContent}
             <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-2 text-sm">
-              <div className="text-xs font-mono text-graytext">当前指令</div>
+              <div className="text-xs font-mono text-graytext">
+                {t("execution.currentInstruction")}
+              </div>
               <div className="mt-1 font-mono text-sm">
                 {currentStep.bytecode}
               </div>
               <div className="mt-1 text-xs text-graytext">
-                {currentStep.title}
+                {currentStepTitle}
               </div>
             </div>
             {callStackContent}

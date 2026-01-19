@@ -10,309 +10,13 @@ export type FrameState = {
 
 export type ExecutionStep = {
   id: string;
-  title: string;
+  titleKey: string;
   bytecode: string;
   sourceLine: string;
   sourceLineIndex: number;
   bytecodeLine: string;
   bytecodeLineIndex: number;
   stack: FrameState[];
-};
-
-type DetailTab = {
-  id: string;
-  label: string;
-  items?: string[];
-  diagram?: string[];
-};
-
-type RuntimeAreaDetail = {
-  summary: string;
-  tabs: DetailTab[];
-};
-
-export const runtimeAreas = [
-  {
-    id: "heap",
-    name: "Heap",
-    stored: "对象实例、数组",
-    ownership: "线程共享",
-    notes: ["对象分配的主要区域", "回收由 GC 驱动"],
-    scopeTag: "Shared",
-  },
-  {
-    id: "stack",
-    name: "Java Stack",
-    stored: "栈帧：局部变量表、操作数栈、返回地址",
-    ownership: "线程私有",
-    notes: ["方法调用入栈/出栈", "栈深度影响稳定性"],
-    scopeTag: "Private",
-  },
-  {
-    id: "method-area",
-    name: "Method Area",
-    stored: "类元数据、常量池、静态变量",
-    ownership: "线程共享",
-    notes: ["类级信息集中管理", "可被回收/卸载"],
-    scopeTag: "Shared",
-  },
-  {
-    id: "pc",
-    name: "PC Register",
-    stored: "下一条字节码指令地址",
-    ownership: "线程私有",
-    notes: ["执行后更新", "线程切换可恢复"],
-    scopeTag: "Private",
-  },
-  {
-    id: "native-stack",
-    name: "Native Method Stack",
-    stored: "本地方法栈帧",
-    ownership: "线程私有",
-    notes: ["JNI 调用支撑", "与 OS 栈关联"],
-    scopeTag: "Private",
-  },
-];
-
-export const runtimeAreaDetails: Record<string, RuntimeAreaDetail> = {
-  heap: {
-    summary: "线程共享的主要内存区，负责对象与数组的分配与回收。",
-    tabs: [
-      {
-        id: "overview",
-        label: "概览",
-        items: [
-          "分代管理：新生代/老年代，GC 主要发生在新生代。",
-          "字符串常量池：JDK 7 起迁移到堆内，与方法区分离。",
-          "对象分配：TLAB 优化线程内分配，失败后走共享分配。",
-        ],
-      },
-      {
-        id: "structure",
-        label: "结构",
-        diagram: [
-          "Young Gen",
-          "  ├─ Eden",
-          "  ├─ S0 (From)",
-          "  └─ S1 (To)",
-          "Old Gen",
-          "  └─ Tenured",
-        ],
-        items: ["对象优先进入 Eden，存活对象在 Survivor 之间复制。"],
-      },
-      {
-        id: "versions",
-        label: "版本差异",
-        items: [
-          "JDK 6/7: 字符串常量池在永久代/方法区。",
-          "JDK 7+: 字符串常量池迁移到堆，减少永久代压力。",
-        ],
-      },
-      {
-        id: "config",
-        label: "配置",
-        items: [
-          "-Xms/-Xmx：堆初始/最大大小",
-          "-Xmn：新生代大小",
-          "-XX:NewRatio：新生代与老年代比例",
-          "-XX:SurvivorRatio：Eden 与 Survivor 比例",
-          "-XX:MaxTenuringThreshold：晋升年龄",
-        ],
-      },
-      {
-        id: "exceptions",
-        label: "异常",
-        items: [
-          "OutOfMemoryError: Java heap space",
-          "GC overhead limit exceeded",
-        ],
-      },
-    ],
-  },
-  "method-area": {
-    summary: "方法区是 JVM 规范的概念，存储类元数据与运行时常量。",
-    tabs: [
-      {
-        id: "overview",
-        label: "概览",
-        items: [
-          "存储：类元数据、运行时常量池、静态变量、即时编译代码。",
-          "与堆不同：主要存放类级别数据，线程共享。",
-        ],
-      },
-      {
-        id: "versions",
-        label: "版本实现",
-        items: [
-          "PermGen (<= JDK 7): 位于堆内，易 OOM，大小固定。",
-          "Metaspace (JDK 8+): 位于本地内存，按需扩展。",
-          "替换原因：类元数据大小难预测，PermGen 调优成本高。",
-        ],
-      },
-      {
-        id: "structure",
-        label: "简图",
-        diagram: [
-          "Method Area",
-          "  ├─ Class Metadata",
-          "  ├─ Runtime Constant Pool",
-          "  └─ Static Variables",
-          "",
-          "JDK 8+: Metaspace (Native Memory)",
-        ],
-      },
-      {
-        id: "config",
-        label: "配置",
-        items: [
-          "-XX:MetaspaceSize/-XX:MaxMetaspaceSize (JDK 8+)",
-          "-XX:PermSize/-XX:MaxPermSize (JDK 7-)",
-        ],
-      },
-      {
-        id: "exceptions",
-        label: "异常",
-        items: ["OutOfMemoryError: Metaspace", "PermGen space (JDK 7-)"],
-      },
-    ],
-  },
-  pc: {
-    summary: "线程私有寄存器，保存下一条将执行的字节码地址。",
-    tabs: [
-      {
-        id: "overview",
-        label: "说明",
-        items: [
-          "执行字节码后会更新，线程切换可恢复执行。",
-          "执行本地方法时，PC 值不定义。",
-        ],
-      },
-    ],
-  },
-  stack: {
-    summary: "线程私有，保存方法调用时创建的栈帧。",
-    tabs: [
-      {
-        id: "overview",
-        label: "栈帧内容",
-        items: [
-          "局部变量表：保存方法参数与局部变量。",
-          "操作数栈：执行指令时的临时数据区。",
-          "动态链接：指向运行时常量池的方法引用。",
-          "方法出口：正常/异常返回地址。",
-          "异常表：catch 处理器区间与跳转位置。",
-        ],
-      },
-      {
-        id: "structure",
-        label: "简图",
-        diagram: [
-          "Stack (Thread)",
-          "  ├─ Frame N",
-          "  │   ├─ Local Vars",
-          "  │   ├─ Operand Stack",
-          "  │   ├─ Dynamic Link",
-          "  │   └─ Return/Exception",
-          "  └─ Frame 1",
-        ],
-      },
-      {
-        id: "config",
-        label: "配置",
-        items: ["-Xss：每个线程栈大小"],
-      },
-      {
-        id: "exceptions",
-        label: "异常",
-        items: ["StackOverflowError", "OutOfMemoryError: unable to create new native thread"],
-      },
-    ],
-  },
-  "native-stack": {
-    summary: "为 JVM 调用本地方法（JNI）提供栈空间。",
-    tabs: [
-      {
-        id: "overview",
-        label: "用途",
-        items: [
-          "执行 C/C++ 等本地方法调用。",
-          "与 OS 线程栈关联，具体实现依赖 JVM 与平台。",
-        ],
-      },
-      {
-        id: "config",
-        label: "配置",
-        items: ["-Xss：影响本地方法栈大小（依实现）"],
-      },
-      {
-        id: "exceptions",
-        label: "异常",
-        items: ["StackOverflowError", "OutOfMemoryError"],
-      },
-    ],
-  },
-};
-
-export const flowSteps = [
-  "Java 源码编译成 .class 字节码",
-  "类加载器完成加载、验证、准备、解析、初始化",
-  "运行时数据区为代码执行提供内存与元数据",
-  "执行引擎解释/编译字节码并协同 GC",
-  "JNI 调用本地库与 OS 交互",
-];
-
-export const exampleMappings = [
-  {
-    label: "A 类元数据",
-    location: "Method Area",
-    detail: "类结构、方法字节码、常量池",
-  },
-  {
-    label: "static int count",
-    location: "Method Area",
-    detail: "静态变量，类级共享",
-  },
-  {
-    label: "new A() 对象",
-    location: "Heap",
-    detail: "实例数据 + 对象头",
-  },
-  {
-    label: "int x / int y",
-    location: "Java Stack",
-    detail: "局部变量表",
-  },
-  {
-    label: "obj 引用",
-    location: "Java Stack",
-    detail: "指向堆中对象的引用",
-  },
-  {
-    label: "字节码指令位置",
-    location: "PC Register",
-    detail: "记录当前线程执行到哪一行",
-  },
-];
-
-export const sourceLineTooltips: Record<number, string> = {
-  0: "类定义：类元数据加载到方法区（JDK8+ 为元空间），方法信息与常量池也在此维护。",
-  1: "staticField 存在方法区的类元数据中，初始化在 <clinit> 执行时通过常量入栈，再 putstatic 写入。",
-  2: "instanceField 写入在 <init> 中完成：iconst_2 先入操作数栈，再通过 putfield 写入堆中对象实例字段。",
-  4: "method1 定义：方法字节码与符号引用存放在方法区，调用时创建新的栈帧。",
-  11: "method2 定义：方法信息在方法区，调用时压入新栈帧并绑定参数 d。",
-  22: "main 定义：类加载后可作为入口方法调用。",
-  5: "int m = 3：iconst_3 入操作数栈，再 istore_1 存入局部变量表 slot1。",
-  6: "int n = 4：iconst_4 入操作数栈，再 istore_2 存入局部变量表 slot2。",
-  7: "m+n：先 iload_1/iload_2 从局部变量表压栈，再 iadd，结果在操作数栈，随后 istore_3。",
-  8: "return k：iload_3 将局部变量表里的 k 压栈，ireturn 返回并弹栈帧。",
-  12: "method1 调用：通过栈帧的动态链接在运行时常量池解析符号引用，aload_0 压入 this，再 invokevirtual；返回值先进操作数栈，再 istore_2。",
-  13: "int j = 5：iconst_5 入操作数栈，再 istore_3 写入局部变量表。",
-  15: "int k = 6 / d：bipush 6 与 iload_1 进入操作数栈，idiv 运算后 istore 4。",
-  17: "j = 7：bipush 7 先入操作数栈，再 istore_3 覆盖局部变量表。",
-  18: "e.printStackTrace：aload 4 将异常引用入栈，再 invokevirtual 调用。",
-  23: "new App：类加载校验通过后在堆分配对象内存，初始化对象头/默认值；构造完成后引用先入操作数栈，再 astore_1 存入局部变量表。",
-  24: "parseInt(args[0])：aload_0 与 iconst_0 入栈，aaload 取值，invokestatic 返回值入栈，再 istore_2。",
-  25: "obj.method2(d)：aload_1/iload_2 先入操作数栈，再 invokevirtual 调用。",
 };
 
 export const sourceLines = [
@@ -401,39 +105,6 @@ export const bytecodeLines = [
   "20:return",
 ];
 
-const opcodeDescriptions: Record<string, string> = {
-  new: "在堆中分配对象内存，压入未初始化引用。",
-  dup: "复制操作数栈顶元素。",
-  invokespecial: "调用实例初始化方法或私有方法。",
-  invokevirtual: "调用虚方法（动态分派）。",
-  invokestatic: "调用静态方法。",
-  aload_0: "将局部变量表 slot0 引用压栈。",
-  aload_1: "将局部变量表 slot1 引用压栈。",
-  aload: "将指定 slot 的引用压栈。",
-  iload_1: "将局部变量表 slot1 int 压栈。",
-  iload_2: "将局部变量表 slot2 int 压栈。",
-  iconst_0: "将 int 常量 0 压栈。",
-  iconst_2: "将 int 常量 2 压栈。",
-  iconst_3: "将 int 常量 3 压栈。",
-  iconst_4: "将 int 常量 4 压栈。",
-  iconst_5: "将 int 常量 5 压栈。",
-  bipush: "将一个字节常量压栈。",
-  putfield: "将栈顶值写入对象实例字段。",
-  putstatic: "将栈顶值写入类静态字段。",
-  istore_1: "将栈顶 int 保存到 slot1。",
-  istore_2: "将栈顶 int 保存到 slot2。",
-  istore_3: "将栈顶 int 保存到 slot3。",
-  istore: "将栈顶 int 保存到指定 slot。",
-  iload_3: "将局部变量表 slot3 int 压栈。",
-  iadd: "弹出两个 int 相加后压栈。",
-  idiv: "弹出两个 int 相除后压栈（可能抛异常）。",
-  aaload: "从引用数组中取元素并压栈。",
-  astore: "将栈顶引用保存到指定 slot。",
-  return: "从 void 方法返回。",
-  ireturn: "返回 int 并弹出当前栈帧。",
-  goto: "无条件跳转到指定偏移。",
-};
-
 export const getOpcodeFromLine = (line: string) => {
   const trimmed = line.trim();
   if (!trimmed || trimmed.endsWith(":")) {
@@ -446,22 +117,10 @@ export const getOpcodeFromLine = (line: string) => {
   return rest.trim().split(/\s+/)[0];
 };
 
-export const getBytecodeTooltip = (line: string) => {
-  const opcode = getOpcodeFromLine(line);
-  if (!opcode) {
-    return line;
-  }
-  const desc = opcodeDescriptions[opcode];
-  if (!desc) {
-    return `${line}\n指令: ${opcode}`;
-  }
-  return `${line}\n指令: ${opcode}\n含义: ${desc}`;
-};
-
 export const executionStepsNormal: ExecutionStep[] = [
   {
     id: "main-0",
-    title: "进入 main",
+    titleKey: "stepTitles.main-0",
     bytecode: "main@0: new #8",
     sourceLine: "main: App obj = new App();",
     sourceLineIndex: 23,
@@ -481,7 +140,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-1",
-    title: "复制栈顶引用",
+    titleKey: "stepTitles.main-1",
     bytecode: "main@3: dup",
     sourceLine: "main: App obj = new App();",
     sourceLineIndex: 23,
@@ -501,7 +160,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-2",
-    title: "调用构造函数",
+    titleKey: "stepTitles.main-2",
     bytecode: "main@4: invokespecial <init>",
     sourceLine: "main: App obj = new App();",
     sourceLineIndex: 23,
@@ -530,7 +189,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "init-0",
-    title: "构造函数加载 this",
+    titleKey: "stepTitles.init-0",
     bytecode: "<init>@0: aload_0",
     sourceLine: "App(): instanceField = 2;",
     sourceLineIndex: 2,
@@ -559,7 +218,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "init-1",
-    title: "调用父类构造",
+    titleKey: "stepTitles.init-1",
     bytecode: "<init>@1: invokespecial #1",
     sourceLine: "App(): instanceField = 2;",
     sourceLineIndex: 2,
@@ -588,7 +247,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "init-2",
-    title: "再次加载 this",
+    titleKey: "stepTitles.init-2",
     bytecode: "<init>@4: aload_0",
     sourceLine: "App(): instanceField = 2;",
     sourceLineIndex: 2,
@@ -617,7 +276,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "init-3",
-    title: "压入常量 2",
+    titleKey: "stepTitles.init-3",
     bytecode: "<init>@5: iconst_2",
     sourceLine: "App(): instanceField = 2;",
     sourceLineIndex: 2,
@@ -646,7 +305,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "init-4",
-    title: "写入 instanceField",
+    titleKey: "stepTitles.init-4",
     bytecode: "<init>@6: putfield instanceField",
     sourceLine: "App(): instanceField = 2;",
     sourceLineIndex: 2,
@@ -675,7 +334,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "init-5",
-    title: "构造返回，弹栈",
+    titleKey: "stepTitles.init-5",
     bytecode: "<init>@9: return",
     sourceLine: "App(): return",
     sourceLineIndex: 2,
@@ -695,7 +354,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-3",
-    title: "保存对象引用",
+    titleKey: "stepTitles.main-3",
     bytecode: "main@7: astore_1",
     sourceLine: "main: App obj = new App();",
     sourceLineIndex: 23,
@@ -715,7 +374,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-4",
-    title: "加载参数数组",
+    titleKey: "stepTitles.main-4",
     bytecode: "main@8: aload_0",
     sourceLine: "main: int d = Integer.parseInt(args[0]);",
     sourceLineIndex: 24,
@@ -735,7 +394,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-5",
-    title: "压入索引 0",
+    titleKey: "stepTitles.main-5",
     bytecode: "main@9: iconst_0",
     sourceLine: "main: int d = Integer.parseInt(args[0]);",
     sourceLineIndex: 24,
@@ -755,7 +414,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-6",
-    title: "读取 args[0]",
+    titleKey: "stepTitles.main-6",
     bytecode: "main@10: aaload",
     sourceLine: "main: int d = Integer.parseInt(args[0]);",
     sourceLineIndex: 24,
@@ -775,7 +434,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-7",
-    title: "parseInt 转换",
+    titleKey: "stepTitles.main-7",
     bytecode: "main@11: invokestatic parseInt",
     sourceLine: "main: int d = Integer.parseInt(args[0]);",
     sourceLineIndex: 24,
@@ -795,7 +454,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-8",
-    title: "保存 d 到局部变量",
+    titleKey: "stepTitles.main-8",
     bytecode: "main@14: istore_2",
     sourceLine: "main: int d = Integer.parseInt(args[0]);",
     sourceLineIndex: 24,
@@ -815,7 +474,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-9",
-    title: "加载 obj 引用",
+    titleKey: "stepTitles.main-9",
     bytecode: "main@15: aload_1",
     sourceLine: "main: obj.method2(d);",
     sourceLineIndex: 25,
@@ -835,7 +494,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-10",
-    title: "加载参数 d",
+    titleKey: "stepTitles.main-10",
     bytecode: "main@16: iload_2",
     sourceLine: "main: obj.method2(d);",
     sourceLineIndex: 25,
@@ -855,7 +514,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-11",
-    title: "调用 method2，压栈",
+    titleKey: "stepTitles.main-11",
     bytecode: "main@17: invokevirtual method2",
     sourceLine: "main: obj.method2(d);",
     sourceLineIndex: 25,
@@ -884,7 +543,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-0",
-    title: "加载 this",
+    titleKey: "stepTitles.m2-0",
     bytecode: "method2@0: aload_0",
     sourceLine: "method2: int i = method1();",
     sourceLineIndex: 12,
@@ -913,7 +572,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-1",
-    title: "调用 method1",
+    titleKey: "stepTitles.m2-1",
     bytecode: "method2@1: invokevirtual method1",
     sourceLine: "method2: int i = method1();",
     sourceLineIndex: 12,
@@ -951,7 +610,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-0",
-    title: "压入常量 3",
+    titleKey: "stepTitles.m1-0",
     bytecode: "method1@0: iconst_3",
     sourceLine: "method1: int m = 3;",
     sourceLineIndex: 5,
@@ -989,7 +648,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-1",
-    title: "保存 m",
+    titleKey: "stepTitles.m1-1",
     bytecode: "method1@1: istore_1",
     sourceLine: "method1: int m = 3;",
     sourceLineIndex: 5,
@@ -1027,7 +686,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-2",
-    title: "压入常量 4",
+    titleKey: "stepTitles.m1-2",
     bytecode: "method1@2: iconst_4",
     sourceLine: "method1: int n = 4;",
     sourceLineIndex: 6,
@@ -1065,7 +724,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-3",
-    title: "保存 n",
+    titleKey: "stepTitles.m1-3",
     bytecode: "method1@3: istore_2",
     sourceLine: "method1: int n = 4;",
     sourceLineIndex: 6,
@@ -1103,7 +762,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-4",
-    title: "加载 m",
+    titleKey: "stepTitles.m1-4",
     bytecode: "method1@4: iload_1",
     sourceLine: "method1: int k = m + n;",
     sourceLineIndex: 7,
@@ -1141,7 +800,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-5",
-    title: "加载 n",
+    titleKey: "stepTitles.m1-5",
     bytecode: "method1@5: iload_2",
     sourceLine: "method1: int k = m + n;",
     sourceLineIndex: 7,
@@ -1179,7 +838,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-6",
-    title: "执行加法",
+    titleKey: "stepTitles.m1-6",
     bytecode: "method1@6: iadd",
     sourceLine: "method1: int k = m + n;",
     sourceLineIndex: 7,
@@ -1217,7 +876,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-7",
-    title: "保存 k",
+    titleKey: "stepTitles.m1-7",
     bytecode: "method1@7: istore_3",
     sourceLine: "method1: int k = m + n;",
     sourceLineIndex: 7,
@@ -1255,7 +914,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-8",
-    title: "加载 k",
+    titleKey: "stepTitles.m1-8",
     bytecode: "method1@8: iload_3",
     sourceLine: "method1: return k;",
     sourceLineIndex: 8,
@@ -1293,7 +952,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m1-9",
-    title: "method1 返回",
+    titleKey: "stepTitles.m1-9",
     bytecode: "method1@9: ireturn",
     sourceLine: "method1: return k;",
     sourceLineIndex: 8,
@@ -1322,7 +981,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-2",
-    title: "保存 i",
+    titleKey: "stepTitles.m2-2",
     bytecode: "method2@4: istore_2",
     sourceLine: "method2: int i = method1();",
     sourceLineIndex: 12,
@@ -1351,7 +1010,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-3",
-    title: "压入常量 5",
+    titleKey: "stepTitles.m2-3",
     bytecode: "method2@5: iconst_5",
     sourceLine: "method2: int j = 5;",
     sourceLineIndex: 13,
@@ -1380,7 +1039,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-4",
-    title: "保存 j",
+    titleKey: "stepTitles.m2-4",
     bytecode: "method2@6: istore_3",
     sourceLine: "method2: int j = 5;",
     sourceLineIndex: 13,
@@ -1409,7 +1068,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-5",
-    title: "压入常量 6",
+    titleKey: "stepTitles.m2-5",
     bytecode: "method2@7: bipush 6",
     sourceLine: "method2: int k = 6 / d;",
     sourceLineIndex: 15,
@@ -1438,7 +1097,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-6",
-    title: "加载 d",
+    titleKey: "stepTitles.m2-6",
     bytecode: "method2@9: iload_1",
     sourceLine: "method2: int k = 6 / d;",
     sourceLineIndex: 15,
@@ -1467,7 +1126,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-7",
-    title: "执行除法",
+    titleKey: "stepTitles.m2-7",
     bytecode: "method2@10: idiv",
     sourceLine: "method2: int k = 6 / d;",
     sourceLineIndex: 15,
@@ -1496,7 +1155,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-8",
-    title: "保存 k",
+    titleKey: "stepTitles.m2-8",
     bytecode: "method2@11: istore 4",
     sourceLine: "method2: int k = 6 / d;",
     sourceLineIndex: 15,
@@ -1525,7 +1184,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-9",
-    title: "跳转 return",
+    titleKey: "stepTitles.m2-9",
     bytecode: "method2@13: goto 26",
     sourceLine: "method2: return",
     sourceLineIndex: 19,
@@ -1554,7 +1213,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "m2-10",
-    title: "method2 正常返回",
+    titleKey: "stepTitles.m2-10",
     bytecode: "method2@26: return",
     sourceLine: "method2: return",
     sourceLineIndex: 19,
@@ -1574,7 +1233,7 @@ export const executionStepsNormal: ExecutionStep[] = [
   },
   {
     id: "main-12",
-    title: "main 返回",
+    titleKey: "stepTitles.main-12",
     bytecode: "main@20: return",
     sourceLine: "main: return",
     sourceLineIndex: 25,
@@ -1591,7 +1250,7 @@ export const executionStepsException: ExecutionStep[] = [
   ),
   {
     id: "m2x-0",
-    title: "除法抛出异常",
+    titleKey: "stepTitles.m2x-0",
     bytecode: "method2@10: idiv",
     sourceLine: "method2: int k = 6 / d;",
     sourceLineIndex: 15,
@@ -1620,7 +1279,7 @@ export const executionStepsException: ExecutionStep[] = [
   },
   {
     id: "m2x-1",
-    title: "进入 catch，保存异常引用",
+    titleKey: "stepTitles.m2x-1",
     bytecode: "method2@16: astore 4",
     sourceLine: "method2: catch (Exception e)",
     sourceLineIndex: 16,
@@ -1649,7 +1308,7 @@ export const executionStepsException: ExecutionStep[] = [
   },
   {
     id: "m2x-2",
-    title: "压入常量 7",
+    titleKey: "stepTitles.m2x-2",
     bytecode: "method2@18: bipush 7",
     sourceLine: "method2: j = 7;",
     sourceLineIndex: 17,
@@ -1678,7 +1337,7 @@ export const executionStepsException: ExecutionStep[] = [
   },
   {
     id: "m2x-3",
-    title: "catch 中更新 j",
+    titleKey: "stepTitles.m2x-3",
     bytecode: "method2@20: istore_3",
     sourceLine: "method2: j = 7;",
     sourceLineIndex: 17,
@@ -1707,7 +1366,7 @@ export const executionStepsException: ExecutionStep[] = [
   },
   {
     id: "m2x-4",
-    title: "加载异常引用",
+    titleKey: "stepTitles.m2x-4",
     bytecode: "method2@21: aload 4",
     sourceLine: "method2: e.printStackTrace();",
     sourceLineIndex: 18,
@@ -1736,7 +1395,7 @@ export const executionStepsException: ExecutionStep[] = [
   },
   {
     id: "m2x-5",
-    title: "打印异常栈",
+    titleKey: "stepTitles.m2x-5",
     bytecode: "method2@23: invokevirtual printStackTrace",
     sourceLine: "method2: e.printStackTrace();",
     sourceLineIndex: 18,
@@ -1765,7 +1424,7 @@ export const executionStepsException: ExecutionStep[] = [
   },
   {
     id: "m2x-6",
-    title: "method2 返回",
+    titleKey: "stepTitles.m2x-6",
     bytecode: "method2@26: return",
     sourceLine: "method2: return",
     sourceLineIndex: 19,
@@ -1785,7 +1444,7 @@ export const executionStepsException: ExecutionStep[] = [
   },
   {
     id: "main-12x",
-    title: "main 返回",
+    titleKey: "stepTitles.main-12x",
     bytecode: "main@20: return",
     sourceLine: "main: return",
     sourceLineIndex: 25,

@@ -1,0 +1,423 @@
+{
+  "page": {
+    "back": "Back to What is it",
+    "title": "JVM Runtime World",
+    "subtitle": "Goal: understand JVM components, runtime data areas, and execution flow."
+  },
+  "sections": {
+    "runtimeDiagram": "JVM components overview (click runtime data areas for details)",
+    "runtimeDetails": "Runtime data area details",
+    "flow": "JVM execution flow (brief)",
+    "execution": "Bytecode execution: step-by-step and stack frame changes"
+  },
+  "diagram": {
+    "classLoader": {
+      "title": "Class Loader",
+      "desc": "Load .class, link, initialize",
+      "delegation": "Parent delegation: delegate to parent first; child loads only if parent can't find it.",
+      "delegationChain": "Bootstrap → Platform/Extension → Application"
+    },
+    "runtimeDataAreas": {
+      "title": "Runtime Data Areas",
+      "scopeShared": "Shared = thread shared",
+      "scopePrivate": "Private = thread private"
+    },
+    "executionEngine": {
+      "title": "Execution Engine",
+      "desc": "Interpretation, JIT compilation, GC coordination"
+    },
+    "jni": {
+      "title": "Native Interface (JNI)",
+      "desc": "Bridge between Java and native methods"
+    },
+    "nativeLibraries": {
+      "title": "Native Libraries",
+      "desc": "OS / C / C++ libraries"
+    }
+  },
+  "runtimeAreas": [
+    {
+      "id": "heap",
+      "name": "Heap",
+      "stored": "Object instances, arrays",
+      "ownership": "Thread shared",
+      "notes": ["Primary area for object allocation", "Reclaimed by GC"],
+      "scopeTag": "Shared"
+    },
+    {
+      "id": "stack",
+      "name": "Java Stack",
+      "stored": "Stack frames: locals, operand stack, return address",
+      "ownership": "Thread private",
+      "notes": ["Push/pop on method calls", "Stack depth affects stability"],
+      "scopeTag": "Private"
+    },
+    {
+      "id": "method-area",
+      "name": "Method Area",
+      "stored": "Class metadata, constant pool, static fields",
+      "ownership": "Thread shared",
+      "notes": ["Centralized class-level data", "May be reclaimed/unloaded"],
+      "scopeTag": "Shared"
+    },
+    {
+      "id": "pc",
+      "name": "PC Register",
+      "stored": "Address of the next bytecode instruction",
+      "ownership": "Thread private",
+      "notes": ["Updated after execution", "Restores after thread switch"],
+      "scopeTag": "Private"
+    },
+    {
+      "id": "native-stack",
+      "name": "Native Method Stack",
+      "stored": "Native method stack frames",
+      "ownership": "Thread private",
+      "notes": ["Supports JNI calls", "Backed by OS stack"],
+      "scopeTag": "Private"
+    }
+  ],
+  "runtimeAreaDetails": {
+    "heap": {
+      "summary": "Shared memory area responsible for object and array allocation and reclamation.",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "Overview",
+          "items": [
+            "Generational management: young/old; most GC happens in young gen.",
+            "String pool: moved to heap in JDK 7+, separated from method area.",
+            "Allocation: TLAB for thread-local fast allocation, fallback to shared allocation."
+          ]
+        },
+        {
+          "id": "structure",
+          "label": "Structure",
+          "diagram": [
+            "Young Gen",
+            "  ├─ Eden",
+            "  ├─ S0 (From)",
+            "  └─ S1 (To)",
+            "Old Gen",
+            "  └─ Tenured"
+          ],
+          "items": ["Objects go to Eden first; survivors copy between Survivor spaces."]
+        },
+        {
+          "id": "versions",
+          "label": "Version differences",
+          "items": [
+            "JDK 6/7: string pool in PermGen/method area.",
+            "JDK 7+: string pool moved to heap to reduce PermGen pressure."
+          ]
+        },
+        {
+          "id": "config",
+          "label": "Config",
+          "items": [
+            "-Xms/-Xmx: initial/max heap size",
+            "-Xmn: young generation size",
+            "-XX:NewRatio: young/old ratio",
+            "-XX:SurvivorRatio: Eden/Survivor ratio",
+            "-XX:MaxTenuringThreshold: promotion age"
+          ]
+        },
+        {
+          "id": "exceptions",
+          "label": "Exceptions",
+          "items": [
+            "OutOfMemoryError: Java heap space",
+            "GC overhead limit exceeded"
+          ]
+        }
+      ]
+    },
+    "method-area": {
+      "summary": "Method area is a JVM spec concept that stores class metadata and runtime constants.",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "Overview",
+          "items": [
+            "Stores class metadata, runtime constant pool, static fields, JIT code.",
+            "Unlike heap: holds class-level data, shared by threads."
+          ]
+        },
+        {
+          "id": "versions",
+          "label": "Implementations",
+          "items": [
+            "PermGen (<= JDK 7): inside heap, prone to OOM, fixed size.",
+            "Metaspace (JDK 8+): native memory, grows on demand.",
+            "Why replaced: class metadata size unpredictable; PermGen tuning is costly."
+          ]
+        },
+        {
+          "id": "structure",
+          "label": "Diagram",
+          "diagram": [
+            "Method Area",
+            "  ├─ Class Metadata",
+            "  ├─ Runtime Constant Pool",
+            "  └─ Static Variables",
+            "",
+            "JDK 8+: Metaspace (Native Memory)"
+          ]
+        },
+        {
+          "id": "config",
+          "label": "Config",
+          "items": [
+            "-XX:MetaspaceSize/-XX:MaxMetaspaceSize (JDK 8+)",
+            "-XX:PermSize/-XX:MaxPermSize (JDK 7-)"
+          ]
+        },
+        {
+          "id": "exceptions",
+          "label": "Exceptions",
+          "items": ["OutOfMemoryError: Metaspace", "PermGen space (JDK 7-)"]
+        }
+      ]
+    },
+    "pc": {
+      "summary": "Thread-private register holding the next bytecode address to execute.",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "Notes",
+          "items": [
+            "Updated after each bytecode instruction; supports resuming after context switch.",
+            "Undefined when executing native methods."
+          ]
+        }
+      ]
+    },
+    "stack": {
+      "summary": "Thread-private stack that stores stack frames created by method calls.",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "Frame contents",
+          "items": [
+            "Local variables: method parameters and locals.",
+            "Operand stack: temporary data during instruction execution.",
+            "Dynamic link: resolves methods via runtime constant pool.",
+            "Return info: normal/exception return address.",
+            "Exception table: catch handler ranges and jump targets."
+          ]
+        },
+        {
+          "id": "structure",
+          "label": "Diagram",
+          "diagram": [
+            "Stack (Thread)",
+            "  ├─ Frame N",
+            "  │   ├─ Local Vars",
+            "  │   ├─ Operand Stack",
+            "  │   ├─ Dynamic Link",
+            "  │   └─ Return/Exception",
+            "  └─ Frame 1"
+          ]
+        },
+        {
+          "id": "config",
+          "label": "Config",
+          "items": ["-Xss: per-thread stack size"]
+        },
+        {
+          "id": "exceptions",
+          "label": "Exceptions",
+          "items": [
+            "StackOverflowError",
+            "OutOfMemoryError: unable to create new native thread"
+          ]
+        }
+      ]
+    },
+    "native-stack": {
+      "summary": "Stack space for JNI/native method execution.",
+      "tabs": [
+        {
+          "id": "overview",
+          "label": "Purpose",
+          "items": [
+            "Executes native methods in C/C++.",
+            "Backed by OS thread stack; implementation varies by JVM/platform."
+          ]
+        },
+        {
+          "id": "config",
+          "label": "Config",
+          "items": ["-Xss: influences native stack size (implementation-dependent)"]
+        },
+        {
+          "id": "exceptions",
+          "label": "Exceptions",
+          "items": ["StackOverflowError", "OutOfMemoryError"]
+        }
+      ]
+    }
+  },
+  "runtimeDetailMeta": {
+    "scopeLabel": "Scope",
+    "tip": "Tip: heap stores objects; stack stores method execution context."
+  },
+  "flowSteps": [
+    "Java source compiles to .class bytecode",
+    "Class loader performs load, verification, preparation, resolution, initialization",
+    "Runtime data areas provide memory and metadata for execution",
+    "Execution engine interprets/compiles bytecode and cooperates with GC",
+    "JNI calls native libraries and OS"
+  ],
+  "execution": {
+    "sourceLabel": "App.java (source)",
+    "bytecodeLabel": "javap -c (excerpt)",
+    "currentInstruction": "Current instruction",
+    "instructionNote": "Note: shows normal and exception paths; executes bytecode step by step.",
+    "runModeLabel": "Run path",
+    "runMode": {
+      "normal": "Normal",
+      "exception": "Exception"
+    },
+    "controls": {
+      "play": "Play",
+      "pause": "Pause",
+      "step": "Step",
+      "back": "Back",
+      "reset": "Reset",
+      "dockStack": "Dock Stack",
+      "floatStack": "Float Stack",
+      "dock": "Dock",
+      "stackTitle": "Call Stack"
+    }
+  },
+  "stack": {
+    "titleHint": "Call stack (top is at the top, pops on return)",
+    "emptyStack": "Stack is empty",
+    "topFrame": "Top Frame",
+    "frameLabel": "Frame",
+    "pc": "PC",
+    "dynamicLink": "Dynamic Link",
+    "methodExit": "Method Exit",
+    "locals": "Locals",
+    "operandStack": "Operand Stack",
+    "exceptionTable": "Exception Table",
+    "empty": "empty",
+    "none": "none",
+    "top": "TOP",
+    "table": {
+      "slot": "Slot",
+      "value": "Value",
+      "label": "Label",
+      "startPc": "Start PC",
+      "endPc": "End PC",
+      "handlerPc": "Handler PC"
+    }
+  },
+  "bytecodeTooltip": {
+    "opcode": "Opcode",
+    "meaning": "Meaning"
+  },
+  "opcodeDescriptions": {
+    "new": "Allocate object memory on heap and push uninitialized reference.",
+    "dup": "Duplicate the top stack value.",
+    "invokespecial": "Invoke instance initialization or private method.",
+    "invokevirtual": "Invoke virtual method (dynamic dispatch).",
+    "invokestatic": "Invoke static method.",
+    "aload_0": "Push reference from local slot0.",
+    "aload_1": "Push reference from local slot1.",
+    "aload": "Push reference from specified local slot.",
+    "iload_1": "Push int from local slot1.",
+    "iload_2": "Push int from local slot2.",
+    "iconst_0": "Push int constant 0.",
+    "iconst_2": "Push int constant 2.",
+    "iconst_3": "Push int constant 3.",
+    "iconst_4": "Push int constant 4.",
+    "iconst_5": "Push int constant 5.",
+    "bipush": "Push a byte constant.",
+    "putfield": "Store value into object instance field.",
+    "putstatic": "Store value into class static field.",
+    "istore_1": "Store int into local slot1.",
+    "istore_2": "Store int into local slot2.",
+    "istore_3": "Store int into local slot3.",
+    "istore": "Store int into specified local slot.",
+    "iload_3": "Push int from local slot3.",
+    "iadd": "Pop two ints, add, and push result.",
+    "idiv": "Pop two ints, divide, push result (may throw).",
+    "aaload": "Load element from reference array and push.",
+    "astore": "Store reference into specified local slot.",
+    "return": "Return from void method.",
+    "ireturn": "Return int and pop current frame.",
+    "goto": "Unconditional branch to offset."
+  },
+  "sourceLineTooltips": {
+    "0": "Class definition: class metadata is loaded into the method area (metaspace in JDK 8+), along with methods and constant pool.",
+    "1": "staticField lives in class metadata; initialized in <clinit> by pushing a constant then putstatic.",
+    "2": "instanceField is set in <init>: iconst_2 pushes to operand stack, then putfield writes to heap object field.",
+    "4": "method1 definition: bytecode and symbol refs live in method area; calling creates a new frame.",
+    "11": "method2 definition: stored in method area; calling pushes a new frame with parameter d.",
+    "22": "main definition: entry point after class load.",
+    "5": "int m = 3: iconst_3 pushes to operand stack, then istore_1 saves to local slot1.",
+    "6": "int n = 4: iconst_4 pushes to operand stack, then istore_2 saves to local slot2.",
+    "7": "m+n: iload_1/iload_2 push from locals, iadd computes, then istore_3 saves result.",
+    "8": "return k: iload_3 pushes k, ireturn returns and pops the frame.",
+    "12": "method1 call: dynamic link resolves in runtime constant pool; aload_0 pushes this, then invokevirtual; return value goes to operand stack then istore_2.",
+    "13": "int j = 5: iconst_5 pushes, then istore_3 saves to locals.",
+    "15": "int k = 6 / d: bipush 6 and iload_1 push operands, idiv computes, then istore 4.",
+    "17": "j = 7: bipush 7 pushes, then istore_3 overwrites local slot.",
+    "18": "e.printStackTrace: aload 4 pushes exception ref, then invokevirtual.",
+    "23": "new App: after class load check, allocate heap memory and init header/defaults; reference goes to operand stack then astore_1.",
+    "24": "parseInt(args[0]): aload_0 and iconst_0 push, aaload reads, invokestatic returns, then istore_2.",
+    "25": "obj.method2(d): aload_1/iload_2 push arguments, then invokevirtual."
+  },
+  "stepTitles": {
+    "main-0": "Enter main",
+    "main-1": "Duplicate top reference",
+    "main-2": "Invoke constructor",
+    "init-0": "Load this in constructor",
+    "init-1": "Call super constructor",
+    "init-2": "Load this again",
+    "init-3": "Push constant 2",
+    "init-4": "Write instanceField",
+    "init-5": "Constructor returns",
+    "main-3": "Store object reference",
+    "main-4": "Load args array",
+    "main-5": "Push index 0",
+    "main-6": "Read args[0]",
+    "main-7": "parseInt conversion",
+    "main-8": "Store d to locals",
+    "main-9": "Load obj reference",
+    "main-10": "Load argument d",
+    "main-11": "Invoke method2, push frame",
+    "m2-0": "Load this",
+    "m2-1": "Invoke method1",
+    "m1-0": "Push constant 3",
+    "m1-1": "Store m",
+    "m1-2": "Push constant 4",
+    "m1-3": "Store n",
+    "m1-4": "Load m",
+    "m1-5": "Load n",
+    "m1-6": "Add",
+    "m1-7": "Store k",
+    "m1-8": "Load k",
+    "m1-9": "Return from method1",
+    "m2-2": "Store i",
+    "m2-3": "Push constant 5",
+    "m2-4": "Store j",
+    "m2-5": "Push constant 6",
+    "m2-6": "Load d",
+    "m2-7": "Divide",
+    "m2-8": "Store k",
+    "m2-9": "Jump to return",
+    "m2-10": "method2 returns normally",
+    "main-12": "main returns",
+    "m2x-0": "Division throws exception",
+    "m2x-1": "Enter catch, store exception ref",
+    "m2x-2": "Push constant 7",
+    "m2x-3": "Update j in catch",
+    "m2x-4": "Load exception ref",
+    "m2x-5": "Print stack trace",
+    "m2x-6": "method2 returns",
+    "main-12x": "main returns"
+  }
+}

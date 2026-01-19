@@ -1,26 +1,47 @@
 import { Link } from "react-router-dom";
 import { GoArrowUpRight } from "react-icons/go";
+import { useTranslation } from "react-i18next";
 import Layout from "@/components/Layout";
 import {
   ProjectCard,
   ProjectCardContent,
 } from "@/components/ui/project-card";
-import { WHAT_IS_IT_LESSONS } from "@/config/whatIsIt";
+import { ROUTES } from "@/config/constants";
+
+type WhatIsItLesson = {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  level: string;
+  duration: string;
+  updated: string;
+};
 
 export default function WhatIsItPage() {
+  const { t } = useTranslation("whatIsIt");
+  const lessons = t("lessons", { returnObjects: true }) as WhatIsItLesson[];
+  const lessonRoutes: Record<string, string> = {
+    jvm: ROUTES.WHAT_IS_IT_JVM,
+  };
+
   return (
     <Layout variant="portfolio">
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-semibold">What is it</h1>
+          <h1 className="text-2xl font-semibold">{t("title")}</h1>
           <p className="text-sm text-graytext mt-2">
-            教学页面合集，用前端网页把一个知识点讲清楚。
+            {t("description")}
           </p>
         </div>
 
         <div className="grid gap-4">
-          {WHAT_IS_IT_LESSONS.map((lesson) => (
-            <Link key={lesson.title} to={lesson.link} className="no-underline">
+          {lessons.map((lesson) => (
+            <Link
+              key={lesson.id}
+              to={lessonRoutes[lesson.id] ?? ROUTES.WHAT_IS_IT_JVM}
+              className="no-underline"
+            >
               <ProjectCard hover className="h-full">
                 <ProjectCardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
@@ -51,7 +72,7 @@ export default function WhatIsItPage() {
                     {lesson.description}
                   </p>
                   <div className="text-xs text-graytext font-mono">
-                    Updated {lesson.updated}
+                    {t("lessonMeta.updated")} {lesson.updated}
                   </div>
                 </ProjectCardContent>
               </ProjectCard>

@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "location": "Beijing",
+    "pages": "Pages",
+    "info": "Info",
+    "close": "Close",
+    "lightsOn": "Lights on",
+    "lightsOff": "Lights off",
+    "items": {
+      "home": "Home",
+      "resume": "Resume",
+      "about": "About",
+      "bookshelf": "Bookshelf",
+      "sideProjects": "Side Projects",
+      "whatIsIt": "What is it",
+      "notes": "Notes",
+      "colophon": "Colophon",
+      "now": "Now"
+    },
+    "language": {
+      "en": "EN",
+      "zh": "中文"
+    }
+  }
+}
