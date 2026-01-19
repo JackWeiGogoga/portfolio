@@ -2,6 +2,8 @@ export const ROUTES = {
   HOME: "/",
   RESUME: "/resume",
   WORK_FLOWLET: "/works/flowlet",
+  WHAT_IS_IT: "/what-is-it",
+  WHAT_IS_IT_JVM: "/what-is-it/jvm",
 
   SIDE_PROJECTS: "/side-projects",
   PROJECTS: "/side-projects/crowdfunding/projects",

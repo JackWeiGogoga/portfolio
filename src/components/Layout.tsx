@@ -4,7 +4,13 @@ import { WalletButton } from "./WalletButton";
 
 interface LayoutProps {
   children: ReactNode;
-  variant?: "default" | "portfolio" | "crowdfunding" | "gogoga" | "resume";
+  variant?:
+    | "default"
+    | "portfolio"
+    | "crowdfunding"
+    | "gogoga"
+    | "resume"
+    | "lesson";
 }
 
 export default function Layout({ children, variant = "default" }: LayoutProps) {
@@ -40,6 +46,15 @@ export default function Layout({ children, variant = "default" }: LayoutProps) {
   if (variant === "resume") {
     return (
       <main className="min-h-screen bg-background font-sans">
+        <NavMenu />
+        {children}
+      </main>
+    );
+  }
+
+  if (variant === "lesson") {
+    return (
+      <main className="min-h-screen max-w-6xl py-10 px-6 mx-auto my-0 font-sans bg-background">
         <NavMenu />
         {children}
       </main>

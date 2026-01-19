@@ -18,6 +18,7 @@ import {
   Info,
   Clock,
   Layers,
+  Lightbulb,
 } from "lucide-react";
 import { ROUTES } from "@/config/constants";
 
@@ -201,6 +202,16 @@ export function NavMenu() {
               >
                 <Layers className="w-4 h-4" />
                 <span>Side Projects</span>
+              </Link>
+              <Link
+                to={ROUTES.WHAT_IS_IT}
+                className={`flex items-center gap-2 py-2 px-2.5 rounded-md hover:bg-muted no-underline ${
+                  pathname === ROUTES.WHAT_IS_IT ? "" : "text-graytext"
+                }`}
+                onClick={() => setOpen(false)}
+              >
+                <Lightbulb className="w-4 h-4" />
+                <span>What is it</span>
               </Link>
             </nav>
           </div>
