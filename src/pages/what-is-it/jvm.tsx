@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import Layout from "@/components/Layout";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ROUTES } from "@/config/constants";
 import {
   bytecodeLines,
@@ -15,7 +19,6 @@ import {
   runtimeAreas,
   sourceLines,
 } from "@/config/jvmLesson";
-
 
 const parseLocals = (locals: string[]) =>
   locals.map((entry, index) => {
@@ -30,9 +33,7 @@ const parseExceptionTable = (exceptionTable: string) => {
   if (exceptionTable === "none") {
     return [];
   }
-  const match = exceptionTable.match(
-    /(\d+)\.\.(\d+)\s*->\s*(\d+)\s*\((.+)\)/
-  );
+  const match = exceptionTable.match(/(\d+)\.\.(\d+)\s*->\s*(\d+)\s*\((.+)\)/);
   if (!match) {
     return [
       {
@@ -82,10 +83,11 @@ export default function JvmLessonPage() {
     return map;
   }, [steps]);
 
-  useEffect(() => {
+  const handleRunModeChange = (mode: "normal" | "exception") => {
+    setRunMode(mode);
     setStepIndex(0);
     setIsPlaying(false);
-  }, [runMode]);
+  };
 
   useEffect(() => {
     if (!isPlaying) {
@@ -356,27 +358,27 @@ export default function JvmLessonPage() {
                     const targetStepIndex = sourceLineToStep.get(index);
                     const isClickable = targetStepIndex !== undefined;
                     return (
-                    <div
-                      key={`${line}-${index}`}
-                      title={line}
-                      onClick={() => {
-                        if (!isClickable) {
-                          return;
-                        }
-                        setIsPlaying(false);
-                        setStepIndex(targetStepIndex);
-                      }}
-                      className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
-                        index === currentStep.sourceLineIndex
-                          ? "bg-accent text-text"
-                          : ""
-                      } ${isClickable ? "cursor-pointer" : ""}`}
-                    >
-                      <span className="inline-block w-6 text-graytext">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      {line}
-                    </div>
+                      <div
+                        key={`${line}-${index}`}
+                        title={line}
+                        onClick={() => {
+                          if (!isClickable) {
+                            return;
+                          }
+                          setIsPlaying(false);
+                          setStepIndex(targetStepIndex);
+                        }}
+                        className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
+                          index === currentStep.sourceLineIndex
+                            ? "bg-accent text-text"
+                            : ""
+                        } ${isClickable ? "cursor-pointer" : ""}`}
+                      >
+                        <span className="inline-block w-6 text-graytext">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        {line}
+                      </div>
                     );
                   })}
                 </div>
@@ -455,7 +457,7 @@ export default function JvmLessonPage() {
                 <span className="text-graytext">运行路径</span>
                 <button
                   type="button"
-                  onClick={() => setRunMode("normal")}
+                  onClick={() => handleRunModeChange("normal")}
                   className={`rounded-md border px-3 py-1 ${
                     runMode === "normal"
                       ? "border-gray-500 bg-accent text-text"
@@ -466,7 +468,7 @@ export default function JvmLessonPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setRunMode("exception")}
+                  onClick={() => handleRunModeChange("exception")}
                   className={`rounded-md border px-3 py-1 ${
                     runMode === "exception"
                       ? "border-gray-500 bg-accent text-text"
@@ -520,7 +522,9 @@ export default function JvmLessonPage() {
 
             <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-sm">
               <div className="text-xs font-mono text-graytext">当前指令</div>
-              <div className="mt-1 font-mono text-sm">{currentStep.bytecode}</div>
+              <div className="mt-1 font-mono text-sm">
+                {currentStep.bytecode}
+              </div>
               <div className="mt-1 text-xs text-graytext">
                 {currentStep.title}
               </div>
@@ -575,9 +579,7 @@ export default function JvmLessonPage() {
                         </div>
                         <div className="grid gap-2 md:grid-cols-2">
                           <div>
-                            <div className="text-[11px] uppercase">
-                              Locals
-                            </div>
+                            <div className="text-[11px] uppercase">Locals</div>
                             <div className="rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background text-xs text-text">
                               {frame.locals.length > 0 ? (
                                 <table className="w-full border-collapse">
@@ -618,7 +620,7 @@ export default function JvmLessonPage() {
                             <div className="text-[11px] uppercase">
                               Operand Stack
                             </div>
-                            <div className="rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-text min-h-[44px]">
+                            <div className="rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-text min-h-11">
                               {frame.stack.length > 0 ? (
                                 <div className="flex flex-col gap-1">
                                   {[...frame.stack]
@@ -675,15 +677,11 @@ export default function JvmLessonPage() {
                                       key={`${row.label}-${row.startPc}-${row.handlerPc}`}
                                       className="border-t border-dashed border-gray-300 dark:border-white/10"
                                     >
-                                      <td className="px-2 py-1">
-                                        {row.label}
-                                      </td>
+                                      <td className="px-2 py-1">{row.label}</td>
                                       <td className="px-2 py-1">
                                         {row.startPc}
                                       </td>
-                                      <td className="px-2 py-1">
-                                        {row.endPc}
-                                      </td>
+                                      <td className="px-2 py-1">{row.endPc}</td>
                                       <td className="px-2 py-1">
                                         {row.handlerPc}
                                       </td>
