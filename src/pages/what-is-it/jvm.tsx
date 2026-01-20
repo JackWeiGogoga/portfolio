@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Layout from "@/components/Layout";
 import {
@@ -52,6 +52,19 @@ const parseExceptionTable = (exceptionTable: string) => {
   ];
 };
 
+const getClassFileTypeTooltip = (
+  type: string,
+  hints: Record<string, string>
+) => {
+  const entries = Object.entries(hints);
+  for (const [key, value] of entries) {
+    if (type.startsWith(key)) {
+      return value;
+    }
+  }
+  return "";
+};
+
 type RuntimeArea = {
   id: string;
   name: string;
@@ -68,6 +81,59 @@ type DetailTab = {
   diagram?: string[];
 };
 
+type PageTab = {
+  id: string;
+  label: string;
+  description?: string;
+};
+
+type ClassLoadingStep = {
+  id: string;
+  title: string;
+  summary: string;
+  items: string[];
+};
+
+type DelegationDemoLoader = {
+  id: string;
+  title: string;
+  desc: string;
+};
+
+type DelegationDemoStep = {
+  loaderId: string;
+  direction: "up" | "down" | "load";
+  action: string;
+  result: string;
+};
+
+type DelegationDemoScenario = {
+  id: string;
+  label: string;
+  className: string;
+  desc: string;
+  steps: DelegationDemoStep[];
+};
+
+type ClassFileInfo = {
+  table: {
+    headers: string[];
+    rows: string[][];
+  };
+  constantPool: string[];
+};
+
+type ResolutionInfo = {
+  constantTypes: string[];
+  deferred: string[];
+  note?: string;
+};
+
+type GcSection = {
+  title: string;
+  items: string[];
+};
+
 type RuntimeAreaDetail = {
   summary: string;
   tabs: DetailTab[];
@@ -78,19 +144,119 @@ export default function JvmLessonPage() {
   const runtimeAreas = t("runtimeAreas", {
     returnObjects: true,
   }) as RuntimeArea[];
+  const pageTabs = t("pageTabs", { returnObjects: true }) as PageTab[];
   const runtimeAreaDetails = t("runtimeAreaDetails", {
     returnObjects: true,
   }) as Record<string, RuntimeAreaDetail>;
   const flowSteps = t("flowSteps", { returnObjects: true }) as string[];
+  const classLoadingSteps = t("classLoading.steps", {
+    returnObjects: true,
+  }) as ClassLoadingStep[];
+  const classLoadingClassFile = t("classLoading.classFile", {
+    returnObjects: true,
+  }) as ClassFileInfo;
+  const classFileTypeHints = t("classLoading.classFile.typeHints", {
+    returnObjects: true,
+  }) as Record<string, string>;
+  const classLoadingResolution = t("classLoading.resolution", {
+    returnObjects: true,
+  }) as ResolutionInfo;
+  const delegationDemo = t("classLoading.delegationDemo", {
+    returnObjects: true,
+  }) as {
+    title: string;
+    description: string;
+    loaders: DelegationDemoLoader[];
+    scenarios: DelegationDemoScenario[];
+  };
+  const classLoadingOverviewItems = t("classLoading.overview.items", {
+    returnObjects: true,
+  }) as string[];
+  const gcSections = t("gc.sections", { returnObjects: true }) as GcSection[];
+  const [activeLoadingStepId, setActiveLoadingStepId] = useState(
+    classLoadingSteps[0]?.id ?? "load"
+  );
+  const activeLoadingStep =
+    classLoadingSteps.find((step) => step.id === activeLoadingStepId) ||
+    classLoadingSteps[0];
+  const [activeScenarioId, setActiveScenarioId] = useState(
+    delegationDemo.scenarios[0]?.id ?? "jdk-core"
+  );
+  const [demoStepIndex, setDemoStepIndex] = useState(0);
+  const [isDemoPlaying, setIsDemoPlaying] = useState(false);
+  const activeScenario =
+    delegationDemo.scenarios.find(
+      (scenario) => scenario.id === activeScenarioId
+    ) || delegationDemo.scenarios[0];
+  const demoSteps = activeScenario?.steps ?? [];
+  const currentDemoStep = demoSteps[demoStepIndex];
+  const loadedById =
+    demoSteps.find((step) => step.direction === "load")?.loaderId ?? "";
+  const hasResolvedLoad =
+    demoSteps
+      .slice(0, demoStepIndex + 1)
+      .some((step) => step.direction === "load") ?? false;
+  const loaderIndexMap = new Map(
+    delegationDemo.loaders.map((loader, index) => [loader.id, index])
+  );
+  const currentLoaderIndex = currentDemoStep
+    ? (loaderIndexMap.get(currentDemoStep.loaderId) ?? -1)
+    : -1;
+  const nextLoaderIndex =
+    currentDemoStep?.direction === "up"
+      ? currentLoaderIndex - 1
+      : currentDemoStep?.direction === "down"
+        ? currentLoaderIndex - 1
+        : currentLoaderIndex;
+  const activeConnectorIndex =
+    currentLoaderIndex >= 0 && nextLoaderIndex >= 0
+      ? Math.min(currentLoaderIndex, nextLoaderIndex)
+      : -1;
+  const visitedConnectors = (() => {
+    const visitedUp = new Set<number>();
+    const visitedDown = new Set<number>();
+    demoSteps.slice(0, demoStepIndex + 1).forEach((step) => {
+      if (step.direction === "load") {
+        return;
+      }
+      const fromIndex = loaderIndexMap.get(step.loaderId);
+      if (fromIndex === undefined) {
+        return;
+      }
+      const toIndex = fromIndex - 1;
+      const connectorIndex = Math.min(fromIndex, toIndex);
+      if (connectorIndex < 0) {
+        return;
+      }
+      if (step.direction === "up") {
+        visitedUp.add(connectorIndex);
+        return;
+      }
+      visitedDown.add(connectorIndex);
+    });
+    return { up: visitedUp, down: visitedDown };
+  })();
   const sourceLineTooltips = t("sourceLineTooltips", {
     returnObjects: true,
   }) as Record<string, string>;
   const opcodeDescriptions = t("opcodeDescriptions", {
     returnObjects: true,
   }) as Record<string, string>;
+  const defaultPageTabId =
+    pageTabs.find((tab) => tab.id === "memory")?.id ??
+    pageTabs[0]?.id ??
+    "memory";
+  const [activePageTabId, setActivePageTabId] = useState(defaultPageTabId);
+  const activePageTab =
+    pageTabs.find((tab) => tab.id === activePageTabId) || pageTabs[0];
   const [activeAreaId, setActiveAreaId] = useState(
     runtimeAreas[0]?.id ?? "heap"
   );
+  const handleScenarioChange = (scenarioId: string) => {
+    setIsDemoPlaying(false);
+    setDemoStepIndex(0);
+    setActiveScenarioId(scenarioId);
+  };
   const [activeDetailTabId, setActiveDetailTabId] = useState(() => {
     const firstAreaId = runtimeAreas[0]?.id;
     const firstTab = firstAreaId
@@ -207,6 +373,16 @@ export default function JvmLessonPage() {
   }, [isPlaying, steps.length]);
 
   useEffect(() => {
+    if (!isDemoPlaying) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      setDemoStepIndex((prev) => (prev < demoSteps.length - 1 ? prev + 1 : 0));
+    }, 1400);
+    return () => window.clearInterval(timer);
+  }, [isDemoPlaying, demoSteps.length]);
+
+  useEffect(() => {
     const updateViewport = () => {
       setViewportHeight(window.innerHeight);
     };
@@ -266,6 +442,19 @@ export default function JvmLessonPage() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (activePageTabId === "class-loading") {
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          setDemoStepIndex((prev) =>
+            prev < demoSteps.length - 1 ? prev + 1 : prev
+          );
+        }
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          setDemoStepIndex((prev) => (prev > 0 ? prev - 1 : prev));
+        }
+        return;
+      }
       if (event.key === "ArrowRight") {
         event.preventDefault();
         setStepIndex((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
@@ -277,7 +466,8 @@ export default function JvmLessonPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [steps.length]);
+  }, [activePageTabId, demoSteps.length, steps.length]);
+
 
   const handleDragStart = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) {
@@ -336,9 +526,7 @@ export default function JvmLessonPage() {
               <div className="mt-2 grid gap-2 text-xs text-graytext">
                 <div className="grid gap-2 md:grid-cols-3">
                   <div>
-                    <div className="text-[11px] uppercase">
-                      {t("stack.pc")}
-                    </div>
+                    <div className="text-[11px] uppercase">{t("stack.pc")}</div>
                     <div className="text-[10px] text-text">{frame.pc}</div>
                   </div>
                   <div>
@@ -509,7 +697,9 @@ export default function JvmLessonPage() {
         onClick={() => setIsPlaying((prev) => !prev)}
         className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
       >
-        {isPlaying ? t("execution.controls.pause") : t("execution.controls.play")}
+        {isPlaying
+          ? t("execution.controls.pause")
+          : t("execution.controls.play")}
       </button>
       <button
         type="button"
@@ -568,351 +758,816 @@ export default function JvmLessonPage() {
           <p className="text-sm text-graytext">{t("page.subtitle")}</p>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-[2fr_1fr]">
-          <div className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-              {t("sections.runtimeDiagram")}
+        <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card p-4 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {pageTabs.map((tab) => {
+              const isActive = tab.id === activePageTabId;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActivePageTabId(tab.id)}
+                  className={`rounded-md border px-3 py-1 text-xs ${
+                    isActive
+                      ? "border-gray-500 bg-accent text-text"
+                      : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+          {activePageTab?.description ? (
+            <div className="text-xs text-graytext">
+              {activePageTab.description}
             </div>
-            <div className="p-4 grid gap-4">
-              <div className="grid gap-3 md:grid-cols-[1fr_2fr_1fr]">
-                <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
-                  <div className="text-xs font-mono text-graytext">
-                    {t("diagram.classLoader.title")}
+          ) : null}
+        </section>
+
+        {activePageTabId === "class-loading" ? (
+          <>
+            <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                {t("classLoading.sections.process")}
+              </div>
+              <div className="p-4 space-y-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-stretch md:gap-0">
+                  {classLoadingSteps.map((step, index) => {
+                    const isActive = step.id === activeLoadingStep?.id;
+                    return (
+                      <div key={step.id} className="flex items-stretch">
+                        <button
+                          type="button"
+                          onClick={() => setActiveLoadingStepId(step.id)}
+                          className={`group relative rounded-lg border px-4 py-3 text-left transition md:rounded-none md:first:rounded-l-lg md:last:rounded-r-lg ${
+                            isActive
+                              ? "border-gray-500 bg-accent text-text"
+                              : "border-gray-300 dark:border-white/12 bg-background hover:bg-muted text-graytext"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-[11px] uppercase tracking-wide">
+                            <span>{String(index + 1).padStart(2, "0")}</span>
+                            <span className="text-[10px] text-graytext group-hover:text-graytext">
+                              Step
+                            </span>
+                          </div>
+                          <div className="mt-2 text-sm font-medium text-text">
+                            {step.title}
+                          </div>
+                        </button>
+                        {index < classLoadingSteps.length - 1 ? (
+                          <div className="hidden md:flex items-center px-2">
+                            <ArrowRight className="h-4 w-4 text-gray-400" />
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+                {activeLoadingStep ? (
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-4 py-4 text-xs text-graytext space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full border border-gray-400 px-2 py-0.5 text-[10px] uppercase text-graytext">
+                        {activeLoadingStep.title}
+                      </div>
+                      <div className="text-sm font-medium text-text">
+                        {activeLoadingStep.summary}
+                      </div>
+                    </div>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {activeLoadingStep.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="text-sm mt-2">{t("diagram.classLoader.desc")}</div>
-                  <div className="mt-3 rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-graytext">
-                    <div>{t("diagram.classLoader.delegation")}</div>
-                    <div className="mt-1">
-                      {t("diagram.classLoader.delegationChain")}
+                ) : null}
+              </div>
+            </section>
+
+            {activeLoadingStepId === "load" ? (
+              <>
+                <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+                  <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                    {delegationDemo.title}
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div className="text-xs text-graytext">
+                      {delegationDemo.description}
+                    </div>
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2">
+                      <div className="text-xs font-mono text-graytext">
+                        {t("classLoading.overview.title")}
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {classLoadingOverviewItems.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {delegationDemo.scenarios.map((scenario) => {
+                        const isActive = scenario.id === activeScenarioId;
+                        return (
+                          <button
+                            key={scenario.id}
+                            type="button"
+                            onClick={() => handleScenarioChange(scenario.id)}
+                            className={`rounded-md border px-3 py-1 text-xs ${
+                              isActive
+                                ? "border-gray-500 bg-accent text-text"
+                                : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
+                            }`}
+                          >
+                            {scenario.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {activeScenario ? (
+                      <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="text-sm font-medium text-text">
+                            {activeScenario.className}
+                          </div>
+                          {loadedById && hasResolvedLoad ? (
+                            <div className="rounded-full border border-emerald-500/80 bg-emerald-500/10 px-2 py-0.5 text-[10px] uppercase text-emerald-600">
+                              {t("classLoading.delegationDemo.loadedBy")}{" "}
+                              {
+                                delegationDemo.loaders.find(
+                                  (loader) => loader.id === loadedById
+                                )?.title
+                              }
+                            </div>
+                          ) : null}
+                        </div>
+                        <div className="mt-1">{activeScenario.desc}</div>
+                      </div>
+                    ) : null}
+
+                    <div className="grid gap-4 lg:grid-cols-[1.1fr_1.4fr]">
+                      <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                        <div className="text-xs font-mono text-graytext mb-3">
+                          {t("classLoading.delegationDemo.flowTitle")}
+                        </div>
+                        <div className="space-y-2">
+                          {delegationDemo.loaders.map((loader, index) => {
+                            const isActive =
+                              loader.id === currentDemoStep?.loaderId;
+                            const isVisited =
+                              demoSteps
+                                .slice(0, demoStepIndex + 1)
+                                .some((step) => step.loaderId === loader.id) ??
+                              false;
+                            const isLoadedBy =
+                              hasResolvedLoad && loader.id === loadedById;
+                            const showConnector =
+                              index < delegationDemo.loaders.length - 1;
+                            const isConnectorActive =
+                              activeConnectorIndex === index &&
+                              currentDemoStep?.direction !== "load";
+                            const isUpVisited = visitedConnectors.up.has(index);
+                            const isDownVisited =
+                              visitedConnectors.down.has(index);
+                            const isUpActive =
+                              isConnectorActive &&
+                              currentDemoStep?.direction === "up";
+                            const isDownActive =
+                              isConnectorActive &&
+                              currentDemoStep?.direction === "down";
+                            return (
+                              <div key={loader.id}>
+                                <div
+                                  className={`rounded-md border px-3 py-2 text-xs transition ${
+                                    isActive
+                                      ? "border-gray-500 bg-accent text-text"
+                                      : isLoadedBy
+                                        ? "border-emerald-500/80 bg-emerald-500/10 text-text"
+                                        : isVisited
+                                          ? "border-gray-400 bg-muted text-text"
+                                          : "border-gray-300 dark:border-white/12 bg-background text-graytext"
+                                  }`}
+                                >
+                                  <div className="text-sm font-medium">
+                                    {loader.title}
+                                  </div>
+                                  <div className="mt-1 text-[11px]">
+                                    {loader.desc}
+                                  </div>
+                                  {isLoadedBy ? (
+                                    <div className="mt-2 inline-flex rounded-full border border-emerald-500/60 px-2 py-0.5 text-[10px] uppercase text-emerald-600">
+                                      {t("classLoading.delegationDemo.loaded")}
+                                    </div>
+                                  ) : null}
+                                </div>
+                                {showConnector ? (
+                                  <div className="flex items-center justify-center py-2 gap-1">
+                                    <ArrowUp
+                                      className={`h-3 w-3 ${
+                                        isUpVisited || isUpActive
+                                          ? "text-gray-500"
+                                          : "text-gray-300 dark:text-white/20"
+                                      }`}
+                                    />
+                                    <ArrowDown
+                                      className={`h-3 w-3 ${
+                                        isDownVisited || isDownActive
+                                          ? "text-gray-500"
+                                          : "text-gray-300 dark:text-white/20"
+                                      }`}
+                                    />
+                                  </div>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="text-xs font-mono text-graytext">
+                              {t("classLoading.delegationDemo.stepTitle")}
+                            </div>
+                            <div className="text-xs text-graytext">
+                              {demoSteps.length ? demoStepIndex + 1 : 0}/
+                              {demoSteps.length}
+                            </div>
+                          </div>
+                          {currentDemoStep ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-sm text-text">
+                                {currentDemoStep.direction === "up" ? (
+                                  <ArrowUp className="h-4 w-4" />
+                                ) : currentDemoStep.direction === "down" ? (
+                                  <ArrowDown className="h-4 w-4" />
+                                ) : (
+                                  <ArrowRight className="h-4 w-4" />
+                                )}
+                                <span>{currentDemoStep.action}</span>
+                              </div>
+                              <div>{currentDemoStep.result}</div>
+                            </div>
+                          ) : (
+                            <div>{t("classLoading.delegationDemo.empty")}</div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsDemoPlaying((prev) => !prev)}
+                            className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+                          >
+                            {isDemoPlaying
+                              ? t("classLoading.delegationDemo.controls.pause")
+                              : t("classLoading.delegationDemo.controls.play")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDemoStepIndex((prev) =>
+                                prev < demoSteps.length - 1 ? prev + 1 : prev
+                              )
+                            }
+                            className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+                          >
+                            {t("classLoading.delegationDemo.controls.step")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDemoStepIndex((prev) =>
+                                prev > 0 ? prev - 1 : prev
+                              )
+                            }
+                            className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+                          >
+                            {t("classLoading.delegationDemo.controls.back")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsDemoPlaying(false);
+                              setDemoStepIndex(0);
+                            }}
+                            className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+                          >
+                            {t("classLoading.delegationDemo.controls.reset")}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </>
+            ) : null}
+
+            {activeLoadingStepId === "verify" ? (
+              <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                  {t("classLoading.sections.classFile")}
+                </div>
+                <div className="p-4 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 overflow-x-auto">
+                    <div className="text-xs font-mono text-graytext mb-2">
+                      {t("classLoading.classFile.structureTitle")}
+                    </div>
+                    <table className="w-full border-collapse text-xs text-graytext">
+                      <thead>
+                        <tr className="text-[10px] uppercase">
+                          {classLoadingClassFile.table.headers.map((head) => (
+                            <th
+                              key={head}
+                              className="px-2 py-1 text-left border-b border-dashed border-gray-300 dark:border-white/10"
+                            >
+                              {head}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {classLoadingClassFile.table.rows.map((row) => (
+                          <tr
+                            key={`${row[0]}-${row[1]}`}
+                            className="border-b border-dashed border-gray-300 dark:border-white/10"
+                          >
+                            {row.map((cell, cellIndex) => {
+                              const tooltip =
+                                cellIndex === 2
+                                  ? getClassFileTypeTooltip(
+                                      cell,
+                                      classFileTypeHints
+                                    )
+                                  : "";
+                              const cellNode = (
+                                <td
+                                  key={`${row[0]}-${cellIndex}`}
+                                  className={`px-2 py-1 ${
+                                    cellIndex === 1
+                                      ? "font-mono text-text"
+                                      : ""
+                                  } ${tooltip ? "cursor-help" : ""}`}
+                                >
+                                  {cell}
+                                </td>
+                              );
+                              if (!tooltip) {
+                                return cellNode;
+                              }
+                              return (
+                                <Tooltip key={`${row[0]}-${cellIndex}`}>
+                                  <TooltipTrigger asChild>
+                                    {cellNode}
+                                  </TooltipTrigger>
+                                  <TooltipContent
+                                    side="top"
+                                    align="start"
+                                    sideOffset={6}
+                                    className="max-w-xs whitespace-pre-line"
+                                  >
+                                    {tooltip}
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2">
+                    <div className="text-xs font-mono text-graytext">
+                      {t("classLoading.classFile.constantPoolTitle")}
+                    </div>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {classLoadingClassFile.constantPool.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
+            {activeLoadingStepId === "resolve" ? (
+              <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                  {t("classLoading.sections.resolution")}
+                </div>
+                <div className="p-4 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2">
+                    <div className="text-xs font-mono text-graytext">
+                      {t("classLoading.resolution.constantTypesTitle")}
+                    </div>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {classLoadingResolution.constantTypes.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2">
+                    <div className="text-xs font-mono text-graytext">
+                      {t("classLoading.resolution.deferredTitle")}
+                    </div>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {classLoadingResolution.deferred.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                    {classLoadingResolution.note ? (
+                      <div className="text-[11px] text-graytext">
+                        {classLoadingResolution.note}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </section>
+            ) : null}
+          </>
+        ) : null}
+
+        {activePageTabId === "memory" ? (
+          <>
+            <section className="grid gap-4 md:grid-cols-[2fr_1fr]">
+              <div className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                  {t("sections.runtimeDiagram")}
+                </div>
+                <div className="p-4 grid gap-4">
+                  <div className="grid gap-3 md:grid-cols-[1fr_2fr_1fr]">
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
+                      <div className="text-xs font-mono text-graytext">
+                        {t("diagram.classLoader.title")}
+                      </div>
+                      <div className="text-sm mt-2">
+                        {t("diagram.classLoader.desc")}
+                      </div>
+                      <div className="mt-3 rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-graytext">
+                        <div>{t("diagram.classLoader.delegation")}</div>
+                        <div className="mt-1">
+                          {t("diagram.classLoader.delegationChain")}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
+                      <div className="text-xs font-mono text-graytext">
+                        {t("diagram.runtimeDataAreas.title")}
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-graytext">
+                        <span className="rounded-full border border-gray-300 dark:border-white/20 px-2 py-0.5">
+                          {t("diagram.runtimeDataAreas.scopeShared")}
+                        </span>
+                        <span className="rounded-full border border-gray-300 dark:border-white/20 px-2 py-0.5">
+                          {t("diagram.runtimeDataAreas.scopePrivate")}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid gap-2">
+                        {runtimeAreas.map((area) => {
+                          const isActive = area.id === activeAreaId;
+                          return (
+                            <button
+                              key={area.id}
+                              type="button"
+                              onClick={() => {
+                                setActiveAreaId(area.id);
+                                const defaultTab =
+                                  runtimeAreaDetails[area.id]?.tabs[0]?.id;
+                                if (defaultTab) {
+                                  setActiveDetailTabId(defaultTab);
+                                }
+                              }}
+                              aria-pressed={isActive}
+                              className={`w-full text-left rounded-md border px-3 py-2 text-sm transition ${
+                                isActive
+                                  ? "border-gray-500 bg-accent text-text"
+                                  : "border-gray-300 dark:border-white/12 bg-background hover:bg-muted"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{area.name}</span>
+                                <span
+                                  className={`text-[11px] rounded-full px-2 py-0.5 border ${
+                                    area.scopeTag === "Shared"
+                                      ? "border-gray-400 text-graytext"
+                                      : "border-gray-300 text-graytext"
+                                  }`}
+                                >
+                                  {area.scopeTag}
+                                </span>
+                              </div>
+                              <div className="text-xs text-graytext mt-1">
+                                {area.stored}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
+                      <div className="text-xs font-mono text-graytext">
+                        {t("diagram.executionEngine.title")}
+                      </div>
+                      <div className="text-sm mt-2">
+                        {t("diagram.executionEngine.desc")}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
+                      <div className="text-xs font-mono text-graytext">
+                        {t("diagram.jni.title")}
+                      </div>
+                      <div className="text-sm mt-2">
+                        {t("diagram.jni.desc")}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
+                      <div className="text-xs font-mono text-graytext">
+                        {t("diagram.nativeLibraries.title")}
+                      </div>
+                      <div className="text-sm mt-2">
+                        {t("diagram.nativeLibraries.desc")}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
-                  <div className="text-xs font-mono text-graytext">
-                    {t("diagram.runtimeDataAreas.title")}
+              </div>
+
+              <div className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                  {t("sections.runtimeDetails")}
+                </div>
+                <div className="p-4 space-y-3">
+                  <div>
+                    <div className="text-sm font-medium">{activeArea.name}</div>
+                    <div className="text-xs text-graytext mt-1">
+                      {activeArea.stored}
+                    </div>
                   </div>
-                  <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-graytext">
-                    <span className="rounded-full border border-gray-300 dark:border-white/20 px-2 py-0.5">
-                      {t("diagram.runtimeDataAreas.scopeShared")}
-                    </span>
-                    <span className="rounded-full border border-gray-300 dark:border-white/20 px-2 py-0.5">
-                      {t("diagram.runtimeDataAreas.scopePrivate")}
-                    </span>
+                  <div className="text-xs text-graytext space-y-2">
+                    <div>
+                      {t("runtimeDetailMeta.scopeLabel")}：
+                      {activeArea.ownership}
+                    </div>
+                    {activeAreaDetail?.summary ? (
+                      <div>{activeAreaDetail.summary}</div>
+                    ) : null}
+                    <ul className="list-disc pl-4">
+                      {activeArea.notes.map((note) => (
+                        <li key={note}>{note}</li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="mt-3 grid gap-2">
-                    {runtimeAreas.map((area) => {
-                      const isActive = area.id === activeAreaId;
-                      return (
-                        <button
-                          key={area.id}
-                          type="button"
-                          onClick={() => {
-                            setActiveAreaId(area.id);
-                            const defaultTab =
-                              runtimeAreaDetails[area.id]?.tabs[0]?.id;
-                            if (defaultTab) {
-                              setActiveDetailTabId(defaultTab);
-                            }
-                          }}
-                          aria-pressed={isActive}
-                          className={`w-full text-left rounded-md border px-3 py-2 text-sm transition ${
-                            isActive
-                              ? "border-gray-500 bg-accent text-text"
-                              : "border-gray-300 dark:border-white/12 bg-background hover:bg-muted"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{area.name}</span>
-                            <span
-                              className={`text-[11px] rounded-full px-2 py-0.5 border ${
-                                area.scopeTag === "Shared"
-                                  ? "border-gray-400 text-graytext"
-                                  : "border-gray-300 text-graytext"
+                  {activeAreaDetail?.tabs?.length ? (
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {activeAreaDetail.tabs.map((tab) => {
+                          const isActive = tab.id === activeDetailTab?.id;
+                          return (
+                            <button
+                              key={tab.id}
+                              type="button"
+                              onClick={() => setActiveDetailTabId(tab.id)}
+                              className={`rounded-md border px-2 py-1 text-xs ${
+                                isActive
+                                  ? "border-gray-500 bg-accent text-text"
+                                  : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
                               }`}
                             >
-                              {area.scopeTag}
-                            </span>
-                          </div>
-                          <div className="text-xs text-graytext mt-1">
-                            {area.stored}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
-                  <div className="text-xs font-mono text-graytext">
-                    {t("diagram.executionEngine.title")}
-                  </div>
-                  <div className="text-sm mt-2">
-                    {t("diagram.executionEngine.desc")}
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
-                  <div className="text-xs font-mono text-graytext">
-                    {t("diagram.jni.title")}
-                  </div>
-                  <div className="text-sm mt-2">{t("diagram.jni.desc")}</div>
-                </div>
-                <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
-                  <div className="text-xs font-mono text-graytext">
-                    {t("diagram.nativeLibraries.title")}
-                  </div>
-                  <div className="text-sm mt-2">
-                    {t("diagram.nativeLibraries.desc")}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-              {t("sections.runtimeDetails")}
-            </div>
-            <div className="p-4 space-y-3">
-              <div>
-                <div className="text-sm font-medium">{activeArea.name}</div>
-                <div className="text-xs text-graytext mt-1">
-                  {activeArea.stored}
-                </div>
-              </div>
-              <div className="text-xs text-graytext space-y-2">
-                <div>
-                  {t("runtimeDetailMeta.scopeLabel")}：{activeArea.ownership}
-                </div>
-                {activeAreaDetail?.summary ? (
-                  <div>{activeAreaDetail.summary}</div>
-                ) : null}
-                <ul className="list-disc pl-4">
-                  {activeArea.notes.map((note) => (
-                    <li key={note}>{note}</li>
-                  ))}
-                </ul>
-              </div>
-              {activeAreaDetail?.tabs?.length ? (
-                <div className="space-y-3">
-                  <div className="flex flex-wrap gap-2">
-                    {activeAreaDetail.tabs.map((tab) => {
-                      const isActive = tab.id === activeDetailTab?.id;
-                      return (
-                        <button
-                          key={tab.id}
-                          type="button"
-                          onClick={() => setActiveDetailTabId(tab.id)}
-                          className={`rounded-md border px-2 py-1 text-xs ${
-                            isActive
-                              ? "border-gray-500 bg-accent text-text"
-                              : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
-                          }`}
-                        >
-                          {tab.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {activeDetailTab ? (
-                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-3">
-                      {activeDetailTab.diagram ? (
-                        <pre className="text-[11px] leading-5 text-text font-mono whitespace-pre">
-                          {activeDetailTab.diagram.join("\n")}
-                        </pre>
-                      ) : null}
-                      {activeDetailTab.items ? (
-                        <ul className="list-disc pl-4 space-y-1">
-                          {activeDetailTab.items.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
+                              {tab.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {activeDetailTab ? (
+                        <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-3">
+                          {activeDetailTab.diagram ? (
+                            <pre className="text-[11px] leading-5 text-text font-mono whitespace-pre">
+                              {activeDetailTab.diagram.join("\n")}
+                            </pre>
+                          ) : null}
+                          {activeDetailTab.items ? (
+                            <ul className="list-disc pl-4 space-y-1">
+                              {activeDetailTab.items.map((item) => (
+                                <li key={item}>{item}</li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </div>
                       ) : null}
                     </div>
                   ) : null}
+                  <div className="text-xs text-graytext">
+                    {t("runtimeDetailMeta.tip")}
+                  </div>
                 </div>
-              ) : null}
-              <div className="text-xs text-graytext">
-                {t("runtimeDetailMeta.tip")}
               </div>
-            </div>
-          </div>
-        </section>
+            </section>
 
-        <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-            {t("sections.flow")}
-          </div>
-          <div className="p-4 grid gap-2 text-sm">
-            {flowSteps.map((step, index) => (
-              <div
-                key={step}
-                className="flex items-start gap-3 rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-2"
-              >
-                <div className="text-xs font-mono text-graytext mt-1">
-                  {String(index + 1).padStart(2, "0")}
-                </div>
-                <div>{step}</div>
+            <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                {t("sections.flow")}
               </div>
-            ))}
-          </div>
-        </section>
+              <div className="p-4 grid gap-2 text-sm">
+                {flowSteps.map((step, index) => (
+                  <div
+                    key={step}
+                    className="flex items-start gap-3 rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-2"
+                  >
+                    <div className="text-xs font-mono text-graytext mt-1">
+                      {String(index + 1).padStart(2, "0")}
+                    </div>
+                    <div>{step}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-        <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-            {t("sections.execution")}
-          </div>
-          <div className="p-4 grid gap-4">
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                <div className="text-xs font-mono text-graytext mb-2">
-                  {t("execution.sourceLabel")}
-                </div>
-                <div className="text-xs leading-6 text-text overflow-x-auto font-mono whitespace-pre">
-                  {sourceLines.map((line, index) => {
-                    const targetStepIndex = sourceLineToStep.get(index);
-                    const isClickable = targetStepIndex !== undefined;
-                    const tooltipText = sourceLineTooltips[String(index)];
-                    const lineNode = (
-                      <div
-                        onClick={() => {
+            <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                {t("sections.execution")}
+              </div>
+              <div className="p-4 grid gap-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                    <div className="text-xs font-mono text-graytext mb-2">
+                      {t("execution.sourceLabel")}
+                    </div>
+                    <div className="text-xs leading-6 text-text overflow-x-auto font-mono whitespace-pre">
+                      {sourceLines.map((line, index) => {
+                        const targetStepIndex = sourceLineToStep.get(index);
+                        const isClickable = targetStepIndex !== undefined;
+                        const tooltipText = sourceLineTooltips[String(index)];
+                        const lineNode = (
+                          <div
+                            onClick={() => {
+                              if (!isClickable) {
+                                return;
+                              }
+                              setIsPlaying(false);
+                              setStepIndex(targetStepIndex);
+                            }}
+                            className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
+                              index === currentStep.sourceLineIndex
+                                ? "bg-accent text-text"
+                                : ""
+                            } ${isClickable ? "cursor-pointer" : ""}`}
+                          >
+                            <span className="inline-block w-6 text-graytext">
+                              {String(index + 1).padStart(2, "0")}
+                            </span>
+                            {tooltipText ? (
+                              <TooltipTrigger asChild>
+                                <span className="cursor-help">{line}</span>
+                              </TooltipTrigger>
+                            ) : (
+                              <span>{line}</span>
+                            )}
+                          </div>
+                        );
+
+                        if (!tooltipText) {
+                          return <div key={`${line}-${index}`}>{lineNode}</div>;
+                        }
+
+                        return (
+                          <Tooltip key={`${line}-${index}`}>
+                            {lineNode}
+                            <TooltipContent
+                              side="top"
+                              align="start"
+                              sideOffset={6}
+                              className="max-w-xs whitespace-pre-line"
+                            >
+                              {tooltipText}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                    <div className="text-xs font-mono text-graytext mb-2">
+                      {t("execution.bytecodeLabel")}
+                    </div>
+                    <div className="text-xs leading-6 text-text overflow-x-auto font-mono whitespace-pre">
+                      {bytecodeLines.map((line, index) => {
+                        const opcode = getOpcodeFromLine(line);
+                        const tooltipText = getBytecodeTooltip(line);
+                        const targetStepIndex = bytecodeLineToStep.get(index);
+                        const isClickable = targetStepIndex !== undefined;
+                        const handleJump = () => {
                           if (!isClickable) {
                             return;
                           }
                           setIsPlaying(false);
                           setStepIndex(targetStepIndex);
-                        }}
-                        className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
-                          index === currentStep.sourceLineIndex
-                            ? "bg-accent text-text"
-                            : ""
-                        } ${isClickable ? "cursor-pointer" : ""}`}
-                      >
-                        <span className="inline-block w-6 text-graytext">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        {tooltipText ? (
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{line}</span>
-                          </TooltipTrigger>
-                        ) : (
-                          <span>{line}</span>
-                        )}
-                      </div>
-                    );
+                        };
 
-                    if (!tooltipText) {
-                      return <div key={`${line}-${index}`}>{lineNode}</div>;
-                    }
+                        if (!opcode) {
+                          return (
+                            <div
+                              key={`${line}-${index}`}
+                              onClick={handleJump}
+                              className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
+                                index === currentStep.bytecodeLineIndex
+                                  ? "bg-accent text-text"
+                                  : ""
+                              } ${isClickable ? "cursor-pointer" : ""}`}
+                            >
+                              <span className="inline-block w-6 text-graytext">
+                                {String(index + 1).padStart(2, "0")}
+                              </span>
+                              {line}
+                            </div>
+                          );
+                        }
 
-                    return (
-                      <Tooltip key={`${line}-${index}`}>
-                        {lineNode}
-                        <TooltipContent
-                          side="top"
-                          align="start"
-                          sideOffset={6}
-                          className="max-w-xs whitespace-pre-line"
-                        >
-                          {tooltipText}
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
+                        return (
+                          <Tooltip key={`${line}-${index}`}>
+                            <div
+                              onClick={handleJump}
+                              className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
+                                index === currentStep.bytecodeLineIndex
+                                  ? "bg-accent text-text"
+                                  : ""
+                              } ${isClickable ? "cursor-pointer" : ""}`}
+                            >
+                              <span className="inline-block w-6 text-graytext">
+                                {String(index + 1).padStart(2, "0")}
+                              </span>
+                              <TooltipTrigger asChild>
+                                <span className="cursor-help">{line}</span>
+                              </TooltipTrigger>
+                            </div>
+                            <TooltipContent
+                              side="top"
+                              align="start"
+                              sideOffset={6}
+                              className="max-w-xs whitespace-pre-line"
+                            >
+                              {tooltipText}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {!isStackFloating ? controlsContent : null}
+
+                {!isStackFloating ? (
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-sm">
+                    <div className="text-xs font-mono text-graytext">
+                      {t("execution.currentInstruction")}
+                    </div>
+                    <div className="mt-1 font-mono text-sm">
+                      {currentStep.bytecode}
+                    </div>
+                    <div className="mt-1 text-xs text-graytext">
+                      {currentStepTitle}
+                    </div>
+                  </div>
+                ) : null}
+
+                {!isStackFloating ? callStackContent : null}
+
+                <div className="text-xs text-graytext">
+                  {t("execution.instructionNote")}
                 </div>
               </div>
-              <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                <div className="text-xs font-mono text-graytext mb-2">
-                  {t("execution.bytecodeLabel")}
-                </div>
-                <div className="text-xs leading-6 text-text overflow-x-auto font-mono whitespace-pre">
-                  {bytecodeLines.map((line, index) => {
-                    const opcode = getOpcodeFromLine(line);
-                    const tooltipText = getBytecodeTooltip(line);
-                    const targetStepIndex = bytecodeLineToStep.get(index);
-                    const isClickable = targetStepIndex !== undefined;
-                    const handleJump = () => {
-                      if (!isClickable) {
-                        return;
-                      }
-                      setIsPlaying(false);
-                      setStepIndex(targetStepIndex);
-                    };
+            </section>
+          </>
+        ) : null}
 
-                    if (!opcode) {
-                      return (
-                        <div
-                          key={`${line}-${index}`}
-                          onClick={handleJump}
-                          className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
-                            index === currentStep.bytecodeLineIndex
-                              ? "bg-accent text-text"
-                              : ""
-                          } ${isClickable ? "cursor-pointer" : ""}`}
-                        >
-                          <span className="inline-block w-6 text-graytext">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          {line}
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <Tooltip key={`${line}-${index}`}>
-                        <div
-                          onClick={handleJump}
-                          className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
-                            index === currentStep.bytecodeLineIndex
-                              ? "bg-accent text-text"
-                              : ""
-                          } ${isClickable ? "cursor-pointer" : ""}`}
-                        >
-                          <span className="inline-block w-6 text-graytext">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{line}</span>
-                          </TooltipTrigger>
-                        </div>
-                        <TooltipContent
-                          side="top"
-                          align="start"
-                          sideOffset={6}
-                          className="max-w-xs whitespace-pre-line"
-                        >
-                          {tooltipText}
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              </div>
+        {activePageTabId === "gc" ? (
+          <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+              {t("gc.title")}
             </div>
-
-            {!isStackFloating ? controlsContent : null}
-
-            {!isStackFloating ? (
-              <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-sm">
-                <div className="text-xs font-mono text-graytext">
-                  {t("execution.currentInstruction")}
+            <div className="p-4 grid gap-3 md:grid-cols-3">
+              {gcSections.map((section) => (
+                <div
+                  key={section.title}
+                  className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2"
+                >
+                  <div className="text-sm font-medium text-text">
+                    {section.title}
+                  </div>
+                  <ul className="list-disc pl-4 space-y-1">
+                    {section.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="mt-1 font-mono text-sm">
-                  {currentStep.bytecode}
-                </div>
-                <div className="mt-1 text-xs text-graytext">
-                  {currentStepTitle}
-                </div>
-              </div>
-            ) : null}
-
-            {!isStackFloating ? callStackContent : null}
-
-            <div className="text-xs text-graytext">
-              {t("execution.instructionNote")}
+              ))}
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
       </div>
 
       {isStackFloating ? (

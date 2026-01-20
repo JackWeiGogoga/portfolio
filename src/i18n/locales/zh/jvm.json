@@ -4,6 +4,437 @@
     "title": "JVM 运行时世界",
     "subtitle": "目标：理解 JVM 的组成、运行时数据区存储内容与执行流程。"
   },
+  "pageTabs": [
+    {
+      "id": "class-loading",
+      "label": "类加载机制",
+      "description": "从 .class 到 Class 对象：加载、验证、准备、解析、初始化。"
+    },
+    {
+      "id": "memory",
+      "label": "内存空间",
+      "description": "运行时数据区、执行流程与字节码执行演示。"
+    },
+    {
+      "id": "gc",
+      "label": "垃圾回收",
+      "description": "对象存活判定、分代策略与常见算法。"
+    }
+  ],
+  "classLoading": {
+    "sections": {
+      "process": "类加载五阶段",
+      "delegation": "双亲委派与安全/权限",
+      "classFile": "Class 文件结构与常量池",
+      "resolution": "解析阶段细节"
+    },
+    "overview": {
+      "title": "双亲委派的安全/隔离价值",
+      "items": [
+        "核心类库优先由 Bootstrap 加载，防止伪造 java.* 类",
+        "不同加载器 + 包名决定类可见性，实现类隔离",
+        "子加载器可访问父加载器可见类，反向不可"
+      ]
+    },
+    "steps": [
+      {
+        "id": "load",
+        "title": "加载（Loading）",
+        "summary": "读取字节流并生成 Class 对象，类元数据进入方法区/元空间。",
+        "items": [
+          "来源：文件、网络、运行时生成、加密容器等",
+          "主动使用触发：new、getstatic、invokestatic、反射",
+          "加载后进入链接阶段"
+        ]
+      },
+      {
+        "id": "verify",
+        "title": "验证（Verification）",
+        "summary": "保证字节码安全与格式正确，阻止恶意指令。",
+        "items": [
+          "文件格式验证：魔数、版本、结构完整性",
+          "元数据验证：继承关系、接口实现合法",
+          "字节码验证：类型安全与控制流",
+          "符号引用验证：常量池引用可解析"
+        ]
+      },
+      {
+        "id": "prepare",
+        "title": "准备（Preparation）",
+        "summary": "为类变量分配内存并设定默认零值。",
+        "items": [
+          "static 变量在方法区/元空间分配",
+          "基本类型 0 / 引用 null / boolean false",
+          "编译期常量可通过 ConstantValue 在此直接赋值"
+        ]
+      },
+      {
+        "id": "resolve",
+        "title": "解析（Resolution）",
+        "summary": "将常量池中的符号引用解析为直接引用。",
+        "items": [
+          "解析类、字段、方法、接口方法等符号",
+          "失败会抛出 NoSuchField/NoSuchMethod 等错误",
+          "支持按需解析（lazy resolution）"
+        ]
+      },
+      {
+        "id": "init",
+        "title": "初始化（Initialization）",
+        "summary": "执行 <clinit>，完成类初始化。",
+        "items": [
+          "先初始化父类，再初始化子类",
+          "按源码顺序执行 static 赋值与静态块",
+          "类初始化只会执行一次（同步保证）"
+        ]
+      }
+    ],
+    "delegation": {
+      "chainTitle": "加载器链路",
+      "securityTitle": "安全性处理",
+      "accessTitle": "访问权限与隔离",
+      "chain": [
+        "Bootstrap ClassLoader（加载 JDK 核心类库）",
+        "Platform/Extension ClassLoader（平台扩展类）",
+        "Application ClassLoader（应用类路径）",
+        "Custom ClassLoader（插件/隔离/热部署）"
+      ],
+      "security": [
+        "防止核心类被伪造：java.* 由 Bootstrap 加载",
+        "可信来源统一校验，降低恶意字节码注入",
+        "ProtectionDomain 与权限检查与加载器绑定"
+      ],
+      "access": [
+        "类的可见性 = 类加载器 + 包名",
+        "不同加载器加载的同名类互不兼容（类隔离）",
+        "子加载器可访问父加载器可见类，反向不可"
+      ],
+      "notes": ["业务场景可打破委派：如插件化、隔离依赖"]
+    },
+    "classFile": {
+      "structureTitle": "结构与字段用途",
+      "constantPoolTitle": "常量池保存的信息",
+      "typeHints": {
+        "u1": "无符号 1 字节",
+        "u2": "无符号 2 字节",
+        "u4": "无符号 4 字节",
+        "u8": "无符号 8 字节",
+        "cp_info": "常量池项结构",
+        "field_info": "字段表项结构",
+        "method_info": "方法表项结构",
+        "attribute_info": "属性表项结构"
+      },
+      "table": {
+        "headers": ["序号", "字段", "类型", "用途"],
+        "rows": [
+          ["1", "magic", "u4", "识别 Class 文件的魔数 0xCAFEBABE"],
+          ["2", "minor_version", "u2", "次版本号"],
+          ["3", "major_version", "u2", "主版本号，决定兼容范围"],
+          ["4", "constant_pool_count", "u2", "常量池项数量（实际数量 +1）"],
+          ["5", "constant_pool", "cp_info[]", "常量池数据区，含字面量与符号引用"],
+          ["6", "access_flags", "u2", "类/接口访问标志（public、final 等）"],
+          ["7", "this_class", "u2", "当前类的索引（指向常量池 Class_info）"],
+          ["8", "super_class", "u2", "父类索引（Object 的父类为 0）"],
+          ["9", "interfaces_count", "u2", "接口数量"],
+          ["10", "interfaces", "u2[]", "接口索引集合（指向常量池 Class_info）"],
+          ["11", "fields_count", "u2", "字段数量"],
+          ["12", "fields", "field_info[]", "字段表，含访问标志/名称/描述符/属性"],
+          ["13", "methods_count", "u2", "方法数量"],
+          ["14", "methods", "method_info[]", "方法表，含访问标志/名称/描述符/属性"],
+          ["15", "attributes_count", "u2", "属性数量"],
+          ["16", "attributes", "attribute_info[]", "属性表（Code、LineNumberTable 等）"]
+        ]
+      },
+      "constantPool": [
+        "字面量：Integer / Float / Long / Double / String",
+        "符号引用：Class / Fieldref / Methodref / InterfaceMethodref",
+        "NameAndType：名称 + 描述符",
+        "UTF8：类名、字段名、方法签名",
+        "MethodHandle / MethodType / InvokeDynamic"
+      ]
+    },
+    "resolution": {
+      "constantTypesTitle": "需要解析的常量类型",
+      "deferredTitle": "可能延迟到调用时解析",
+      "constantTypes": [
+        "Class、Fieldref、Methodref、InterfaceMethodref",
+        "String 常量（指向 UTF8）",
+        "MethodHandle / MethodType / InvokeDynamic",
+        "NameAndType（方法/字段签名）"
+      ],
+      "deferred": [
+        "实例方法与接口方法常在第一次调用时解析（动态分派）",
+        "invokedynamic 在引导方法执行时解析",
+        "类与字段也允许按需解析（实现可延迟）"
+      ],
+      "note": "解析后得到直接引用：指向方法区/元空间中的实际目标。"
+    },
+    "delegationDemo": {
+      "title": "双亲委派加载演示",
+      "description": "选择要加载的类，观察请求从子加载器向上委派，再向下回退的过程。",
+      "flowTitle": "加载器链路（上 → 父加载器）",
+      "stepTitle": "当前步骤",
+      "loadedBy": "最终由",
+      "loaded": "加载完成",
+      "empty": "请选择场景开始演示",
+      "controls": {
+        "play": "播放",
+        "pause": "暂停",
+        "step": "单步",
+        "back": "回退",
+        "reset": "重置"
+      },
+      "loaders": [
+        {
+          "id": "bootstrap",
+          "title": "Bootstrap ClassLoader",
+          "desc": "加载 JDK 核心类库（$JAVA_HOME/lib）"
+        },
+        {
+          "id": "platform",
+          "title": "Platform/Extension ClassLoader",
+          "desc": "平台扩展类（$JAVA_HOME/lib/ext）"
+        },
+        {
+          "id": "application",
+          "title": "Application ClassLoader",
+          "desc": "应用类路径（CLASSPATH）"
+        },
+        {
+          "id": "custom",
+          "title": "Custom ClassLoader",
+          "desc": "插件 / 隔离 / 热部署"
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "jdk-core",
+          "label": "JDK 核心类",
+          "className": "java.lang.String",
+          "desc": "核心类由 Bootstrap 加载，子加载器只能复用结果。",
+          "steps": [
+            {
+              "loaderId": "custom",
+              "direction": "up",
+              "action": "Custom 接收请求",
+              "result": "委派给 Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "up",
+              "action": "Application 接收请求",
+              "result": "继续委派到 Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "up",
+              "action": "Platform 接收请求",
+              "result": "继续委派到 Bootstrap"
+            },
+            {
+              "loaderId": "bootstrap",
+              "direction": "load",
+              "action": "Bootstrap 查找并加载",
+              "result": "找到核心类，加载成功"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "down",
+              "action": "返回到 Platform",
+              "result": "复用父加载器结果"
+            },
+            {
+              "loaderId": "application",
+              "direction": "down",
+              "action": "返回到 Application",
+              "result": "复用父加载器结果"
+            },
+            {
+              "loaderId": "custom",
+              "direction": "down",
+              "action": "返回到 Custom",
+              "result": "使用 Bootstrap 加载的类"
+            }
+          ]
+        },
+        {
+          "id": "app-class",
+          "label": "应用类",
+          "className": "com.app.Main",
+          "desc": "父加载器未找到时，Application 负责加载。",
+          "steps": [
+            {
+              "loaderId": "custom",
+              "direction": "up",
+              "action": "Custom 接收请求",
+              "result": "委派给 Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "up",
+              "action": "Application 接收请求",
+              "result": "继续委派到 Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "up",
+              "action": "Platform 接收请求",
+              "result": "继续委派到 Bootstrap"
+            },
+            {
+              "loaderId": "bootstrap",
+              "direction": "down",
+              "action": "Bootstrap 未找到类",
+              "result": "回退到 Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "down",
+              "action": "Platform 未找到类",
+              "result": "回退到 Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "load",
+              "action": "Application 加载类",
+              "result": "类加载成功"
+            },
+            {
+              "loaderId": "custom",
+              "direction": "down",
+              "action": "返回到 Custom",
+              "result": "使用 Application 加载的类"
+            }
+          ]
+        },
+        {
+          "id": "plugin-class",
+          "label": "插件类",
+          "className": "plugin.Plugin",
+          "desc": "父加载器都未命中时，由自定义加载器加载。",
+          "steps": [
+            {
+              "loaderId": "custom",
+              "direction": "up",
+              "action": "Custom 接收请求",
+              "result": "委派给 Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "up",
+              "action": "Application 接收请求",
+              "result": "继续委派到 Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "up",
+              "action": "Platform 接收请求",
+              "result": "继续委派到 Bootstrap"
+            },
+            {
+              "loaderId": "bootstrap",
+              "direction": "down",
+              "action": "Bootstrap 未找到类",
+              "result": "回退到 Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "down",
+              "action": "Platform 未找到类",
+              "result": "回退到 Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "down",
+              "action": "Application 未找到类",
+              "result": "回退到 Custom"
+            },
+            {
+              "loaderId": "custom",
+              "direction": "load",
+              "action": "Custom 加载类",
+              "result": "插件类加载完成"
+            }
+          ]
+        },
+        {
+          "id": "spoof-object",
+          "label": "伪装 Object",
+          "className": "java.lang.Object",
+          "desc": "尝试自定义 Object 时会被 Bootstrap 先加载，伪造失败。",
+          "steps": [
+            {
+              "loaderId": "custom",
+              "direction": "up",
+              "action": "Custom 接收请求",
+              "result": "委派给 Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "up",
+              "action": "Application 接收请求",
+              "result": "继续委派到 Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "up",
+              "action": "Platform 接收请求",
+              "result": "继续委派到 Bootstrap"
+            },
+            {
+              "loaderId": "bootstrap",
+              "direction": "load",
+              "action": "Bootstrap 加载 Object",
+              "result": "核心类优先加载，阻止伪造"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "down",
+              "action": "返回到 Platform",
+              "result": "复用父加载器结果"
+            },
+            {
+              "loaderId": "application",
+              "direction": "down",
+              "action": "返回到 Application",
+              "result": "复用父加载器结果"
+            },
+            {
+              "loaderId": "custom",
+              "direction": "down",
+              "action": "返回到 Custom",
+              "result": "只能使用 Bootstrap 的 Object"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "gc": {
+    "title": "垃圾回收基础（概览）",
+    "sections": [
+      {
+        "title": "对象存活判定",
+        "items": [
+          "可达性分析（GC Roots）",
+          "引用类型：强 / 软 / 弱 / 虚",
+          "对象标记在 GC 中传播"
+        ]
+      },
+      {
+        "title": "分代与触发",
+        "items": ["新生代 Minor GC，老年代 Full GC", "晋升与 Survivor 复制", "STW（Stop-the-world）暂停"]
+      },
+      {
+        "title": "常见算法/收集器",
+        "items": [
+          "标记-清除、复制、标记-整理",
+          "Serial / Parallel / CMS / G1 / ZGC / Shenandoah",
+          "吞吐量 vs 延迟的权衡"
+        ]
+      }
+    ]
+  },
   "sections": {
     "runtimeDiagram": "JVM 组成示意图（点击运行时数据区查看细节）",
     "runtimeDetails": "运行时数据区细节",

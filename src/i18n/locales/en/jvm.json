@@ -4,6 +4,441 @@
     "title": "JVM Runtime World",
     "subtitle": "Goal: understand JVM components, runtime data areas, and execution flow."
   },
+  "pageTabs": [
+    {
+      "id": "class-loading",
+      "label": "Class Loading",
+      "description": "From .class to Class: load, verify, prepare, resolve, initialize."
+    },
+    {
+      "id": "memory",
+      "label": "Memory Areas",
+      "description": "Runtime data areas, execution flow, and bytecode demo."
+    },
+    {
+      "id": "gc",
+      "label": "Garbage Collection",
+      "description": "Reachability, generations, and common algorithms."
+    }
+  ],
+  "classLoading": {
+    "sections": {
+      "process": "Class loading stages",
+      "delegation": "Parent delegation & security",
+      "classFile": "Class file structure & constant pool",
+      "resolution": "Resolution details"
+    },
+    "overview": {
+      "title": "Security & isolation from delegation",
+      "items": [
+        "Bootstrap loads core classes first to prevent spoofing java.*",
+        "Class visibility is loader + package, enabling isolation",
+        "Child loaders see parent classes, not the other way"
+      ]
+    },
+    "steps": [
+      {
+        "id": "load",
+        "title": "Loading",
+        "summary": "Read bytecode and create the Class object; metadata goes to method area/metaspace.",
+        "items": [
+          "Sources: file, network, runtime-generated, encrypted container",
+          "Triggered by active use: new, getstatic, invokestatic, reflection",
+          "Enter linking after loading"
+        ]
+      },
+      {
+        "id": "verify",
+        "title": "Verification",
+        "summary": "Ensures bytecode safety and valid format.",
+        "items": [
+          "File format: magic, version, structure",
+          "Metadata: inheritance and interfaces",
+          "Bytecode: type safety and control flow",
+          "Symbolic refs: constant pool entries resolvable"
+        ]
+      },
+      {
+        "id": "prepare",
+        "title": "Preparation",
+        "summary": "Allocate class variables and set default zero values.",
+        "items": [
+          "static fields allocated in method area/metaspace",
+          "primitives 0 / refs null / boolean false",
+          "compile-time constants may be assigned via ConstantValue"
+        ]
+      },
+      {
+        "id": "resolve",
+        "title": "Resolution",
+        "summary": "Resolve symbolic references in the constant pool to direct references.",
+        "items": [
+          "Resolve class, field, method, interface method symbols",
+          "Failure throws NoSuchField/NoSuchMethod, etc.",
+          "Supports lazy resolution"
+        ]
+      },
+      {
+        "id": "init",
+        "title": "Initialization",
+        "summary": "Execute <clinit> and finish class initialization.",
+        "items": [
+          "Superclass initializes first",
+          "Static assignments and blocks in source order",
+          "Runs once (synchronized)"
+        ]
+      }
+    ],
+    "delegation": {
+      "chainTitle": "Loader chain",
+      "securityTitle": "Security handling",
+      "accessTitle": "Access & isolation",
+      "chain": [
+        "Bootstrap ClassLoader (JDK core classes)",
+        "Platform/Extension ClassLoader (platform extensions)",
+        "Application ClassLoader (classpath)",
+        "Custom ClassLoader (plugins/isolation/hot deploy)"
+      ],
+      "security": [
+        "Prevents spoofing core classes: java.* loaded by Bootstrap",
+        "Single trusted source reduces malicious bytecode injection",
+        "ProtectionDomain and permission checks tied to loader"
+      ],
+      "access": [
+        "Visibility = class loader + package name",
+        "Same-name classes from different loaders are incompatible (isolation)",
+        "Child loader can see parent classes; not vice versa"
+      ],
+      "notes": ["Delegation can be bypassed for plugins or isolation"]
+    },
+    "classFile": {
+      "structureTitle": "Structure & field usage",
+      "constantPoolTitle": "Constant pool contents",
+      "typeHints": {
+        "u1": "Unsigned 1 byte",
+        "u2": "Unsigned 2 bytes",
+        "u4": "Unsigned 4 bytes",
+        "u8": "Unsigned 8 bytes",
+        "cp_info": "Constant pool entry",
+        "field_info": "Field table entry",
+        "method_info": "Method table entry",
+        "attribute_info": "Attribute table entry"
+      },
+      "table": {
+        "headers": ["No.", "Field", "Type", "Usage"],
+        "rows": [
+          ["1", "magic", "u4", "Magic number 0xCAFEBABE"],
+          ["2", "minor_version", "u2", "Minor version"],
+          ["3", "major_version", "u2", "Major version (compatibility)"],
+          ["4", "constant_pool_count", "u2", "Constant pool entries (+1)"],
+          ["5", "constant_pool", "cp_info[]", "Constants: literals and symbolic refs"],
+          ["6", "access_flags", "u2", "Access flags (public, final, etc.)"],
+          ["7", "this_class", "u2", "Index of this class (Class_info)"],
+          ["8", "super_class", "u2", "Superclass index (Object => 0)"],
+          ["9", "interfaces_count", "u2", "Number of interfaces"],
+          ["10", "interfaces", "u2[]", "Interface indices (Class_info)"],
+          ["11", "fields_count", "u2", "Number of fields"],
+          ["12", "fields", "field_info[]", "Field table: flags/name/descriptor/attrs"],
+          ["13", "methods_count", "u2", "Number of methods"],
+          ["14", "methods", "method_info[]", "Method table: flags/name/descriptor/attrs"],
+          ["15", "attributes_count", "u2", "Number of attributes"],
+          ["16", "attributes", "attribute_info[]", "Attributes (Code, LineNumberTable, etc.)"]
+        ]
+      },
+      "constantPool": [
+        "Literals: Integer / Float / Long / Double / String",
+        "Symbolic refs: Class / Fieldref / Methodref / InterfaceMethodref",
+        "NameAndType: name + descriptor",
+        "UTF8: class names, field names, method signatures",
+        "MethodHandle / MethodType / InvokeDynamic"
+      ]
+    },
+    "resolution": {
+      "constantTypesTitle": "Constant types to resolve",
+      "deferredTitle": "Often deferred until use",
+      "constantTypes": [
+        "Class, Fieldref, Methodref, InterfaceMethodref",
+        "String constants (via UTF8)",
+        "MethodHandle / MethodType / InvokeDynamic",
+        "NameAndType (field/method signatures)"
+      ],
+      "deferred": [
+        "Instance/interface methods often resolve at first invocation (dynamic dispatch)",
+        "invokedynamic resolves when its bootstrap method runs",
+        "Classes/fields can be resolved lazily (implementation-defined)"
+      ],
+      "note": "After resolution you get direct references to targets in method area/metaspace."
+    },
+    "delegationDemo": {
+      "title": "Parent delegation demo",
+      "description": "Pick a class to load and watch delegation go up to parents, then fall back down.",
+      "flowTitle": "Loader chain (up → parent)",
+      "stepTitle": "Current step",
+      "loadedBy": "Loaded by",
+      "loaded": "Loaded",
+      "empty": "Select a scenario to start",
+      "controls": {
+        "play": "Play",
+        "pause": "Pause",
+        "step": "Step",
+        "back": "Back",
+        "reset": "Reset"
+      },
+      "loaders": [
+        {
+          "id": "bootstrap",
+          "title": "Bootstrap ClassLoader",
+          "desc": "JDK core classes"
+        },
+        {
+          "id": "platform",
+          "title": "Platform/Extension ClassLoader",
+          "desc": "Platform extensions"
+        },
+        {
+          "id": "application",
+          "title": "Application ClassLoader",
+          "desc": "Application classpath"
+        },
+        {
+          "id": "custom",
+          "title": "Custom ClassLoader",
+          "desc": "Plugins / isolation / hot deploy"
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "jdk-core",
+          "label": "JDK core class",
+          "className": "java.lang.String",
+          "desc": "Core classes are loaded by Bootstrap; children reuse the result.",
+          "steps": [
+            {
+              "loaderId": "custom",
+              "direction": "up",
+              "action": "Custom receives request",
+              "result": "Delegate to Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "up",
+              "action": "Application receives request",
+              "result": "Delegate to Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "up",
+              "action": "Platform receives request",
+              "result": "Delegate to Bootstrap"
+            },
+            {
+              "loaderId": "bootstrap",
+              "direction": "load",
+              "action": "Bootstrap loads class",
+              "result": "Core class found and loaded"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "down",
+              "action": "Return to Platform",
+              "result": "Reuse parent result"
+            },
+            {
+              "loaderId": "application",
+              "direction": "down",
+              "action": "Return to Application",
+              "result": "Reuse parent result"
+            },
+            {
+              "loaderId": "custom",
+              "direction": "down",
+              "action": "Return to Custom",
+              "result": "Uses Bootstrap-loaded class"
+            }
+          ]
+        },
+        {
+          "id": "app-class",
+          "label": "App class",
+          "className": "com.app.Main",
+          "desc": "When parents miss, Application loads the class.",
+          "steps": [
+            {
+              "loaderId": "custom",
+              "direction": "up",
+              "action": "Custom receives request",
+              "result": "Delegate to Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "up",
+              "action": "Application receives request",
+              "result": "Delegate to Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "up",
+              "action": "Platform receives request",
+              "result": "Delegate to Bootstrap"
+            },
+            {
+              "loaderId": "bootstrap",
+              "direction": "down",
+              "action": "Bootstrap misses class",
+              "result": "Fallback to Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "down",
+              "action": "Platform misses class",
+              "result": "Fallback to Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "load",
+              "action": "Application loads class",
+              "result": "Class loaded"
+            },
+            {
+              "loaderId": "custom",
+              "direction": "down",
+              "action": "Return to Custom",
+              "result": "Uses Application-loaded class"
+            }
+          ]
+        },
+        {
+          "id": "plugin-class",
+          "label": "Plugin class",
+          "className": "plugin.Plugin",
+          "desc": "When all parents miss, Custom loads the class.",
+          "steps": [
+            {
+              "loaderId": "custom",
+              "direction": "up",
+              "action": "Custom receives request",
+              "result": "Delegate to Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "up",
+              "action": "Application receives request",
+              "result": "Delegate to Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "up",
+              "action": "Platform receives request",
+              "result": "Delegate to Bootstrap"
+            },
+            {
+              "loaderId": "bootstrap",
+              "direction": "down",
+              "action": "Bootstrap misses class",
+              "result": "Fallback to Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "down",
+              "action": "Platform misses class",
+              "result": "Fallback to Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "down",
+              "action": "Application misses class",
+              "result": "Fallback to Custom"
+            },
+            {
+              "loaderId": "custom",
+              "direction": "load",
+              "action": "Custom loads class",
+              "result": "Plugin loaded"
+            }
+          ]
+        },
+        {
+          "id": "spoof-object",
+          "label": "Spoof Object",
+          "className": "java.lang.Object",
+          "desc": "Trying to redefine Object is blocked by Bootstrap loading first.",
+          "steps": [
+            {
+              "loaderId": "custom",
+              "direction": "up",
+              "action": "Custom receives request",
+              "result": "Delegate to Application"
+            },
+            {
+              "loaderId": "application",
+              "direction": "up",
+              "action": "Application receives request",
+              "result": "Delegate to Platform"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "up",
+              "action": "Platform receives request",
+              "result": "Delegate to Bootstrap"
+            },
+            {
+              "loaderId": "bootstrap",
+              "direction": "load",
+              "action": "Bootstrap loads Object",
+              "result": "Core class wins; spoof blocked"
+            },
+            {
+              "loaderId": "platform",
+              "direction": "down",
+              "action": "Return to Platform",
+              "result": "Reuse parent result"
+            },
+            {
+              "loaderId": "application",
+              "direction": "down",
+              "action": "Return to Application",
+              "result": "Reuse parent result"
+            },
+            {
+              "loaderId": "custom",
+              "direction": "down",
+              "action": "Return to Custom",
+              "result": "Must use Bootstrap's Object"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "gc": {
+    "title": "Garbage Collection (overview)",
+    "sections": [
+      {
+        "title": "Reachability",
+        "items": [
+          "Reachability analysis (GC Roots)",
+          "Reference types: strong / soft / weak / phantom",
+          "Marking propagates through the object graph"
+        ]
+      },
+      {
+        "title": "Generations & triggers",
+        "items": [
+          "Young/Major (Minor/Full) GC",
+          "Promotion and Survivor copying",
+          "STW (Stop-the-world) pauses"
+        ]
+      },
+      {
+        "title": "Algorithms/collectors",
+        "items": [
+          "Mark-sweep, copying, mark-compact",
+          "Serial / Parallel / CMS / G1 / ZGC / Shenandoah",
+          "Throughput vs latency tradeoffs"
+        ]
+      }
+    ]
+  },
   "sections": {
     "runtimeDiagram": "JVM components overview (click runtime data areas for details)",
     "runtimeDetails": "Runtime data area details",
