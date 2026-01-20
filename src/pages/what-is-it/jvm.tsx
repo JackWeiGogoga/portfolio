@@ -80,7 +80,6 @@ const getClassFileTypeTooltip = (
   return "";
 };
 
-
 export default function JvmLessonPage() {
   const { t } = useTranslation("jvm");
   const runtimeAreas = t("runtimeAreas", {
@@ -548,9 +547,7 @@ export default function JvmLessonPage() {
     }
     const steps = gcAlgorithms.steps["mark-sweep"] ?? [];
     const timer = window.setInterval(() => {
-      setSweepAlgoStepIndex((prev) =>
-        prev < steps.length - 1 ? prev + 1 : 0
-      );
+      setSweepAlgoStepIndex((prev) => (prev < steps.length - 1 ? prev + 1 : 0));
     }, 1400);
     return () => window.clearInterval(timer);
   }, [gcAlgorithms.steps, isSweepAlgoPlaying]);
@@ -1132,12 +1129,6 @@ export default function JvmLessonPage() {
                       </div>
                       <div className="text-sm mt-2">
                         {t("diagram.classLoader.desc")}
-                      </div>
-                      <div className="mt-3 rounded-md border border-dashed border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-graytext">
-                        <div>{t("diagram.classLoader.delegation")}</div>
-                        <div className="mt-1">
-                          {t("diagram.classLoader.delegationChain")}
-                        </div>
                       </div>
                     </div>
                     <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 p-3 bg-background">
