@@ -13,6 +13,15 @@
       "level": "入门",
       "duration": "8-12 min",
       "updated": "2026.02"
+    },
+    {
+      "id": "java-locks",
+      "title": "Java 锁深潜",
+      "description": "从对象头到 AQS，把 synchronized 与 Lock 的原理和面试要点讲透。",
+      "tags": ["Java", "Lock", "Concurrency"],
+      "level": "进阶",
+      "duration": "15-20 min",
+      "updated": "2026.03"
     }
   ]
 }

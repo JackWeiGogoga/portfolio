@@ -6,6 +6,8 @@ import resumeEn from "./locales/en/resume.json";
 import resumeZh from "./locales/zh/resume.json";
 import jvmEn from "./locales/en/jvm.json";
 import jvmZh from "./locales/zh/jvm.json";
+import javaLocksEn from "./locales/en/javaLocks.json";
+import javaLocksZh from "./locales/zh/javaLocks.json";
 import whatIsItEn from "./locales/en/whatIsIt.json";
 import whatIsItZh from "./locales/zh/whatIsIt.json";
 
@@ -26,12 +28,14 @@ void i18n.use(initReactI18next).init({
       common: commonEn,
       resume: resumeEn,
       jvm: jvmEn,
+      javaLocks: javaLocksEn,
       whatIsIt: whatIsItEn,
     },
     zh: {
       common: commonZh,
       resume: resumeZh,
       jvm: jvmZh,
+      javaLocks: javaLocksZh,
       whatIsIt: whatIsItZh,
     },
   },

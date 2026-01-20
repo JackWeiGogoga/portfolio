@@ -1,0 +1,404 @@
+{
+  "page": {
+    "back": "Back to What is it",
+    "title": "Java Lock Deep Dive",
+    "subtitle": "From object headers to AQS, a full-stack walkthrough for interviews."
+  },
+  "tabs": [
+    {
+      "id": "overview",
+      "label": "Overview",
+      "description": "Map the goal, tradeoffs, and selection strategy for locks."
+    },
+    {
+      "id": "synchronized",
+      "label": "synchronized",
+      "description": "Object header, lock inflation, bytecode, JVM optimizations."
+    },
+    {
+      "id": "lock",
+      "label": "Lock",
+      "description": "Explicit locks with interrupt, timeout, and conditions."
+    },
+    {
+      "id": "aqs",
+      "label": "AQS",
+      "description": "The core: state + CLH queue + park/unpark."
+    },
+    {
+      "id": "interview",
+      "label": "Interview",
+      "description": "Follow-up questions, pitfalls, and troubleshooting."
+    }
+  ],
+  "overview": {
+    "title": "Lock Landscape",
+    "intro": "Locks solve three concurrency problems: mutual exclusion, visibility, and ordering. Choosing a lock is a tradeoff between performance and control.",
+    "pillars": [
+      "Mutual exclusion: limit threads inside the critical section.",
+      "Visibility: unlock makes writes visible to the next lock holder.",
+      "Ordering: both synchronized and Lock establish happens-before."
+    ],
+    "highlightsTitle": "Interview Focus",
+    "highlights": [
+      "Lock inflation path and Mark Word transitions.",
+      "When to choose synchronized vs ReentrantLock.",
+      "AQS exclusive/shared modes and blocking strategy.",
+      "Condition vs wait/notify semantics."
+    ],
+    "landscapeTitle": "Lock Types",
+    "landscape": {
+      "headers": ["Type", "Semantics", "Reentrant", "Fairness", "Typical Use"],
+      "rows": [
+        ["synchronized", "JVM monitor", "Yes", "Non-fair", "Basic mutual exclusion"],
+        ["ReentrantLock", "Explicit lock", "Yes", "Optional fair", "Timeout/interrupt/condition"],
+        ["ReadWriteLock", "Read/write split", "Yes", "Optional fair", "Read-heavy workloads"],
+        ["StampedLock", "Optimistic read", "No", "Non-fair", "Read-mostly with retries"]
+      ]
+    },
+    "checklistTitle": "Selection Checklist",
+    "checklist": [
+      "Need tryLock/timeout/interrupt? Pick ReentrantLock.",
+      "Read-heavy with write isolation? Pick ReadWriteLock.",
+      "Mostly reads with optimistic validation? Pick StampedLock.",
+      "Simple logic without advanced features? synchronized works."
+    ]
+  },
+  "synchronized": {
+    "title": "Inside synchronized",
+    "summary": "synchronized is a JVM monitor lock backed by Mark Word and Monitor state transitions.",
+    "objectHeaderTitle": "Object Header (64-bit + compressed oops)",
+    "objectHeaderTable": {
+      "headers": ["Field", "Width", "Notes"],
+      "rows": [
+        ["Mark Word", "64", "hash, age, lock bits, biased thread id"],
+        ["Klass Pointer", "32", "points to class metadata"],
+        ["Padding", "32", "alignment"],
+        ["Array Length", "32", "only for array objects"]
+      ]
+    },
+    "markWordTitle": "Mark Word & Lock States",
+    "markWordTable": {
+      "headers": ["State", "Bits", "Biased bit", "Contents", "Trigger"],
+      "rows": [
+        ["No lock", "01", "0", "hash, age", "new object"],
+        ["Biased", "01", "1", "thread id, epoch", "single-thread reentry"],
+        ["Lightweight", "00", "0", "stack lock record", "CAS contention"],
+        ["Heavyweight", "10", "0", "Monitor pointer", "spin failed / hot contention"]
+      ]
+    },
+    "upgradeTitle": "Inflation Path",
+    "upgradeSteps": [
+      "No lock → biased: first thread enters.",
+      "Biased → lightweight: another thread CAS fails.",
+      "Lightweight → heavyweight: spin fails or contention grows.",
+      "Once inflated, it rarely deflates." 
+    ],
+    "upgradeDemo": {
+      "title": "Object Header State Changes",
+      "note": "Step through the animation to see how Mark Word fields change.",
+      "fieldsTitle": "Mark Word Fields",
+      "stepsTitle": "Upgrade Steps",
+      "arrivingTitle": "Arriving thread",
+      "ownerTitle": "Owner",
+      "ownerEmpty": "None",
+      "waitingTitle": "Waiting/spinning",
+      "waitingEmpty": "None",
+      "flowTitle": "Thread flow",
+      "flowNote": "Threads move from arrival to contention, leading to spinning or blocking and lock inflation.",
+      "fields": {
+        "lockBits": "Lock bits",
+        "biased": "Biased bit",
+        "hash": "Hash",
+        "age": "Age",
+        "threadId": "Thread ID",
+        "ptr": "Pointer/record"
+      },
+      "steps": [
+        {
+          "id": "no-lock",
+          "title": "No lock",
+          "description": "New object with hash/age available, lock bits 01.",
+          "arrivingThread": "T1",
+          "contenders": [],
+          "ownerThread": null,
+          "lockBits": "01",
+          "biased": "0",
+          "hash": "0x0000",
+          "age": "0010",
+          "threadId": "-",
+          "ptr": "-"
+        },
+        {
+          "id": "biased",
+          "title": "Biased lock",
+          "description": "First thread writes ID, biased bit on, still 01.",
+          "arrivingThread": "T1",
+          "contenders": [],
+          "ownerThread": "T1",
+          "lockBits": "01",
+          "biased": "1",
+          "hash": "0x0000",
+          "age": "0010",
+          "threadId": "T1",
+          "ptr": "-"
+        },
+        {
+          "id": "lightweight",
+          "title": "Lightweight lock",
+          "description": "CAS failure, Mark Word points to stack lock record.",
+          "arrivingThread": "T2",
+          "contenders": ["T2"],
+          "ownerThread": "T1",
+          "lockBits": "00",
+          "biased": "0",
+          "hash": "-",
+          "age": "0010",
+          "threadId": "-",
+          "ptr": "LockRecord@T1"
+        },
+        {
+          "id": "heavyweight",
+          "title": "Heavyweight lock",
+          "description": "Spin failed, inflates to Monitor pointer.",
+          "arrivingThread": "T3",
+          "contenders": ["T2", "T3"],
+          "ownerThread": "T1",
+          "lockBits": "10",
+          "biased": "0",
+          "hash": "-",
+          "age": "0010",
+          "threadId": "-",
+          "ptr": "Monitor@0x7f"
+        }
+      ]
+    },
+    "bytecodeSourceTitle": "Source",
+    "bytecodeSource": "public class Counter {\n  private final Object lock = new Object();\n  private int count = 0;\n\n  public void inc() {\n    synchronized (lock) {\n      count++;\n    }\n  }\n}",
+    "bytecodeListingTitle": "Bytecode",
+    "bytecodeListing": "0: aload_0\n1: getfield #2\n4: dup\n5: astore_1\n6: monitorenter\n7: aload_0\n8: dup\n9: getfield #3\n12: iconst_1\n13: iadd\n14: putfield #3\n17: aload_1\n18: monitorexit\n19: goto 27\n22: astore_2\n23: aload_1\n24: monitorexit\n25: aload_2\n26: athrow\n27: return",
+    "scopeTitle": "Where synchronized Applies",
+    "scopeTabs": [
+      { "id": "object", "label": "Object lock" },
+      { "id": "class", "label": "Class lock" }
+    ],
+    "scopeContent": {
+      "object": {
+        "summary": "Object locks are tied to instances. The default lock is this, or any explicit object you choose.",
+        "examples": [
+          {
+            "title": "Synchronized method: lock is this",
+            "code": "public class InstanceLockDemo implements Runnable {\n  static InstanceLockDemo instance = new InstanceLockDemo();\n\n  @Override\n  public void run() {\n    method();\n  }\n\n  public synchronized void method() {\n    System.out.println(\"Thread \" + Thread.currentThread().getName());\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance).start();\n    new Thread(instance).start();\n  }\n}"
+          },
+          {
+            "title": "Synchronized block: lock this",
+            "code": "public class BlockThisDemo implements Runnable {\n  static BlockThisDemo instance = new BlockThisDemo();\n\n  @Override\n  public void run() {\n    synchronized (this) {\n      System.out.println(\"Thread \" + Thread.currentThread().getName());\n    }\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance).start();\n    new Thread(instance).start();\n  }\n}"
+          },
+          {
+            "title": "Synchronized block: custom lock object",
+            "code": "public class BlockObjectDemo implements Runnable {\n  static BlockObjectDemo instance = new BlockObjectDemo();\n  private final Object lock = new Object();\n\n  @Override\n  public void run() {\n    synchronized (lock) {\n      System.out.println(\"Thread \" + Thread.currentThread().getName());\n    }\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance).start();\n    new Thread(instance).start();\n  }\n}"
+          }
+        ]
+      },
+      "class": {
+        "summary": "Class locks are tied to the Class object. All instances share the same lock.",
+        "examples": [
+          {
+            "title": "Static method: lock is Class",
+            "code": "public class ClassLockDemo implements Runnable {\n  static ClassLockDemo instance1 = new ClassLockDemo();\n  static ClassLockDemo instance2 = new ClassLockDemo();\n\n  @Override\n  public void run() {\n    method();\n  }\n\n  public static synchronized void method() {\n    System.out.println(\"Thread \" + Thread.currentThread().getName());\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance1).start();\n    new Thread(instance2).start();\n  }\n}"
+          },
+          {
+            "title": "Synchronized block: lock Class object",
+            "code": "public class ClassBlockDemo implements Runnable {\n  static ClassBlockDemo instance1 = new ClassBlockDemo();\n  static ClassBlockDemo instance2 = new ClassBlockDemo();\n\n  @Override\n  public void run() {\n    synchronized (ClassBlockDemo.class) {\n      System.out.println(\"Thread \" + Thread.currentThread().getName());\n    }\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance1).start();\n    new Thread(instance2).start();\n  }\n}"
+          }
+        ]
+      }
+    },
+    "optimizationsTitle": "JVM Optimizations",
+    "optimizations": [
+      "Biased locking for uncontended paths.",
+      "Spin before blocking to reduce context switches.",
+      "Lock coarsening to merge adjacent locks.",
+      "Lock elimination via escape analysis."
+    ],
+    "optimizationExamplesTitle": "Lock Coarsening & Elimination Examples",
+    "optimizationExamples": [
+      {
+        "title": "Coarsening: merge adjacent locks",
+        "summary": "Frequent enter/exit in a loop adds overhead, so JIT may combine them into one larger lock.",
+        "code": "public void appendAll(String[] items) {\n  StringBuilder sb = new StringBuilder();\n  for (String item : items) {\n    synchronized (this) {\n      sb.append(item);\n    }\n  }\n  // JIT may coarsen to:\n  // synchronized (this) {\n  //   for (...) sb.append(item);\n  // }\n}"
+      },
+      {
+        "title": "Elimination: object does not escape",
+        "summary": "If the lock object is thread-local, JIT can remove the synchronized block entirely.",
+        "code": "public String build() {\n  StringBuffer buffer = new StringBuffer();\n  // buffer is only used by this thread\n  buffer.append(\"A\");\n  buffer.append(\"B\");\n  return buffer.toString();\n  // JIT can eliminate internal synchronized\n}"
+      }
+    ],
+    "pitfallsTitle": "Pitfalls",
+    "pitfalls": [
+      "Locking on mutable references.",
+      "String literal locks causing global contention.",
+      "I/O inside synchronized blocks.",
+      "hashCode can revoke biased locks."
+    ]
+  },
+  "lock": {
+    "title": "Lock Family",
+    "summary": "Explicit locks add interruption, timeout, fairness, and multiple conditions.",
+    "comparisonTitle": "synchronized vs ReentrantLock",
+    "comparisonTable": {
+      "headers": ["Capability", "synchronized", "ReentrantLock"],
+      "rows": [
+        ["Reentrant", "Yes", "Yes"],
+        ["Interrupt", "No", "lockInterruptibly"],
+        ["Timeout", "No", "tryLock(timeout)"],
+        ["Fairness", "Not controllable", "Optional fair"],
+        ["Conditions", "wait/notify", "Multiple Condition queues"],
+        ["Diagnostics", "Limited", "Queue metrics"]
+      ]
+    },
+    "reentrantTitle": "ReentrantLock Example",
+    "reentrantCode": "private final ReentrantLock lock = new ReentrantLock(true);\n\npublic int tryUpdate() throws InterruptedException {\n  if (lock.tryLock(200, TimeUnit.MILLISECONDS)) {\n    try {\n      return ++counter;\n    } finally {\n      lock.unlock();\n    }\n  }\n  return -1;\n}",
+    "conditionTitle": "Condition Example",
+    "conditionCode": "private final Condition notEmpty = lock.newCondition();\n\npublic int take() throws InterruptedException {\n  lock.lock();\n  try {\n    while (queue.isEmpty()) {\n      notEmpty.await();\n    }\n    return queue.remove();\n  } finally {\n    lock.unlock();\n  }\n}\n\npublic void put(int item) {\n  lock.lock();\n  try {\n    queue.add(item);\n    notEmpty.signal();\n  } finally {\n    lock.unlock();\n  }\n}",
+    "readWriteTitle": "ReadWriteLock Example",
+    "readWriteCode": "private final ReadWriteLock rw = new ReentrantReadWriteLock();\n\npublic String read() {\n  rw.readLock().lock();\n  try {\n    return cache;\n  } finally {\n    rw.readLock().unlock();\n  }\n}\n\npublic void write(String value) {\n  rw.writeLock().lock();\n  try {\n    cache = value;\n  } finally {\n    rw.writeLock().unlock();\n  }\n}",
+    "stampedTitle": "StampedLock Optimistic Read",
+    "stampedCode": "private final StampedLock stamped = new StampedLock();\n\npublic String optimisticRead() {\n  long stamp = stamped.tryOptimisticRead();\n  String value = data;\n  if (!stamped.validate(stamp)) {\n    stamp = stamped.readLock();\n    try {\n      value = data;\n    } finally {\n      stamped.unlockRead(stamp);\n    }\n  }\n  return value;\n}",
+    "bestPracticesTitle": "Best Practices",
+    "bestPractices": [
+      "Always unlock in a finally block.",
+      "Keep lock scope small and avoid nested locks.",
+      "Use tryLock for timeout fallback.",
+      "Watch for write starvation in read/write locks."
+    ]
+  },
+  "aqs": {
+    "title": "AQS Fundamentals",
+    "summary": "AQS models synchronization with a volatile state and a CLH queue of waiting threads.",
+    "conceptsTitle": "Core Concepts",
+    "concepts": [
+      "state: 0 means free; >0 means held count.",
+      "Exclusive vs shared modes.",
+      "CLH queue: FIFO doubly linked list.",
+      "LockSupport.park/unpark for blocking.",
+      "ConditionObject as a separate queue."
+    ],
+    "nodeTableTitle": "Node Fields",
+    "nodeTable": {
+      "headers": ["Field", "Meaning", "Typical"],
+      "rows": [
+        ["waitStatus", "node state", "SIGNAL, CANCELLED, CONDITION"],
+        ["prev/next", "links", "maintain CLH queue"],
+        ["thread", "owner thread", "queued thread ref"],
+        ["nextWaiter", "condition link", "shared/condition node"]
+      ]
+    },
+    "acquireTitle": "Acquire Pseudocode",
+    "acquirePseudo": "if (tryAcquire()) return;\nnode = enqueue(currentThread);\nfor (;;) {\n  if (node.prev == head && tryAcquire()) {\n    setHead(node);\n    return;\n  }\n  if (shouldParkAfterFailedAcquire()) {\n    park();\n  }\n}",
+    "releaseTitle": "Release Pseudocode",
+    "releasePseudo": "if (tryRelease()) {\n  Node h = head;\n  if (h != null && h.waitStatus == SIGNAL) {\n    unparkSuccessor(h);\n  }\n}",
+    "demo": {
+      "title": "AQS Step-by-step Demo",
+      "note": "Three threads compete for an exclusive lock with CAS, enqueue, and park/unpark.",
+      "lockStateTitle": "Lock State",
+      "stateLabel": "state",
+      "ownerLabel": "owner",
+      "ownerEmpty": "none",
+      "queueTitle": "Sync Queue",
+      "queueEmpty": "queue is empty",
+      "arrivingTitle": "Arriving Thread",
+      "stepsTitle": "Steps",
+      "headTag": "head",
+      "tailTag": "tail",
+      "parkedTag": "parked",
+      "signalTitle": "Signal",
+      "steps": {
+        "t1Acquire": {
+          "title": "T1 CAS acquires",
+          "description": "state 0->1, T1 becomes owner"
+        },
+        "t2Enqueue": {
+          "title": "T2 enqueue",
+          "description": "CAS fails, enter CLH queue and park"
+        },
+        "t3Enqueue": {
+          "title": "T3 enqueue",
+          "description": "queued behind T2 waiting signal"
+        },
+        "t1Release": {
+          "title": "T1 releases",
+          "description": "release succeeds, unpark head",
+          "signal": "unpark(T2)"
+        },
+        "t2Release": {
+          "title": "T2 acquires",
+          "description": "T2 becomes owner and releases",
+          "signal": "unpark(T3)"
+        },
+        "t3Release": {
+          "title": "T3 completes",
+          "description": "queue empty, state back to 0"
+        }
+      }
+    }
+  },
+  "interview": {
+    "title": "Interview Deep Dive",
+    "sections": [
+      {
+        "title": "Must-cover",
+        "items": [
+          "Lock inflation and object header transitions.",
+          "Fair vs non-fair ReentrantLock.",
+          "Head/tail responsibilities in AQS.",
+          "Condition vs wait/notify." 
+        ]
+      },
+      {
+        "title": "Troubleshooting",
+        "items": [
+          "Diagnose contention with jstack/JFR.",
+          "Deadlock detection and thread dump reading.",
+          "Spin vs block performance tradeoff.",
+          "Why lock coarsening can be faster." 
+        ]
+      }
+    ],
+    "questionsTitle": "Common Follow-ups",
+    "questions": [
+      {
+        "question": "Why is synchronized reentrant?",
+        "answer": "The monitor tracks the owning thread and reentry count."
+      },
+      {
+        "question": "Why does AQS need a CLH queue?",
+        "answer": "It preserves FIFO order and lets threads block safely."
+      },
+      {
+        "question": "Condition vs wait/notify?",
+        "answer": "Condition supports multiple queues bound to explicit locks."
+      },
+      {
+        "question": "Why is StampedLock not reentrant?",
+        "answer": "It prioritizes low-overhead stamps over owner tracking."
+      }
+    ],
+    "checklistTitle": "Answer Checklist",
+    "checklist": [
+      "Explain inflation triggers and irreversibility.",
+      "Contrast interrupt, timeout, fairness, conditions.",
+      "Cover state, queue, park/unpark in AQS.",
+      "Tie lock choice back to real-world scenarios."
+    ]
+  },
+  "labels": {
+    "controls": {
+      "play": "Play",
+      "pause": "Pause",
+      "step": "Step",
+      "back": "Back",
+      "reset": "Reset"
+    }
+  }
+}

@@ -14,6 +14,7 @@ import Resume from "@/pages/Resume";
 import SideProjectsPage from "@/pages/side-projects";
 import WhatIsItPage from "@/pages/what-is-it";
 import JvmLessonPage from "@/pages/what-is-it/jvm";
+import JavaLocksLessonPage from "@/pages/what-is-it/java-locks";
 import {
   CrowdfundingProject,
   CrowdfundingProjectDetail,
@@ -46,6 +47,10 @@ function AppContent() {
           <Route path={ROUTES.SIDE_PROJECTS} element={<SideProjectsPage />} />
           <Route path={ROUTES.WHAT_IS_IT} element={<WhatIsItPage />} />
           <Route path={ROUTES.WHAT_IS_IT_JVM} element={<JvmLessonPage />} />
+          <Route
+            path={ROUTES.WHAT_IS_IT_JAVA_LOCKS}
+            element={<JavaLocksLessonPage />}
+          />
 
           <Route path={ROUTES.WORK_FLOWLET} element={<Flowlet />} />
 

@@ -13,6 +13,15 @@
       "level": "Beginner",
       "duration": "8-12 min",
       "updated": "2026.02"
+    },
+    {
+      "id": "java-locks",
+      "title": "Java Lock Deep Dive",
+      "description": "From object headers to AQS: synchronized and Lock internals for interviews.",
+      "tags": ["Java", "Lock", "Concurrency"],
+      "level": "Advanced",
+      "duration": "15-20 min",
+      "updated": "2026.03"
     }
   ]
 }

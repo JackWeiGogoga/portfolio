@@ -23,6 +23,7 @@ export default function WhatIsItPage() {
   const lessons = t("lessons", { returnObjects: true }) as WhatIsItLesson[];
   const lessonRoutes: Record<string, string> = {
     jvm: ROUTES.WHAT_IS_IT_JVM,
+    "java-locks": ROUTES.WHAT_IS_IT_JAVA_LOCKS,
   };
 
   return (

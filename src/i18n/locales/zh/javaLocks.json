@@ -1,0 +1,404 @@
+{
+  "page": {
+    "back": "返回 What is it",
+    "title": "Java 锁深潜",
+    "subtitle": "synchronized、Lock、AQS 与对象头，全链路拆解面试必问点。"
+  },
+  "tabs": [
+    {
+      "id": "overview",
+      "label": "总览",
+      "description": "用一页地图定位锁的目标、能力边界与选择策略。"
+    },
+    {
+      "id": "synchronized",
+      "label": "synchronized",
+      "description": "对象头、锁升级、字节码与 JVM 优化。"
+    },
+    {
+      "id": "lock",
+      "label": "Lock",
+      "description": "并发包里的可中断、可超时、可组合锁。"
+    },
+    {
+      "id": "aqs",
+      "label": "AQS",
+      "description": "state + CLH 队列 + park/unpark 的抽象核心。"
+    },
+    {
+      "id": "interview",
+      "label": "面试深水区",
+      "description": "常见追问、坑位与排障视角。"
+    }
+  ],
+  "overview": {
+    "title": "锁的地图",
+    "intro": "锁解决的是并发中的三件事：互斥、可见性与顺序性。选择何种锁，本质是性能、可控性与语义之间的权衡。",
+    "pillars": [
+      "互斥：控制同时进入临界区的线程数量。",
+      "可见性：释放锁前写入对获得同一锁的线程可见。",
+      "有序性：synchronized 与 Lock 都建立 happens-before。"
+    ],
+    "highlightsTitle": "面试重点",
+    "highlights": [
+      "锁升级路径与对象头 Mark Word 的变化。",
+      "synchronized 与 ReentrantLock 的差异场景。",
+      "AQS 的独占/共享、阻塞/唤醒机制。",
+      "Condition 与 wait/notify 的语义边界。"
+    ],
+    "landscapeTitle": "锁类型对比",
+    "landscape": {
+      "headers": ["类型", "语义", "可重入", "公平性", "典型场景"],
+      "rows": [
+        ["synchronized", "JVM 监视器", "是", "非公平", "普通互斥、对象内锁"],
+        ["ReentrantLock", "显式锁", "是", "可选公平", "需要超时/中断/条件"],
+        ["ReadWriteLock", "读写分离", "是", "可选公平", "读多写少"],
+        ["StampedLock", "乐观读", "否", "非公平", "读多且允许乐观读"]
+      ]
+    },
+    "checklistTitle": "锁选择速查",
+    "checklist": [
+      "需要 tryLock/超时/中断？选 ReentrantLock。",
+      "读多写少且写入有隔离需求？选 ReadWriteLock。",
+      "读多且能接受验证失败重读？选 StampedLock。",
+      "逻辑简单且无需高级特性？synchronized 足够。"
+    ]
+  },
+  "synchronized": {
+    "title": "synchronized 的底层",
+    "summary": "synchronized 是 JVM 内建的监视器锁，依赖对象头 Mark Word 与 Monitor 的状态转换。",
+    "objectHeaderTitle": "对象头组成（64-bit + 压缩指针）",
+    "objectHeaderTable": {
+      "headers": ["字段", "位宽", "说明"],
+      "rows": [
+        ["Mark Word", "64", "哈希、GC 年龄、锁标志、偏向线程信息"],
+        ["Klass Pointer", "32", "指向类元数据"],
+        ["Padding", "32", "对齐填充"],
+        ["数组长度", "32", "仅数组对象持有"]
+      ]
+    },
+    "markWordTitle": "Mark Word 与锁状态",
+    "markWordTable": {
+      "headers": ["锁状态", "标志位", "偏向位", "主要内容", "触发条件"],
+      "rows": [
+        ["无锁", "01", "0", "hash、年龄等", "对象刚创建"],
+        ["偏向锁", "01", "1", "线程 ID、epoch", "单线程重入"],
+        ["轻量级锁", "00", "0", "指向栈锁记录", "CAS 竞争"],
+        ["重量级锁", "10", "0", "指向 Monitor", "自旋失败/竞争激烈"]
+      ]
+    },
+    "upgradeTitle": "锁升级路径",
+    "upgradeSteps": [
+      "无锁 → 偏向锁：第一次被线程进入。",
+      "偏向锁 → 轻量级锁：另一个线程尝试 CAS。",
+      "轻量级锁 → 重量级锁：自旋失败或竞争激烈。",
+      "一旦膨胀为重量级锁，通常不会降级。"
+    ],
+    "upgradeDemo": {
+      "title": "对象头锁状态演进",
+      "note": "点击或播放观察 Mark Word 字段如何随锁升级而改变。",
+      "fieldsTitle": "Mark Word 字段",
+      "stepsTitle": "升级步骤",
+      "arrivingTitle": "到达线程",
+      "ownerTitle": "持有者",
+      "ownerEmpty": "空",
+      "waitingTitle": "等待/自旋",
+      "waitingEmpty": "无",
+      "flowTitle": "线程流转",
+      "flowNote": "线程从到达到竞争，形成自旋或阻塞，最终触发锁升级。",
+      "fields": {
+        "lockBits": "锁标志位",
+        "biased": "偏向位",
+        "hash": "哈希",
+        "age": "GC 年龄",
+        "threadId": "线程 ID",
+        "ptr": "指针/记录"
+      },
+      "steps": [
+        {
+          "id": "no-lock",
+          "title": "无锁态",
+          "description": "对象刚创建，可写入 hash 与 age，锁标志位为 01。",
+          "arrivingThread": "T1",
+          "contenders": [],
+          "ownerThread": null,
+          "lockBits": "01",
+          "biased": "0",
+          "hash": "0x0000",
+          "age": "0010",
+          "threadId": "-",
+          "ptr": "-"
+        },
+        {
+          "id": "biased",
+          "title": "偏向锁",
+          "description": "首次进入的线程写入 ID，偏向位开启，仍是 01。",
+          "arrivingThread": "T1",
+          "contenders": [],
+          "ownerThread": "T1",
+          "lockBits": "01",
+          "biased": "1",
+          "hash": "0x0000",
+          "age": "0010",
+          "threadId": "T1",
+          "ptr": "-"
+        },
+        {
+          "id": "lightweight",
+          "title": "轻量级锁",
+          "description": "另一个线程 CAS 失败，Mark Word 指向栈锁记录。",
+          "arrivingThread": "T2",
+          "contenders": ["T2"],
+          "ownerThread": "T1",
+          "lockBits": "00",
+          "biased": "0",
+          "hash": "-",
+          "age": "0010",
+          "threadId": "-",
+          "ptr": "LockRecord@T1"
+        },
+        {
+          "id": "heavyweight",
+          "title": "重量级锁",
+          "description": "自旋失败后膨胀为 Monitor，Mark Word 指向监视器。",
+          "arrivingThread": "T3",
+          "contenders": ["T2", "T3"],
+          "ownerThread": "T1",
+          "lockBits": "10",
+          "biased": "0",
+          "hash": "-",
+          "age": "0010",
+          "threadId": "-",
+          "ptr": "Monitor@0x7f"
+        }
+      ]
+    },
+    "bytecodeSourceTitle": "同步代码",
+    "bytecodeSource": "public class Counter {\n  private final Object lock = new Object();\n  private int count = 0;\n\n  public void inc() {\n    synchronized (lock) {\n      count++;\n    }\n  }\n}",
+    "bytecodeListingTitle": "字节码片段",
+    "bytecodeListing": "0: aload_0\n1: getfield #2\n4: dup\n5: astore_1\n6: monitorenter\n7: aload_0\n8: dup\n9: getfield #3\n12: iconst_1\n13: iadd\n14: putfield #3\n17: aload_1\n18: monitorexit\n19: goto 27\n22: astore_2\n23: aload_1\n24: monitorexit\n25: aload_2\n26: athrow\n27: return",
+    "scopeTitle": "synchronized 的作用范围",
+    "scopeTabs": [
+      { "id": "object", "label": "对象锁" },
+      { "id": "class", "label": "类锁" }
+    ],
+    "scopeContent": {
+      "object": {
+        "summary": "对象锁绑定的是具体实例。默认锁对象是 this，也可以显式指定任意对象作为锁。",
+        "examples": [
+          {
+            "title": "同步方法：锁是 this",
+            "code": "public class InstanceLockDemo implements Runnable {\n  static InstanceLockDemo instance = new InstanceLockDemo();\n\n  @Override\n  public void run() {\n    method();\n  }\n\n  public synchronized void method() {\n    System.out.println(\"线程 \" + Thread.currentThread().getName());\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance).start();\n    new Thread(instance).start();\n  }\n}"
+          },
+          {
+            "title": "同步代码块：锁定 this",
+            "code": "public class BlockThisDemo implements Runnable {\n  static BlockThisDemo instance = new BlockThisDemo();\n\n  @Override\n  public void run() {\n    synchronized (this) {\n      System.out.println(\"线程 \" + Thread.currentThread().getName());\n    }\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance).start();\n    new Thread(instance).start();\n  }\n}"
+          },
+          {
+            "title": "同步代码块：锁定自定义对象",
+            "code": "public class BlockObjectDemo implements Runnable {\n  static BlockObjectDemo instance = new BlockObjectDemo();\n  private final Object lock = new Object();\n\n  @Override\n  public void run() {\n    synchronized (lock) {\n      System.out.println(\"线程 \" + Thread.currentThread().getName());\n    }\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance).start();\n    new Thread(instance).start();\n  }\n}"
+          }
+        ]
+      },
+      "class": {
+        "summary": "类锁绑定的是 Class 对象，无论多少实例，争用的是同一把锁。",
+        "examples": [
+          {
+            "title": "静态方法：锁是 Class 对象",
+            "code": "public class ClassLockDemo implements Runnable {\n  static ClassLockDemo instance1 = new ClassLockDemo();\n  static ClassLockDemo instance2 = new ClassLockDemo();\n\n  @Override\n  public void run() {\n    method();\n  }\n\n  public static synchronized void method() {\n    System.out.println(\"线程 \" + Thread.currentThread().getName());\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance1).start();\n    new Thread(instance2).start();\n  }\n}"
+          },
+          {
+            "title": "同步代码块：锁定 Class",
+            "code": "public class ClassBlockDemo implements Runnable {\n  static ClassBlockDemo instance1 = new ClassBlockDemo();\n  static ClassBlockDemo instance2 = new ClassBlockDemo();\n\n  @Override\n  public void run() {\n    synchronized (ClassBlockDemo.class) {\n      System.out.println(\"线程 \" + Thread.currentThread().getName());\n    }\n  }\n\n  public static void main(String[] args) {\n    new Thread(instance1).start();\n    new Thread(instance2).start();\n  }\n}"
+          }
+        ]
+      }
+    },
+    "optimizationsTitle": "JVM 锁优化",
+    "optimizations": [
+      "偏向锁：减少无竞争的 CAS。",
+      "自旋锁：短时间竞争避免线程切换。",
+      "锁粗化：连续锁合并。",
+      "锁消除：逃逸分析下移除无共享锁。"
+    ],
+    "optimizationExamplesTitle": "锁粗化与锁消除示例",
+    "optimizationExamples": [
+      {
+        "title": "锁粗化：合并连续同步块",
+        "summary": "循环内频繁进入/退出锁会产生开销，JIT 可能把多个同步块合并为一个更大的锁。",
+        "code": "public void appendAll(String[] items) {\n  StringBuilder sb = new StringBuilder();\n  for (String item : items) {\n    synchronized (this) {\n      sb.append(item);\n    }\n  }\n  // JIT 可能将锁粗化为：\n  // synchronized (this) {\n  //   for (...) sb.append(item);\n  // }\n}"
+      },
+      {
+        "title": "锁消除：对象不逃逸",
+        "summary": "如果锁对象不会被其他线程共享，JIT 可以移除 synchronized，避免无意义的互斥。",
+        "code": "public String build() {\n  StringBuffer buffer = new StringBuffer();\n  // buffer 仅在当前线程使用\n  buffer.append(\"A\");\n  buffer.append(\"B\");\n  return buffer.toString();\n  // JIT 可能消除内部的 synchronized\n}"
+      }
+    ],
+    "pitfallsTitle": "常见坑",
+    "pitfalls": [
+      "锁对象选择不当（尤其是可变引用）。",
+      "字符串常量作为锁导致全局竞争。",
+      "在锁内执行 I/O 或远程调用。",
+      "调用 hashCode 触发偏向锁撤销。"
+    ]
+  },
+  "lock": {
+    "title": "Lock 系列",
+    "summary": "显式锁提供中断、超时、公平性与条件队列，适合更精细的并发控制。",
+    "comparisonTitle": "synchronized vs ReentrantLock",
+    "comparisonTable": {
+      "headers": ["能力", "synchronized", "ReentrantLock"],
+      "rows": [
+        ["可重入", "是", "是"],
+        ["中断", "否", "支持 lockInterruptibly"],
+        ["超时", "否", "支持 tryLock(timeout)"],
+        ["公平性", "不可控", "可选公平"],
+        ["条件队列", "wait/notify", "Condition 多队列"],
+        ["诊断", "较少", "支持 getQueueLength 等"]
+      ]
+    },
+    "reentrantTitle": "ReentrantLock 示例",
+    "reentrantCode": "private final ReentrantLock lock = new ReentrantLock(true);\n\npublic int tryUpdate() throws InterruptedException {\n  if (lock.tryLock(200, TimeUnit.MILLISECONDS)) {\n    try {\n      return ++counter;\n    } finally {\n      lock.unlock();\n    }\n  }\n  return -1;\n}",
+    "conditionTitle": "Condition 示例",
+    "conditionCode": "private final Condition notEmpty = lock.newCondition();\n\npublic int take() throws InterruptedException {\n  lock.lock();\n  try {\n    while (queue.isEmpty()) {\n      notEmpty.await();\n    }\n    return queue.remove();\n  } finally {\n    lock.unlock();\n  }\n}\n\npublic void put(int item) {\n  lock.lock();\n  try {\n    queue.add(item);\n    notEmpty.signal();\n  } finally {\n    lock.unlock();\n  }\n}",
+    "readWriteTitle": "ReadWriteLock 示例",
+    "readWriteCode": "private final ReadWriteLock rw = new ReentrantReadWriteLock();\n\npublic String read() {\n  rw.readLock().lock();\n  try {\n    return cache;\n  } finally {\n    rw.readLock().unlock();\n  }\n}\n\npublic void write(String value) {\n  rw.writeLock().lock();\n  try {\n    cache = value;\n  } finally {\n    rw.writeLock().unlock();\n  }\n}",
+    "stampedTitle": "StampedLock 乐观读",
+    "stampedCode": "private final StampedLock stamped = new StampedLock();\n\npublic String optimisticRead() {\n  long stamp = stamped.tryOptimisticRead();\n  String value = data;\n  if (!stamped.validate(stamp)) {\n    stamp = stamped.readLock();\n    try {\n      value = data;\n    } finally {\n      stamped.unlockRead(stamp);\n    }\n  }\n  return value;\n}",
+    "bestPracticesTitle": "最佳实践",
+    "bestPractices": [
+      "lock 与 unlock 必须在 finally 中成对出现。",
+      "尽量缩小锁粒度，避免嵌套锁。",
+      "用 tryLock 做超时兜底。",
+      "读写分离时关注写锁饥饿。"
+    ]
+  },
+  "aqs": {
+    "title": "AQS 原理",
+    "summary": "AQS 用一个 volatile state 表示同步状态，依赖 CLH 双向队列管理阻塞线程。",
+    "conceptsTitle": "核心概念",
+    "concepts": [
+      "state：0 代表无锁，>0 代表持有次数。",
+      "独占/共享：ReentrantLock vs Semaphore。",
+      "CLH 队列：FIFO + 双向链表。",
+      "LockSupport.park/unpark：阻塞与唤醒。",
+      "ConditionObject：独立条件队列。"
+    ],
+    "nodeTableTitle": "Node 关键字段",
+    "nodeTable": {
+      "headers": ["字段", "含义", "常见值"],
+      "rows": [
+        ["waitStatus", "节点状态", "SIGNAL、CANCELLED、CONDITION"],
+        ["prev/next", "双向指针", "维护 CLH 队列"],
+        ["thread", "持有线程", "入队线程引用"],
+        ["nextWaiter", "条件队列", "共享/条件节点"]
+      ]
+    },
+    "acquireTitle": "获取锁伪代码",
+    "acquirePseudo": "if (tryAcquire()) return;\nnode = enqueue(currentThread);\nfor (;;) {\n  if (node.prev == head && tryAcquire()) {\n    setHead(node);\n    return;\n  }\n  if (shouldParkAfterFailedAcquire()) {\n    park();\n  }\n}",
+    "releaseTitle": "释放锁伪代码",
+    "releasePseudo": "if (tryRelease()) {\n  Node h = head;\n  if (h != null && h.waitStatus == SIGNAL) {\n    unparkSuccessor(h);\n  }\n}",
+    "demo": {
+      "title": "AQS 分步执行演示",
+      "note": "模拟三线程竞争独占锁：CAS、入队、park/unpark 的节奏。",
+      "lockStateTitle": "锁状态",
+      "stateLabel": "state",
+      "ownerLabel": "owner",
+      "ownerEmpty": "none",
+      "queueTitle": "同步队列",
+      "queueEmpty": "队列为空",
+      "arrivingTitle": "到达线程",
+      "stepsTitle": "执行步骤",
+      "headTag": "head",
+      "tailTag": "tail",
+      "parkedTag": "parked",
+      "signalTitle": "唤醒信号",
+      "steps": {
+        "t1Acquire": {
+          "title": "T1 CAS 获取锁",
+          "description": "state 0->1，T1 成为 owner"
+        },
+        "t2Enqueue": {
+          "title": "T2 失败入队",
+          "description": "CAS 失败，进入 CLH 队列并 park"
+        },
+        "t3Enqueue": {
+          "title": "T3 继续入队",
+          "description": "排队在 T2 后方等待唤醒"
+        },
+        "t1Release": {
+          "title": "T1 释放并唤醒",
+          "description": "release 成功，unpark 头节点",
+          "signal": "unpark(T2)"
+        },
+        "t2Release": {
+          "title": "T2 获锁并释放",
+          "description": "T2 成为 owner，释放后唤醒下一节点",
+          "signal": "unpark(T3)"
+        },
+        "t3Release": {
+          "title": "T3 完成释放",
+          "description": "队列清空，state 归零"
+        }
+      }
+    }
+  },
+  "interview": {
+    "title": "面试深水区",
+    "sections": [
+      {
+        "title": "必答要点",
+        "items": [
+          "synchronized 的锁升级与对象头变化。",
+          "ReentrantLock 的公平/非公平策略。",
+          "AQS 队列中 head 与 tail 的职责。",
+          "Condition 与 wait/notify 的差异。"
+        ]
+      },
+      {
+        "title": "排障视角",
+        "items": [
+          "如何定位锁竞争：jstack、JFR、锁热点。",
+          "死锁排查与线程转储解析。",
+          "自旋与阻塞的性能权衡。",
+          "为何锁粗化可能更快。"
+        ]
+      }
+    ],
+    "questionsTitle": "高频追问",
+    "questions": [
+      {
+        "question": "synchronized 为什么是可重入的？",
+        "answer": "Monitor 记录线程持有次数，同线程重复进入仅递增计数。"
+      },
+      {
+        "question": "AQS 为什么需要 CLH 队列？",
+        "answer": "保证 FIFO 公平性并降低自旋竞争，线程在队列中安全阻塞。"
+      },
+      {
+        "question": "Condition 与 wait/notify 最大区别？",
+        "answer": "Condition 支持多个等待队列，且与显式锁绑定。"
+      },
+      {
+        "question": "StampedLock 为什么不可重入？",
+        "answer": "设计上强调低开销的版本戳，避免记录持有线程。"
+      }
+    ],
+    "checklistTitle": "面试答题 Checklist",
+    "checklist": [
+      "描述锁升级时，说明触发条件与退化行为。",
+      "对比锁时，至少提到中断、超时、公平、条件队列。",
+      "讲 AQS 时要覆盖 state、队列、park/unpark。",
+      "结合实际案例说明锁选择策略。"
+    ]
+  },
+  "labels": {
+    "controls": {
+      "play": "播放",
+      "pause": "暂停",
+      "step": "下一步",
+      "back": "上一步",
+      "reset": "重置"
+    }
+  }
+}
