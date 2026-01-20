@@ -21,6 +21,19 @@
       "description": "对象存活判定、分代策略与常见算法。"
     }
   ],
+  "references": {
+    "title": "参考文档",
+    "items": [
+      {
+        "title": "JDK8 官方文档",
+        "url": "https://docs.oracle.com/javase/specs/jvms/se8/html/index.html"
+      },
+      {
+        "title": "JVM 类加载机制（视频）",
+        "url": "https://www.bilibili.com/video/BV1btJ9zaE7e/"
+      }
+    ]
+  },
   "classLoading": {
     "sections": {
       "process": "类加载五阶段",

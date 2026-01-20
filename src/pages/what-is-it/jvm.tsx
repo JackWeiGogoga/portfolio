@@ -167,16 +167,26 @@ export default function JvmLessonPage() {
       pros: string;
       cons: string;
       focus: string;
+      command?: string;
     };
     items: Array<{
       id: string;
       name: string;
       generations: string;
       algorithms: string;
+      command?: string;
       focus: string;
       pros: string[];
       cons: string[];
       notes?: string[];
+    }>;
+  };
+  const references = t("references", { returnObjects: true }) as {
+    title: string;
+    items: Array<{
+      title: string;
+      url: string;
+      description?: string;
     }>;
   };
   const gcReachabilityLabels = {
@@ -1424,6 +1434,37 @@ export default function JvmLessonPage() {
                   </div>
                 )}
               </div>
+            </div>
+          </section>
+        ) : null}
+
+        {references.items?.length ? (
+          <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+              {references.title}
+            </div>
+            <div className="p-4 grid gap-2 text-sm">
+              {references.items.map((item) => (
+                <a
+                  key={item.url}
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-2 text-xs text-graytext no-underline hover:bg-muted"
+                >
+                  <div className="text-sm font-medium text-text">
+                    {item.title}
+                  </div>
+                  {item.description ? (
+                    <div className="mt-1 text-[11px] text-graytext">
+                      {item.description}
+                    </div>
+                  ) : null}
+                  <div className="mt-1 text-[11px] font-mono text-graytext break-all">
+                    {item.url}
+                  </div>
+                </a>
+              ))}
             </div>
           </section>
         ) : null}

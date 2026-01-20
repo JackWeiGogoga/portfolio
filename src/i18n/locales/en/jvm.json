@@ -21,6 +21,19 @@
       "description": "Reachability, generations, and common algorithms."
     }
   ],
+  "references": {
+    "title": "References",
+    "items": [
+      {
+        "title": "JDK 8 JVM Spec",
+        "url": "https://docs.oracle.com/javase/specs/jvms/se8/html/index.html"
+      },
+      {
+        "title": "JVM Class Loading Mechanism (Video)",
+        "url": "https://www.bilibili.com/video/BV1btJ9zaE7e/"
+      }
+    ]
+  },
   "classLoading": {
     "sections": {
       "process": "Class loading stages",
