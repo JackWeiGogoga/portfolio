@@ -486,6 +486,11 @@
       "cardTableOldGen": "Old gen card table",
       "cardTableYoungGen": "Young gen",
       "cardTableNote": "Dirty cards record old-to-young references.",
+      "cardTableWhy": [
+        "Avoid scanning the whole old gen: only dirty cards are tracked.",
+        "Young GC is frequent; old→young refs locate what must be scanned.",
+        "No young→old card table: old-gen collection includes young gen/roots, so refs are counted."
+      ],
       "writeBarrierTitle": "Concurrent marking & write barriers",
       "roots": [
         "Local variables on thread stacks",
