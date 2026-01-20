@@ -468,7 +468,6 @@ export default function JvmLessonPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activePageTabId, demoSteps.length, steps.length]);
 
-
   const handleDragStart = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) {
       return;
@@ -744,7 +743,7 @@ export default function JvmLessonPage() {
 
   return (
     <Layout variant="lesson">
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-3">
         <Link
           to={ROUTES.WHAT_IS_IT}
           className="inline-flex items-center gap-2 text-xs text-graytext hover:text-text no-underline"
@@ -1106,9 +1105,7 @@ export default function JvmLessonPage() {
                                 <td
                                   key={`${row[0]}-${cellIndex}`}
                                   className={`px-2 py-1 ${
-                                    cellIndex === 1
-                                      ? "font-mono text-text"
-                                      : ""
+                                    cellIndex === 1 ? "font-mono text-text" : ""
                                   } ${tooltip ? "cursor-help" : ""}`}
                                 >
                                   {cell}
@@ -1147,6 +1144,88 @@ export default function JvmLessonPage() {
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
+            {activeLoadingStepId === "prepare" ? (
+              <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                  {t("classLoading.prepareDiagram.title")}
+                </div>
+                <div className="p-4 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                    <div className="text-xs font-mono text-graytext mb-2">
+                      {t("classLoading.prepareDiagram.jdk6Title")}
+                    </div>
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-card/80 p-3 space-y-3 text-xs text-graytext">
+                      <div className="text-[10px] uppercase tracking-wide text-graytext">
+                        {t("classLoading.prepareDiagram.labels.jvmMemory")}
+                      </div>
+                      <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-1">
+                        <div className="font-medium text-text">
+                          {t("classLoading.prepareDiagram.labels.methodArea")}
+                        </div>
+                        <div className="text-[11px]">
+                          {t("classLoading.prepareDiagram.labels.metadata")}
+                        </div>
+                        <div className="text-[11px]">
+                          {t("classLoading.prepareDiagram.labels.runtimeData")}
+                        </div>
+                      </div>
+                      <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-3 py-2 text-xs text-graytext">
+                        <div className="font-medium text-text">
+                          {t("classLoading.prepareDiagram.labels.heap")}
+                        </div>
+                        <div className="text-[11px]">
+                          {t("classLoading.prepareDiagram.labels.classObjects")}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                    <div className="text-xs font-mono text-graytext mb-2">
+                      {t("classLoading.prepareDiagram.jdk8Title")}
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-card/80 p-3 space-y-2 text-xs text-graytext">
+                        <div className="text-[10px] uppercase tracking-wide text-graytext">
+                          {t("classLoading.prepareDiagram.labels.jvmMemory")}
+                        </div>
+                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-3 py-2 text-xs text-graytext">
+                          <div className="font-medium text-text">
+                            {t("classLoading.prepareDiagram.labels.heap")}
+                          </div>
+                          <div className="text-[11px]">
+                            {t(
+                              "classLoading.prepareDiagram.labels.classObjects"
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-card/80 p-3 space-y-2 text-xs text-graytext">
+                        <div className="text-[10px] uppercase tracking-wide text-graytext">
+                          {t("classLoading.prepareDiagram.labels.nativeMemory")}
+                        </div>
+                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-1">
+                          <div className="font-medium text-text">
+                            {t("classLoading.prepareDiagram.labels.metaspace")}
+                          </div>
+                          <div className="text-[11px]">
+                            {t("classLoading.prepareDiagram.labels.metadata")}
+                          </div>
+                          <div className="text-[11px]">
+                            {t(
+                              "classLoading.prepareDiagram.labels.runtimeData"
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="md:col-span-2 text-xs text-graytext">
+                    {t("classLoading.prepareDiagram.note")}
                   </div>
                 </div>
               </section>

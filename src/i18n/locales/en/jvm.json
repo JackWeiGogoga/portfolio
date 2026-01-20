@@ -169,6 +169,22 @@
       ],
       "note": "After resolution you get direct references to targets in method area/metaspace."
     },
+    "prepareDiagram": {
+      "title": "Preparation: where class metadata lives (version comparison)",
+      "jdk6Title": "JDK 6/7 (HotSpot)",
+      "jdk8Title": "JDK 8+ (HotSpot)",
+      "note": "Key point: JDK 7 and earlier use PermGen in JVM memory; JDK 8+ uses Metaspace in native memory.",
+      "labels": {
+        "jvmMemory": "JVM Memory",
+        "nativeMemory": "Native Memory",
+        "methodArea": "Method Area (PermGen)",
+        "metaspace": "Metaspace",
+        "heap": "Heap",
+        "classObjects": "java.lang.Class objects",
+        "runtimeData": "Runtime data",
+        "metadata": "Class metadata / CP"
+      }
+    },
     "delegationDemo": {
       "title": "Parent delegation demo",
       "description": "Pick a class to load and watch delegation go up to parents, then fall back down.",

@@ -169,6 +169,22 @@
       ],
       "note": "解析后得到直接引用：指向方法区/元空间中的实际目标。"
     },
+    "prepareDiagram": {
+      "title": "准备阶段：类信息存放位置（版本对比）",
+      "jdk6Title": "JDK 6/7（HotSpot）",
+      "jdk8Title": "JDK 8+（HotSpot）",
+      "note": "要点：JDK 7 及之前方法区/永久代在 JVM 内存中；JDK 8 起元空间在本地内存中。",
+      "labels": {
+        "jvmMemory": "JVM 内存",
+        "nativeMemory": "本地内存",
+        "methodArea": "方法区（永久代）",
+        "metaspace": "元空间（Metaspace）",
+        "heap": "堆",
+        "classObjects": "java.lang.Class 对象",
+        "runtimeData": "Runtime data",
+        "metadata": "类元数据 / 常量池"
+      }
+    },
     "delegationDemo": {
       "title": "双亲委派加载演示",
       "description": "选择要加载的类，观察请求从子加载器向上委派，再向下回退的过程。",
