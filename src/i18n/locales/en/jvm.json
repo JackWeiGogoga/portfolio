@@ -477,6 +477,94 @@
         ]
       }
     },
+    "generations": {
+      "whyTitle": "Why generations",
+      "triggersTitle": "Trigger conditions",
+      "youngTitle": "Young GC (Minor GC)",
+      "oldTitle": "Old GC (Major/Full GC)",
+      "promoteTitle": "Why objects promote to old gen",
+      "stwTitle": "STW & safepoints",
+      "safepointTitle": "Safepoint mechanism",
+      "safepointSignal": "signal",
+      "safepointTabs": [
+        { "id": "why", "label": "Why" },
+        { "id": "how", "label": "How it works" },
+        { "id": "poll", "label": "Safepoint poll" },
+        { "id": "stw", "label": "STW relation" }
+      ],
+      "safepointContent": {
+        "why": {
+          "title": "Why safepoints are needed",
+          "summary": "GC needs enumerable roots, but running threads have dynamic stacks/registers; we must stop at safe locations.",
+          "items": [
+            "Stopping anywhere can leave frames incomplete and refs unidentifiable.",
+            "Safepoints let the compiler provide precise root maps.",
+            "Prevents missing or mis-marking live objects."
+          ]
+        },
+        "how": {
+          "title": "Safepoint flow",
+          "summary": "JVM requests a global stop; threads stop at next safepoint; GC runs; threads resume.",
+          "items": [
+            "JVM issues a safepoint request (global stop).",
+            "Threads stop at safe points (return, loop back-edge, call).",
+            "GC scans roots and marks/compacts.",
+            "Exit safepoint and resume."
+          ]
+        },
+        "poll": {
+          "title": "Safepoint polling",
+          "summary": "Insert polling loads at hot spots; flip memory page to trap into safepoint.",
+          "items": [
+            "Typical instruction: test/ld on a known address.",
+            "Normally readable -> pass; on safepoint -> make unreadable.",
+            "Page fault brings thread into safepoint handling."
+          ]
+        },
+        "stw": {
+          "title": "Safepoint vs STW",
+          "summary": "STW is the pause outcome; safepoint ensures the paused state is safe and enumerable.",
+          "items": [
+            "GC starts only after all threads reach safepoint.",
+            "Pause time includes safepoint entry, root scan, and cleanup.",
+            "Safepoint is about correctness, not just pausing."
+          ]
+        }
+      },
+      "whyItems": [
+        "Most objects die young; copying is efficient in young gen.",
+        "Old gen holds long-lived objects; mark-sweep/compact fits better.",
+        "Generations reduce scan scope and pause time."
+      ],
+      "triggersYoung": [
+        "Eden space exhausted or allocation failure triggers Minor GC.",
+        "TLAB allocation fails and shared allocation also fails.",
+        "Collector-specific thresholds (e.g., G1 young occupancy)."
+      ],
+      "triggersOld": [
+        "Old gen space exhaustion (promotion or large allocation failure).",
+        "Promotion failure / guarantee failure.",
+        "Explicit Full GC (System.gc or tuning flags).",
+        "Metaspace/class metadata pressure (class unloading)."
+      ],
+      "promoteItems": [
+        "Age threshold reached (tenuring threshold).",
+        "Survivor space overflow causes direct promotion.",
+        "Large objects allocated directly in old gen.",
+        "Dynamic age judgment promotes earlier when same-age is large."
+      ],
+      "stwItems": [
+        "STW pauses all Java threads for GC.",
+        "Safepoints stop threads at safe locations for consistent stacks.",
+        "Pause time depends on root scanning and collector phases."
+      ],
+      "safepointSteps": [
+        "JVM requests a global safepoint (signal).",
+        "Threads stop at next safepoint (method return, loop back-edge).",
+        "Collector scans roots and marks objects.",
+        "Exit safepoint and resume threads."
+      ]
+    },
     "reachability": {
       "diagramTitle": "Object graph & tri-color marking",
       "rootsTitle": "GC Roots",

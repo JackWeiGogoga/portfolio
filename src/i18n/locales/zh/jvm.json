@@ -473,6 +473,94 @@
         ]
       }
     },
+    "generations": {
+      "whyTitle": "为什么要分代",
+      "triggersTitle": "触发条件",
+      "youngTitle": "新生代 GC（Minor GC）",
+      "oldTitle": "老年代 GC（Major/Full GC）",
+      "promoteTitle": "对象进入老年代的原因",
+      "stwTitle": "STW 与安全检查点",
+      "safepointTitle": "安全检查点机制（Safepoint）",
+      "safepointSignal": "发信号",
+      "safepointTabs": [
+        { "id": "why", "label": "为什么需要" },
+        { "id": "how", "label": "实现方式" },
+        { "id": "poll", "label": "Safepoint Poll" },
+        { "id": "stw", "label": "与 STW 关系" }
+      ],
+      "safepointContent": {
+        "why": {
+          "title": "为什么需要 Safepoint",
+          "summary": "GC 需要可枚举的 Roots，但线程正在运行时栈/寄存器引用是动态的，必须在安全位置停下。",
+          "items": [
+            "任意指令处停下会导致栈帧未完整、寄存器引用不可识别。",
+            "Safepoint 保证编译器能提供精确 Root Map。",
+            "避免漏标或误标导致的错误回收。"
+          ]
+        },
+        "how": {
+          "title": "Safepoint 实现流程",
+          "summary": "JVM 发出全局请求，各线程在下一次 safepoint 处停下，完成后恢复执行。",
+          "items": [
+            "JVM 发出 safepoint 请求（全局停顿）。",
+            "线程在方法返回、循环回边、调用点等安全位置停下。",
+            "GC 扫描 Roots 并完成标记/整理。",
+            "解除 safepoint，线程继续运行。"
+          ]
+        },
+        "poll": {
+          "title": "Safepoint Polling 机制",
+          "summary": "在热点位置插入“轮询指令”，通过内存页权限触发陷入。",
+          "items": [
+            "常见指令形态：test/ld 指令访问特定地址。",
+            "正常可读 -> 直接通过；触发 safepoint 时映射为不可读。",
+            "线程命中后产生 page fault 进入 safepoint 处理。"
+          ]
+        },
+        "stw": {
+          "title": "Safepoint 与 STW",
+          "summary": "STW 是结果，Safepoint 是保证停顿时状态安全可枚举的机制。",
+          "items": [
+            "STW 需要所有线程进入 safepoint 才开始 GC。",
+            "停顿时间由进入 safepoint、扫描 Roots 与清理阶段共同决定。",
+            "Safepoint 确保一致性与正确性，而非单纯“暂停”。"
+          ]
+        }
+      },
+      "whyItems": [
+        "大多数对象“朝生夕死”，新生代使用复制算法更高效。",
+        "老年代对象存活久，使用标记-整理/标记-清除更合适。",
+        "分代减少整体扫描范围，降低停顿时间。"
+      ],
+      "triggersYoung": [
+        "Eden 空间不足或分配失败触发 Minor GC。",
+        "TLAB 无法分配且共享分配失败。",
+        "某些收集器满足阈值触发（如 G1 年轻代占比）。"
+      ],
+      "triggersOld": [
+        "老年代空间不足（晋升失败或大对象分配失败）。",
+        "晋升担保失败（Promotion Failure）。",
+        "显式 Full GC（System.gc/调优参数触发）。",
+        "元空间或类元数据压力（类卸载/元空间扩容）。"
+      ],
+      "promoteItems": [
+        "对象达到晋升年龄阈值（Tenuring threshold）。",
+        "Survivor 空间不足，直接晋升。",
+        "大对象直接分配到老年代（预判避免复制成本）。",
+        "动态年龄判断：同龄对象过多提前晋升。"
+      ],
+      "stwItems": [
+        "STW（Stop-the-world）：GC 需要暂停所有 Java 线程。",
+        "安全检查点：线程在“安全位置”停下来，保证栈/寄存器一致。",
+        "STW 时间由根扫描、并发/并行阶段与清理阶段共同决定。"
+      ],
+      "safepointSteps": [
+        "JVM 发出全局 Safepoint 请求（“发信号”）。",
+        "各线程在下一次安全点停下（如方法返回、循环回边）。",
+        "收集器扫描根并标记对象。",
+        "完成后解除 Safepoint，线程恢复执行。"
+      ]
+    },
     "reachability": {
       "diagramTitle": "对象图与三色标记",
       "rootsTitle": "GC Roots",

@@ -196,6 +196,18 @@ export default function JvmLessonPage() {
   const gcCardTableWhy = t("gc.reachability.cardTableWhy", {
     returnObjects: true,
   }) as string[];
+  const gcGenerationsWhy = t("gc.generations.whyItems", {
+    returnObjects: true,
+  }) as string[];
+  const gcGenerationsYoung = t("gc.generations.triggersYoung", {
+    returnObjects: true,
+  }) as string[];
+  const gcGenerationsOld = t("gc.generations.triggersOld", {
+    returnObjects: true,
+  }) as string[];
+  const gcPromoteReasons = t("gc.generations.promoteItems", {
+    returnObjects: true,
+  }) as string[];
   const [activeLoadingStepId, setActiveLoadingStepId] = useState(
     classLoadingSteps[0]?.id ?? "load"
   );
@@ -280,6 +292,7 @@ export default function JvmLessonPage() {
   );
   const [gcMarkStepIndex, setGcMarkStepIndex] = useState(0);
   const [isGcMarkPlaying, setIsGcMarkPlaying] = useState(false);
+  const [activeSafepointTabId, setActiveSafepointTabId] = useState("why");
   const handleGcSectionChange = (sectionId: string) => {
     setIsGcMarkPlaying(false);
     setGcMarkStepIndex(0);
@@ -1720,7 +1733,8 @@ export default function JvmLessonPage() {
                   </div>
                   <div>{gcDetails[activeGcSectionId]?.summary}</div>
                   <ul className="list-disc pl-4 space-y-1">
-                    {(gcDetails[activeGcSectionId]?.items ??
+                    {(
+                      gcDetails[activeGcSectionId]?.items ??
                       gcSections.find((s) => s.id === activeGcSectionId)
                         ?.items ??
                       []
@@ -1771,18 +1785,36 @@ export default function JvmLessonPage() {
                                 <path d="M0,0 L6,3 L0,6 Z" fill="#9ca3af" />
                               </marker>
                             </defs>
-                            {([
-                              { from: "R", to: "A" },
-                              { from: "R", to: "B" },
-                              { from: "A", to: "C" },
-                              { from: "A", to: "D" },
-                              { from: "B", to: "E" },
-                              { from: "C", to: "F" },
-                              { from: "E", to: "G" },
-                            ] as Array<{
-                              from: "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G";
-                              to: "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G";
-                            }>).map((edge) => {
+                            {(
+                              [
+                                { from: "R", to: "A" },
+                                { from: "R", to: "B" },
+                                { from: "A", to: "C" },
+                                { from: "A", to: "D" },
+                                { from: "B", to: "E" },
+                                { from: "C", to: "F" },
+                                { from: "E", to: "G" },
+                              ] as Array<{
+                                from:
+                                  | "R"
+                                  | "A"
+                                  | "B"
+                                  | "C"
+                                  | "D"
+                                  | "E"
+                                  | "F"
+                                  | "G";
+                                to:
+                                  | "R"
+                                  | "A"
+                                  | "B"
+                                  | "C"
+                                  | "D"
+                                  | "E"
+                                  | "F"
+                                  | "G";
+                              }>
+                            ).map((edge) => {
                               const nodes: Record<
                                 "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G",
                                 { x: number; y: number }
@@ -1811,35 +1843,101 @@ export default function JvmLessonPage() {
                                 />
                               );
                             })}
-                            {([
-                              { id: "R", x: 20, y: 8 },
-                              { id: "A", x: 110, y: 48 },
-                              { id: "B", x: 210, y: 48 },
-                              { id: "C", x: 70, y: 118 },
-                              { id: "D", x: 150, y: 118 },
-                              { id: "E", x: 230, y: 118 },
-                              { id: "F", x: 50, y: 168 },
-                              { id: "G", x: 190, y: 168 },
-                            ] as Array<{
-                              id: "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G";
-                              x: number;
-                              y: number;
-                            }>).map((node) => {
+                            {(
+                              [
+                                { id: "R", x: 20, y: 8 },
+                                { id: "A", x: 110, y: 48 },
+                                { id: "B", x: 210, y: 48 },
+                                { id: "C", x: 70, y: 118 },
+                                { id: "D", x: 150, y: 118 },
+                                { id: "E", x: 230, y: 118 },
+                                { id: "F", x: 50, y: 168 },
+                                { id: "G", x: 190, y: 168 },
+                              ] as Array<{
+                                id:
+                                  | "R"
+                                  | "A"
+                                  | "B"
+                                  | "C"
+                                  | "D"
+                                  | "E"
+                                  | "F"
+                                  | "G";
+                                x: number;
+                                y: number;
+                              }>
+                            ).map((node) => {
                               const frameStates: Array<
                                 Record<
                                   "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G",
                                   "root" | "white" | "gray" | "black"
                                 >
                               > = [
-                                { R: "root", A: "white", B: "white", C: "white", D: "white", E: "white", F: "white", G: "white" },
-                                { R: "root", A: "gray", B: "gray", C: "white", D: "white", E: "white", F: "white", G: "white" },
-                                { R: "root", A: "black", B: "gray", C: "gray", D: "gray", E: "white", F: "white", G: "white" },
-                                { R: "root", A: "black", B: "black", C: "black", D: "gray", E: "gray", F: "white", G: "white" },
-                                { R: "root", A: "black", B: "black", C: "black", D: "black", E: "black", F: "gray", G: "gray" },
-                                { R: "root", A: "black", B: "black", C: "black", D: "black", E: "black", F: "black", G: "black" },
+                                {
+                                  R: "root",
+                                  A: "white",
+                                  B: "white",
+                                  C: "white",
+                                  D: "white",
+                                  E: "white",
+                                  F: "white",
+                                  G: "white",
+                                },
+                                {
+                                  R: "root",
+                                  A: "gray",
+                                  B: "gray",
+                                  C: "white",
+                                  D: "white",
+                                  E: "white",
+                                  F: "white",
+                                  G: "white",
+                                },
+                                {
+                                  R: "root",
+                                  A: "black",
+                                  B: "gray",
+                                  C: "gray",
+                                  D: "gray",
+                                  E: "white",
+                                  F: "white",
+                                  G: "white",
+                                },
+                                {
+                                  R: "root",
+                                  A: "black",
+                                  B: "black",
+                                  C: "black",
+                                  D: "gray",
+                                  E: "gray",
+                                  F: "white",
+                                  G: "white",
+                                },
+                                {
+                                  R: "root",
+                                  A: "black",
+                                  B: "black",
+                                  C: "black",
+                                  D: "black",
+                                  E: "black",
+                                  F: "gray",
+                                  G: "gray",
+                                },
+                                {
+                                  R: "root",
+                                  A: "black",
+                                  B: "black",
+                                  C: "black",
+                                  D: "black",
+                                  E: "black",
+                                  F: "black",
+                                  G: "black",
+                                },
                               ];
                               const state =
-                                frameStates[gcMarkStepIndex % frameStates.length][node.id];
+                                frameStates[
+                                  gcMarkStepIndex % frameStates.length
+                                ][node.id];
                               const fill =
                                 state === "root"
                                   ? "#d1fae5"
@@ -1909,12 +2007,18 @@ export default function JvmLessonPage() {
                           <div className="flex flex-wrap items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => setIsGcMarkPlaying((prev) => !prev)}
+                              onClick={() =>
+                                setIsGcMarkPlaying((prev) => !prev)
+                              }
                               className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
                             >
                               {isGcMarkPlaying
-                                ? t("classLoading.delegationDemo.controls.pause")
-                                : t("classLoading.delegationDemo.controls.play")}
+                                ? t(
+                                    "classLoading.delegationDemo.controls.pause"
+                                  )
+                                : t(
+                                    "classLoading.delegationDemo.controls.play"
+                                  )}
                             </button>
                             <button
                               type="button"
@@ -2107,6 +2211,109 @@ export default function JvmLessonPage() {
                             {item}
                           </div>
                         ))}
+                      </div>
+                    </section>
+                  </>
+                ) : activeGcSectionId === "generations" ? (
+                  <>
+                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                      <div className="text-xs font-mono text-graytext mb-2">
+                        {t("gc.generations.whyTitle")}
+                      </div>
+                      <ul className="list-disc pl-4 text-xs text-graytext space-y-1">
+                        {gcGenerationsWhy.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </section>
+
+                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                      <div className="text-xs font-mono text-graytext mb-2">
+                        {t("gc.generations.triggersTitle")}
+                      </div>
+                      <div className="grid gap-3 lg:grid-cols-2 text-xs text-graytext">
+                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2 space-y-2">
+                          <div className="text-[11px] uppercase text-graytext">
+                            {t("gc.generations.youngTitle")}
+                          </div>
+                          <ul className="list-disc pl-4 space-y-1">
+                            {gcGenerationsYoung.map((item) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2 space-y-2">
+                          <div className="text-[11px] uppercase text-graytext">
+                            {t("gc.generations.oldTitle")}
+                          </div>
+                          <ul className="list-disc pl-4 space-y-1">
+                            {gcGenerationsOld.map((item) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                      <div className="text-xs font-mono text-graytext mb-2">
+                        {t("gc.generations.promoteTitle")}
+                      </div>
+                      <ul className="list-disc pl-4 text-xs text-graytext space-y-1">
+                        {gcPromoteReasons.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </section>
+
+                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                      <div className="text-xs font-mono text-graytext mb-2">
+                        {t("gc.generations.stwTitle")}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(
+                          t("gc.generations.safepointTabs", {
+                            returnObjects: true,
+                          }) as { id: string; label: string }[]
+                        ).map((tab) => {
+                          const isActive = tab.id === activeSafepointTabId;
+                          return (
+                            <button
+                              key={tab.id}
+                              type="button"
+                              onClick={() => setActiveSafepointTabId(tab.id)}
+                              className={`rounded-md border px-2 py-1 text-[11px] ${
+                                isActive
+                                  ? "border-gray-500 bg-accent text-text"
+                                  : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
+                              }`}
+                            >
+                              {tab.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-2 rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2 text-xs text-graytext space-y-2">
+                        <div className="text-[11px] uppercase text-graytext">
+                          {t(
+                            `gc.generations.safepointContent.${activeSafepointTabId}.title`
+                          )}
+                        </div>
+                        <div>
+                          {t(
+                            `gc.generations.safepointContent.${activeSafepointTabId}.summary`
+                          )}
+                        </div>
+                        <ul className="list-disc pl-4 space-y-1">
+                          {(
+                            t(
+                              `gc.generations.safepointContent.${activeSafepointTabId}.items`,
+                              { returnObjects: true }
+                            ) as string[]
+                          ).map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
                       </div>
                     </section>
                   </>
