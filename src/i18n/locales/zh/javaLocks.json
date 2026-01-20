@@ -46,6 +46,127 @@
       "AQS 的独占/共享、阻塞/唤醒机制。",
       "Condition 与 wait/notify 的语义边界。"
     ],
+    "categoriesTitle": "Java 锁类型速览",
+    "categories": [
+      {
+        "title": "乐观锁 vs 悲观锁",
+        "table": {
+          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "rows": [
+            [
+              "乐观锁",
+              "CAS/版本号；Atomic*、LongAdder、StampedLock 乐观读",
+              "低冲突、读多写少、重试成本可控"
+            ],
+            [
+              "悲观锁",
+              "synchronized、ReentrantLock、读写锁写锁",
+              "冲突高或临界区较长，需要严格互斥"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "可重入锁 vs 非可重入锁",
+        "table": {
+          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "rows": [
+            [
+              "可重入锁",
+              "synchronized(监视器计数)、ReentrantLock(state 递增)",
+              "递归/调用链需要二次进入同一锁"
+            ],
+            [
+              "非可重入锁",
+              "自定义 AQS 非重入锁",
+              "强制顺序、避免误重入"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "公平锁 vs 非公平锁",
+        "table": {
+          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "rows": [
+            [
+              "公平锁",
+              "AQS 前驱检查（公平）",
+              "减少饥饿，响应时间更稳定"
+            ],
+            [
+              "非公平锁",
+              "CAS 抢占优先（非公平）",
+              "吞吐更高，适合短临界区"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "独享锁 vs 共享锁",
+        "table": {
+          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "rows": [
+            [
+              "独享锁",
+              "AQS 独占：synchronized、ReentrantLock、写锁",
+              "严格互斥"
+            ],
+            [
+              "共享锁",
+              "AQS 共享：读锁、Semaphore",
+              "读多写少或许可控制"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "无锁/偏向/轻量/重量",
+        "table": {
+          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "rows": [
+            [
+              "无锁",
+              "Mark Word 记录 hash/age",
+              "无竞争直接执行"
+            ],
+            [
+              "偏向锁",
+              "记录线程 ID，避免 CAS",
+              "单线程或低竞争"
+            ],
+            [
+              "轻量级锁",
+              "CAS + 栈锁记录 + 自旋",
+              "短时间竞争"
+            ],
+            [
+              "重量级锁",
+              "Monitor 阻塞/唤醒",
+              "高竞争或长临界区"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "自旋锁 vs 适应性自旋锁",
+        "table": {
+          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "rows": [
+            [
+              "自旋锁",
+              "JDK 6+ 默认启用；-XX:PreBlockSpin 可调",
+              "临界区很短，避免线程切换"
+            ],
+            [
+              "适应性自旋锁",
+              "根据历史成功、持锁线程状态、CPU 负载动态调整",
+              "减少无效自旋，平衡吞吐与延迟"
+            ]
+          ]
+        }
+      }
+    ],
     "landscapeTitle": "锁类型对比",
     "landscape": {
       "headers": ["类型", "语义", "可重入", "公平性", "典型场景"],
@@ -260,7 +381,7 @@
     "reentrantTitle": "ReentrantLock 示例",
     "reentrantCode": "private final ReentrantLock lock = new ReentrantLock(true);\n\npublic int tryUpdate() throws InterruptedException {\n  if (lock.tryLock(200, TimeUnit.MILLISECONDS)) {\n    try {\n      return ++counter;\n    } finally {\n      lock.unlock();\n    }\n  }\n  return -1;\n}",
     "conditionTitle": "Condition 示例",
-    "conditionCode": "private final Condition notEmpty = lock.newCondition();\n\npublic int take() throws InterruptedException {\n  lock.lock();\n  try {\n    while (queue.isEmpty()) {\n      notEmpty.await();\n    }\n    return queue.remove();\n  } finally {\n    lock.unlock();\n  }\n}\n\npublic void put(int item) {\n  lock.lock();\n  try {\n    queue.add(item);\n    notEmpty.signal();\n  } finally {\n    lock.unlock();\n  }\n}",
+    "conditionCode": "private final ReentrantLock lock = new ReentrantLock();\nprivate final Condition notEmpty = lock.newCondition();\n\npublic int take() throws InterruptedException {\n  lock.lock();\n  try {\n    while (queue.isEmpty()) {\n      notEmpty.await();\n    }\n    return queue.remove();\n  } finally {\n    lock.unlock();\n  }\n}\n\npublic void put(int item) {\n  lock.lock();\n  try {\n    queue.add(item);\n    notEmpty.signal();\n  } finally {\n    lock.unlock();\n  }\n}",
     "readWriteTitle": "ReadWriteLock 示例",
     "readWriteCode": "private final ReadWriteLock rw = new ReentrantReadWriteLock();\n\npublic String read() {\n  rw.readLock().lock();\n  try {\n    return cache;\n  } finally {\n    rw.readLock().unlock();\n  }\n}\n\npublic void write(String value) {\n  rw.writeLock().lock();\n  try {\n    cache = value;\n  } finally {\n    rw.writeLock().unlock();\n  }\n}",
     "stampedTitle": "StampedLock 乐观读",

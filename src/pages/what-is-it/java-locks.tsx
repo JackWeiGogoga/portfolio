@@ -55,9 +55,17 @@ type SimpleTableProps = {
 };
 
 function SimpleTable({ data }: SimpleTableProps) {
+  const hasThreeColumns = data.headers.length === 3;
   return (
     <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background text-xs text-text overflow-x-auto">
       <table className="w-full border-collapse">
+        {hasThreeColumns ? (
+          <colgroup>
+            <col className="w-[22%]" />
+            <col className="w-[34%]" />
+            <col className="w-[44%]" />
+          </colgroup>
+        ) : null}
         <thead>
           <tr className="text-graytext text-[10px] uppercase">
             {data.headers.map((header) => (
@@ -96,6 +104,9 @@ export default function JavaLocksLessonPage() {
   const overviewHighlights = t("overview.highlights", {
     returnObjects: true,
   }) as string[];
+  const overviewCategories = t("overview.categories", {
+    returnObjects: true,
+  }) as { title: string; table: TableData }[];
   const overviewPillars = t("overview.pillars", {
     returnObjects: true,
   }) as string[];
@@ -377,6 +388,24 @@ export default function JavaLocksLessonPage() {
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-[11px] uppercase text-graytext">
+                    {t("overview.categoriesTitle")}
+                  </div>
+                  <div className="grid gap-3">
+                    {overviewCategories.map((category) => (
+                      <div
+                        key={category.title}
+                        className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 space-y-2"
+                      >
+                        <div className="text-xs font-medium text-text">
+                          {category.title}
+                        </div>
+                        <SimpleTable data={category.table} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="text-[11px] uppercase text-graytext">

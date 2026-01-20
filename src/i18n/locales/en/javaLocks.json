@@ -46,6 +46,127 @@
       "AQS exclusive/shared modes and blocking strategy.",
       "Condition vs wait/notify semantics."
     ],
+    "categoriesTitle": "Lock Taxonomy",
+    "categories": [
+      {
+        "title": "Optimistic vs Pessimistic",
+        "table": {
+          "headers": ["Type", "Implementation/Classes", "Best Use & Notes"],
+          "rows": [
+            [
+              "Optimistic",
+              "CAS/version; Atomic*, LongAdder, StampedLock optimistic read",
+              "Low contention, read-heavy, cheap retries"
+            ],
+            [
+              "Pessimistic",
+              "synchronized, ReentrantLock, write lock",
+              "High contention or long critical sections"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "Reentrant vs Non-reentrant",
+        "table": {
+          "headers": ["Type", "Implementation/Classes", "Best Use & Notes"],
+          "rows": [
+            [
+              "Reentrant",
+              "synchronized (monitor count), ReentrantLock (state++)",
+              "Recursion or layered call chains"
+            ],
+            [
+              "Non-reentrant",
+              "Custom non-reentrant AQS lock",
+              "Prevent accidental reentry"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "Fair vs Non-fair",
+        "table": {
+          "headers": ["Type", "Implementation/Classes", "Best Use & Notes"],
+          "rows": [
+            [
+              "Fair",
+              "AQS predecessor check",
+              "Predictable latency, lower starvation"
+            ],
+            [
+              "Non-fair",
+              "CAS-first barging",
+              "Higher throughput for short sections"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "Exclusive vs Shared",
+        "table": {
+          "headers": ["Type", "Implementation/Classes", "Best Use & Notes"],
+          "rows": [
+            [
+              "Exclusive",
+              "AQS exclusive: synchronized, ReentrantLock, write lock",
+              "Strict mutual exclusion"
+            ],
+            [
+              "Shared",
+              "AQS shared: read lock, Semaphore",
+              "Read-heavy or permit control"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "No/Biased/Light/Heavy",
+        "table": {
+          "headers": ["Type", "Implementation/Classes", "Best Use & Notes"],
+          "rows": [
+            [
+              "No lock",
+              "Mark Word stores hash/age",
+              "No contention"
+            ],
+            [
+              "Biased",
+              "Store thread id to avoid CAS",
+              "Single thread or low contention"
+            ],
+            [
+              "Lightweight",
+              "CAS + stack lock record + spinning",
+              "Short contention"
+            ],
+            [
+              "Heavyweight",
+              "Monitor block/park",
+              "High contention or long sections"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "Spin vs Adaptive Spin",
+        "table": {
+          "headers": ["Type", "Implementation/Classes", "Best Use & Notes"],
+          "rows": [
+            [
+              "Spin",
+              "Enabled by default (JDK 6+); -XX:PreBlockSpin tuning",
+              "Very short critical sections"
+            ],
+            [
+              "Adaptive spin",
+              "Uses history, owner state, CPU load",
+              "Avoid wasted spinning"
+            ]
+          ]
+        }
+      }
+    ],
     "landscapeTitle": "Lock Types",
     "landscape": {
       "headers": ["Type", "Semantics", "Reentrant", "Fairness", "Typical Use"],
@@ -260,7 +381,7 @@
     "reentrantTitle": "ReentrantLock Example",
     "reentrantCode": "private final ReentrantLock lock = new ReentrantLock(true);\n\npublic int tryUpdate() throws InterruptedException {\n  if (lock.tryLock(200, TimeUnit.MILLISECONDS)) {\n    try {\n      return ++counter;\n    } finally {\n      lock.unlock();\n    }\n  }\n  return -1;\n}",
     "conditionTitle": "Condition Example",
-    "conditionCode": "private final Condition notEmpty = lock.newCondition();\n\npublic int take() throws InterruptedException {\n  lock.lock();\n  try {\n    while (queue.isEmpty()) {\n      notEmpty.await();\n    }\n    return queue.remove();\n  } finally {\n    lock.unlock();\n  }\n}\n\npublic void put(int item) {\n  lock.lock();\n  try {\n    queue.add(item);\n    notEmpty.signal();\n  } finally {\n    lock.unlock();\n  }\n}",
+    "conditionCode": "private final ReentrantLock lock = new ReentrantLock();\nprivate final Condition notEmpty = lock.newCondition();\n\npublic int take() throws InterruptedException {\n  lock.lock();\n  try {\n    while (queue.isEmpty()) {\n      notEmpty.await();\n    }\n    return queue.remove();\n  } finally {\n    lock.unlock();\n  }\n}\n\npublic void put(int item) {\n  lock.lock();\n  try {\n    queue.add(item);\n    notEmpty.signal();\n  } finally {\n    lock.unlock();\n  }\n}",
     "readWriteTitle": "ReadWriteLock Example",
     "readWriteCode": "private final ReadWriteLock rw = new ReentrantReadWriteLock();\n\npublic String read() {\n  rw.readLock().lock();\n  try {\n    return cache;\n  } finally {\n    rw.readLock().unlock();\n  }\n}\n\npublic void write(String value) {\n  rw.writeLock().lock();\n  try {\n    cache = value;\n  } finally {\n    rw.writeLock().unlock();\n  }\n}",
     "stampedTitle": "StampedLock Optimistic Read",
