@@ -428,8 +428,10 @@
   },
   "gc": {
     "title": "垃圾回收基础（概览）",
+    "placeholder": "更多内容正在整理中…",
     "sections": [
       {
+        "id": "reachability",
         "title": "对象存活判定",
         "items": [
           "可达性分析（GC Roots）",
@@ -438,10 +440,12 @@
         ]
       },
       {
+        "id": "generations",
         "title": "分代与触发",
         "items": ["新生代 Minor GC，老年代 Full GC", "晋升与 Survivor 复制", "STW（Stop-the-world）暂停"]
       },
       {
+        "id": "algorithms",
         "title": "常见算法/收集器",
         "items": [
           "标记-清除、复制、标记-整理",
@@ -449,7 +453,68 @@
           "吞吐量 vs 延迟的权衡"
         ]
       }
-    ]
+    ],
+    "details": {
+      "reachability": {
+        "title": "对象存活判定（深入）",
+        "summary": "从 GC Roots 出发进行可达性分析，通过三色标记跟踪对象状态；并行标记、写屏障与卡表用于保证一致性与跨代记录。",
+        "items": [
+          "三色标记：白=未访问，灰=已访问但子节点未扫描，黑=已扫描完成。",
+          "并行标记：多个线程同时扫描对象图，但需要写屏障保证一致性。",
+          "跨代引用：老年代指向新生代需要记录，避免全堆扫描。",
+          "卡表（Card Table）：按块记录“脏”区域，配合 Remembered Set。",
+          "写屏障：在指针更新时记录/修正三色不变式（如增量更新、SATB）。"
+        ],
+        "legend": [
+          { "label": "白色：不可达候选", "color": "bg-gray-200" },
+          { "label": "灰色：待扫描", "color": "bg-yellow-300/70" },
+          { "label": "黑色：已扫描", "color": "bg-gray-700" },
+          { "label": "绿色：GC Roots", "color": "bg-emerald-300/70" }
+        ]
+      }
+    },
+    "reachability": {
+      "diagramTitle": "对象图与三色标记",
+      "rootsTitle": "GC Roots",
+      "graphTitle": "对象图（简化）",
+      "tricolorTitle": "三色标记规则",
+      "cardTableTitle": "卡表（Card Table）",
+      "cardTableOldGen": "老年代卡表区域",
+      "cardTableYoungGen": "新生代",
+      "cardTableNote": "脏卡表示老年代存在指向新生代的引用。",
+      "writeBarrierTitle": "并行标记与写屏障",
+      "roots": [
+        "线程栈中的局部变量",
+        "静态变量（方法区/元空间）",
+        "JNI 引用"
+      ],
+      "graph": [
+        { "id": "R", "state": "root" },
+        { "id": "A", "state": "gray" },
+        { "id": "B", "state": "gray" },
+        { "id": "C", "state": "black" },
+        { "id": "D", "state": "white" },
+        { "id": "E", "state": "black" },
+        { "id": "F", "state": "white" },
+        { "id": "G", "state": "gray" },
+        { "id": "H", "state": "black" },
+        { "id": "I", "state": "white" },
+        { "id": "J", "state": "black" },
+        { "id": "K", "state": "white" }
+      ],
+      "tricolorSteps": [
+        "根集直接可达对象标记为灰色",
+        "从灰色对象出发扫描子引用，子对象变灰",
+        "扫描完成的对象标记为黑色",
+        "最终剩余白色对象可回收"
+      ],
+      "writeBarrier": [
+        "SATB：并发标记前记录旧引用，保证漏标不发生",
+        "增量更新：新引用写入时标记目标为灰",
+        "跨代引用写屏障更新卡表，避免扫描老年代全量对象",
+        "并行标记需保证三色不变式：黑对象不直接指向白对象"
+      ]
+    }
   },
   "sections": {
     "runtimeDiagram": "JVM 组成示意图（点击运行时数据区查看细节）",

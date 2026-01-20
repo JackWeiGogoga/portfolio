@@ -130,8 +130,16 @@ type ResolutionInfo = {
 };
 
 type GcSection = {
+  id: string;
   title: string;
   items: string[];
+};
+
+type GcDetail = {
+  title: string;
+  summary: string;
+  items: string[];
+  legend?: { label: string; color: string }[];
 };
 
 type RuntimeAreaDetail = {
@@ -173,6 +181,21 @@ export default function JvmLessonPage() {
     returnObjects: true,
   }) as string[];
   const gcSections = t("gc.sections", { returnObjects: true }) as GcSection[];
+  const gcDetails = t("gc.details", {
+    returnObjects: true,
+  }) as Record<string, GcDetail>;
+  const gcReachabilityRoots = t("gc.reachability.roots", {
+    returnObjects: true,
+  }) as string[];
+  const gcReachabilityGraph = t("gc.reachability.graph", {
+    returnObjects: true,
+  }) as { id: string; state: string }[];
+  const gcReachabilitySteps = t("gc.reachability.tricolorSteps", {
+    returnObjects: true,
+  }) as string[];
+  const gcReachabilityBarriers = t("gc.reachability.writeBarrier", {
+    returnObjects: true,
+  }) as string[];
   const [activeLoadingStepId, setActiveLoadingStepId] = useState(
     classLoadingSteps[0]?.id ?? "load"
   );
@@ -252,6 +275,16 @@ export default function JvmLessonPage() {
   const [activeAreaId, setActiveAreaId] = useState(
     runtimeAreas[0]?.id ?? "heap"
   );
+  const [activeGcSectionId, setActiveGcSectionId] = useState(
+    gcSections[0]?.id ?? "reachability"
+  );
+  const [gcMarkStepIndex, setGcMarkStepIndex] = useState(0);
+  const [isGcMarkPlaying, setIsGcMarkPlaying] = useState(false);
+  const handleGcSectionChange = (sectionId: string) => {
+    setIsGcMarkPlaying(false);
+    setGcMarkStepIndex(0);
+    setActiveGcSectionId(sectionId);
+  };
   const handleScenarioChange = (scenarioId: string) => {
     setIsDemoPlaying(false);
     setDemoStepIndex(0);
@@ -381,6 +414,18 @@ export default function JvmLessonPage() {
     }, 1400);
     return () => window.clearInterval(timer);
   }, [isDemoPlaying, demoSteps.length]);
+
+  useEffect(() => {
+    if (!isGcMarkPlaying) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      setGcMarkStepIndex((prev) =>
+        prev < gcReachabilitySteps.length - 1 ? prev + 1 : 0
+      );
+    }, 1400);
+    return () => window.clearInterval(timer);
+  }, [isGcMarkPlaying, gcReachabilitySteps.length]);
 
   useEffect(() => {
     const updateViewport = () => {
@@ -1628,22 +1673,466 @@ export default function JvmLessonPage() {
             <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
               {t("gc.title")}
             </div>
-            <div className="p-4 grid gap-3 md:grid-cols-3">
-              {gcSections.map((section) => (
-                <div
-                  key={section.title}
-                  className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2"
-                >
+            <div className="p-4 space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {gcSections.map((section) => {
+                  const isActive = section.id === activeGcSectionId;
+                  return (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => handleGcSectionChange(section.id)}
+                      className={`rounded-md border px-3 py-1 text-xs ${
+                        isActive
+                          ? "border-gray-500 bg-accent text-text"
+                          : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
+                      }`}
+                    >
+                      {section.title}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="grid gap-4 lg:grid-cols-[1.1fr_1.4fr]">
+                <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2">
                   <div className="text-sm font-medium text-text">
-                    {section.title}
+                    {gcDetails[activeGcSectionId]?.title ??
+                      gcSections.find((s) => s.id === activeGcSectionId)?.title}
                   </div>
+                  <div>{gcDetails[activeGcSectionId]?.summary}</div>
                   <ul className="list-disc pl-4 space-y-1">
-                    {section.items.map((item) => (
+                    {(gcDetails[activeGcSectionId]?.items ??
+                      gcSections.find((s) => s.id === activeGcSectionId)
+                        ?.items ??
+                      []
+                    ).map((item) => (
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
                 </div>
-              ))}
+
+                {activeGcSectionId === "reachability" ? (
+                  <div className="space-y-3">
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+                      <div className="text-xs font-mono text-graytext mb-2">
+                        {t("gc.reachability.diagramTitle")}
+                      </div>
+                      <div className="grid gap-3">
+                        <div className="grid gap-3 lg:grid-cols-[1.1fr_1.4fr]">
+                          <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-graytext space-y-2">
+                            <div className="text-[11px] uppercase text-graytext">
+                              {t("gc.reachability.rootsTitle")}
+                            </div>
+                            <div className="grid gap-2">
+                              {gcReachabilityRoots.map((root) => (
+                                <div
+                                  key={root}
+                                  className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-1 text-[11px] text-text"
+                                >
+                                  {root}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-3 text-[11px] text-graytext">
+                              {t("gc.reachability.graphTitle")}
+                            </div>
+                            <div className="mt-2 rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2">
+                              <div className="grid grid-cols-6 gap-1">
+                                {gcReachabilityGraph.map((node) => (
+                                  <div
+                                    key={node.id}
+                                    className={`h-5 rounded border text-[10px] flex items-center justify-center ${
+                                      node.state === "white"
+                                        ? "border-gray-300 bg-background text-graytext"
+                                        : node.state === "gray"
+                                          ? "border-yellow-300/70 bg-yellow-200/40 text-yellow-700"
+                                          : node.state === "black"
+                                            ? "border-gray-600 bg-gray-700 text-white"
+                                            : "border-emerald-400/70 bg-emerald-200/50 text-emerald-700"
+                                    }`}
+                                  >
+                                    {node.id}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
+                              {gcDetails.reachability?.legend?.map((legend) => (
+                                <div
+                                  key={legend.label}
+                                  className="flex items-center gap-1 rounded-full border border-gray-300 dark:border-white/15 px-2 py-0.5"
+                                >
+                                  <span
+                                    className={`inline-block h-2 w-2 rounded-full ${legend.color}`}
+                                  />
+                                  <span>{legend.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-graytext space-y-3">
+                            <div className="text-[11px] uppercase text-graytext">
+                              {t("gc.reachability.tricolorTitle")}
+                            </div>
+                            <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card p-2">
+                              <svg
+                                viewBox="0 0 300 200"
+                                className="w-full h-48"
+                                aria-hidden="true"
+                              >
+                                <defs>
+                                  <marker
+                                    id="arrow"
+                                    markerWidth="6"
+                                    markerHeight="6"
+                                    refX="5"
+                                    refY="3"
+                                    orient="auto"
+                                  >
+                                    <path d="M0,0 L6,3 L0,6 Z" fill="#9ca3af" />
+                                  </marker>
+                                </defs>
+                                {([
+                                  { from: "R", to: "A" },
+                                  { from: "R", to: "B" },
+                                  { from: "A", to: "C" },
+                                  { from: "A", to: "D" },
+                                  { from: "B", to: "E" },
+                                  { from: "C", to: "F" },
+                                  { from: "E", to: "G" },
+                                ] as Array<{
+                                  from: "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G";
+                                  to: "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G";
+                                }>).map((edge) => {
+                                  const nodes: Record<
+                                    "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G",
+                                    { x: number; y: number }
+                                  > = {
+                                    R: { x: 30, y: 20 },
+                                    A: { x: 120, y: 60 },
+                                    B: { x: 220, y: 60 },
+                                    C: { x: 80, y: 130 },
+                                    D: { x: 160, y: 130 },
+                                    E: { x: 240, y: 130 },
+                                    F: { x: 60, y: 180 },
+                                    G: { x: 200, y: 180 },
+                                  };
+                                  const from = nodes[edge.from];
+                                  const to = nodes[edge.to];
+                                  return (
+                                    <line
+                                      key={`${edge.from}-${edge.to}`}
+                                      x1={from.x}
+                                      y1={from.y}
+                                      x2={to.x}
+                                      y2={to.y}
+                                      stroke="#9ca3af"
+                                      strokeWidth="1"
+                                      markerEnd="url(#arrow)"
+                                    />
+                                  );
+                                })}
+                                {([
+                                  { id: "R", x: 20, y: 8 },
+                                  { id: "A", x: 110, y: 48 },
+                                  { id: "B", x: 210, y: 48 },
+                                  { id: "C", x: 70, y: 118 },
+                                  { id: "D", x: 150, y: 118 },
+                                  { id: "E", x: 230, y: 118 },
+                                  { id: "F", x: 50, y: 168 },
+                                  { id: "G", x: 190, y: 168 },
+                                ] as Array<{
+                                  id: "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G";
+                                  x: number;
+                                  y: number;
+                                }>).map((node) => {
+                                  const frameStates: Array<
+                                    Record<
+                                      "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G",
+                                      "root" | "white" | "gray" | "black"
+                                    >
+                                  > = [
+                                    { R: "root", A: "white", B: "white", C: "white", D: "white", E: "white", F: "white", G: "white" },
+                                    { R: "root", A: "gray", B: "gray", C: "white", D: "white", E: "white", F: "white", G: "white" },
+                                    { R: "root", A: "black", B: "gray", C: "gray", D: "gray", E: "white", F: "white", G: "white" },
+                                    { R: "root", A: "black", B: "black", C: "black", D: "gray", E: "gray", F: "white", G: "white" },
+                                    { R: "root", A: "black", B: "black", C: "black", D: "black", E: "black", F: "gray", G: "gray" },
+                                    { R: "root", A: "black", B: "black", C: "black", D: "black", E: "black", F: "black", G: "black" },
+                                  ];
+                                  const state =
+                                    frameStates[gcMarkStepIndex % frameStates.length][node.id];
+                                  const fill =
+                                    state === "root"
+                                      ? "#d1fae5"
+                                      : state === "gray"
+                                        ? "#fde68a"
+                                        : state === "black"
+                                          ? "#374151"
+                                          : "#f3f4f6";
+                                  const stroke =
+                                    state === "black" ? "#111827" : "#9ca3af";
+                                  const text =
+                                    state === "black" ? "#f9fafb" : "#111827";
+                                  return (
+                                    <g key={node.id}>
+                                      <rect
+                                        x={node.x}
+                                        y={node.y}
+                                        rx="6"
+                                        ry="6"
+                                        width="32"
+                                        height="24"
+                                        fill={fill}
+                                        stroke={stroke}
+                                      />
+                                      <text
+                                        x={node.x + 16}
+                                        y={node.y + 16}
+                                        textAnchor="middle"
+                                        fontSize="10"
+                                        fill={text}
+                                      >
+                                        {node.id}
+                                      </text>
+                                    </g>
+                                  );
+                                })}
+                              </svg>
+                            </div>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {gcReachabilitySteps.map((step, index) => (
+                                <div
+                                  key={step}
+                                  className={`rounded-md border px-2 py-1 text-[11px] ${
+                                    index === gcMarkStepIndex
+                                      ? "border-gray-500 bg-accent text-text"
+                                      : "border-gray-300 dark:border-white/15 bg-background text-graytext"
+                                  }`}
+                                >
+                                  {step}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setIsGcMarkPlaying((prev) => !prev)}
+                                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+                              >
+                                {isGcMarkPlaying
+                                  ? t("classLoading.delegationDemo.controls.pause")
+                                  : t("classLoading.delegationDemo.controls.play")}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setGcMarkStepIndex((prev) =>
+                                    prev < gcReachabilitySteps.length - 1
+                                      ? prev + 1
+                                      : prev
+                                  )
+                                }
+                                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+                              >
+                                {t("classLoading.delegationDemo.controls.step")}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setGcMarkStepIndex((prev) =>
+                                    prev > 0 ? prev - 1 : prev
+                                  )
+                                }
+                                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+                              >
+                                {t("classLoading.delegationDemo.controls.back")}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsGcMarkPlaying(false);
+                                  setGcMarkStepIndex(0);
+                                }}
+                                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+                              >
+                                {t("classLoading.delegationDemo.controls.reset")}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-2 py-2 text-xs text-graytext space-y-2">
+                          <div className="text-[11px] uppercase text-graytext">
+                            {t("gc.reachability.writeBarrierTitle")}
+                          </div>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            {gcReachabilityBarriers.map((item) => (
+                              <div
+                                key={item}
+                                className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-1 text-[11px]"
+                              >
+                                {item}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-2 rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2">
+                            <div className="text-[11px] uppercase text-graytext mb-2">
+                              {t("gc.reachability.cardTableTitle")}
+                            </div>
+                            <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-2 py-2">
+                              <svg
+                                viewBox="0 0 340 150"
+                                className="w-full h-40"
+                                aria-hidden="true"
+                              >
+                                <defs>
+                                  <marker
+                                    id="card-arrow"
+                                    markerWidth="6"
+                                    markerHeight="6"
+                                    refX="5"
+                                    refY="3"
+                                    orient="auto"
+                                  >
+                                    <path d="M0,0 L6,3 L0,6 Z" fill="#f59e0b" />
+                                  </marker>
+                                </defs>
+                                <rect
+                                  x="8"
+                                  y="18"
+                                  width="200"
+                                  height="128"
+                                  rx="8"
+                                  fill="#f8fafc"
+                                  stroke="#cbd5f5"
+                                />
+                                <text
+                                  x="18"
+                                  y="34"
+                                  fontSize="10"
+                                  fill="#64748b"
+                                >
+                                  {t("gc.reachability.cardTableOldGen")}
+                                </text>
+                                {Array.from({ length: 40 }).map((_, idx) => {
+                                  const col = idx % 8;
+                                  const row = Math.floor(idx / 8);
+                                  const x = 20 + col * 22;
+                                  const y = 46 + row * 18;
+                                  const isDirty = [3, 7, 12, 18, 24, 29].includes(
+                                    idx
+                                  );
+                                  return (
+                                    <rect
+                                      key={idx}
+                                      x={x}
+                                      y={y}
+                                      width="18"
+                                      height="14"
+                                      rx="3"
+                                      fill={isDirty ? "#fecaca" : "#f1f5f9"}
+                                      stroke={isDirty ? "#f43f5e" : "#cbd5f5"}
+                                    />
+                                  );
+                                })}
+                                <text
+                                  x="238"
+                                  y="28"
+                                  fontSize="10"
+                                  fill="#0e7490"
+                                >
+                                  {t("gc.reachability.cardTableYoungGen")}
+                                </text>
+                                <rect
+                                  x="230"
+                                  y="50"
+                                  width="110"
+                                  height="44"
+                                  rx="10"
+                                  fill="#ecfeff"
+                                  stroke="#67e8f9"
+                                />
+                                <line
+                                  x1="318"
+                                  y1="50"
+                                  x2="318"
+                                  y2="94"
+                                  stroke="#67e8f9"
+                                  strokeWidth="1"
+                                />
+                                <line
+                                  x1="329"
+                                  y1="50"
+                                  x2="329"
+                                  y2="94"
+                                  stroke="#67e8f9"
+                                  strokeWidth="1"
+                                />
+                                <text
+                                  x="274"
+                                  y="76"
+                                  fontSize="10"
+                                  textAnchor="middle"
+                                  fill="#0e7490"
+                                >
+                                  Eden
+                                </text>
+                                <text
+                                  x="323.5"
+                                  y="76"
+                                  fontSize="8"
+                                  textAnchor="middle"
+                                  fill="#0e7490"
+                                >
+                                  S0
+                                </text>
+                                <text
+                                  x="334.5"
+                                  y="76"
+                                  fontSize="8"
+                                  textAnchor="middle"
+                                  fill="#0e7490"
+                                >
+                                  S1
+                                </text>
+                                {[
+                                  { idx: 7, target: { x: 260, y: 72 } },
+                                  { idx: 29, target: { x: 324, y: 72 } },
+                                ].map((edge) => {
+                                  const col = edge.idx % 8;
+                                  const row = Math.floor(edge.idx / 8);
+                                  const x1 = 20 + col * 22 + 9;
+                                  const y1 = 46 + row * 18 + 7;
+                                  return (
+                                    <line
+                                      key={edge.idx}
+                                      x1={x1}
+                                      y1={y1}
+                                      x2={edge.target.x}
+                                      y2={edge.target.y}
+                                      stroke="#f59e0b"
+                                      strokeWidth="1.5"
+                                      markerEnd="url(#card-arrow)"
+                                    />
+                                  );
+                                })}
+                              </svg>
+                            </div>
+                            <div className="mt-2 text-[11px] text-graytext">
+                              {t("gc.reachability.cardTableNote")}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext">
+                    {t("gc.placeholder")}
+                  </div>
+                )}
+              </div>
             </div>
           </section>
         ) : null}

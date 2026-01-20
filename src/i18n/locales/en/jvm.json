@@ -428,8 +428,10 @@
   },
   "gc": {
     "title": "Garbage Collection (overview)",
+    "placeholder": "More content is being prepared…",
     "sections": [
       {
+        "id": "reachability",
         "title": "Reachability",
         "items": [
           "Reachability analysis (GC Roots)",
@@ -438,6 +440,7 @@
         ]
       },
       {
+        "id": "generations",
         "title": "Generations & triggers",
         "items": [
           "Young/Major (Minor/Full) GC",
@@ -446,6 +449,7 @@
         ]
       },
       {
+        "id": "algorithms",
         "title": "Algorithms/collectors",
         "items": [
           "Mark-sweep, copying, mark-compact",
@@ -453,7 +457,68 @@
           "Throughput vs latency tradeoffs"
         ]
       }
-    ]
+    ],
+    "details": {
+      "reachability": {
+        "title": "Reachability (deep dive)",
+        "summary": "Start from GC Roots and traverse the graph with tri-color marking; concurrent marking relies on write barriers, card tables, and remembered sets.",
+        "items": [
+          "Tri-color: white = unseen, gray = discovered not scanned, black = scanned.",
+          "Concurrent marking: multiple threads scan in parallel; barriers preserve correctness.",
+          "Cross-generation refs: old → young must be recorded to avoid full-heap scan.",
+          "Card table: tracks dirty regions; used by remembered sets.",
+          "Write barriers: maintain tri-color invariant (SATB or incremental update)."
+        ],
+        "legend": [
+          { "label": "White: candidate garbage", "color": "bg-gray-200" },
+          { "label": "Gray: to be scanned", "color": "bg-yellow-300/70" },
+          { "label": "Black: scanned", "color": "bg-gray-700" },
+          { "label": "Green: GC Roots", "color": "bg-emerald-300/70" }
+        ]
+      }
+    },
+    "reachability": {
+      "diagramTitle": "Object graph & tri-color marking",
+      "rootsTitle": "GC Roots",
+      "graphTitle": "Object graph (simplified)",
+      "tricolorTitle": "Tri-color rules",
+      "cardTableTitle": "Card Table",
+      "cardTableOldGen": "Old gen card table",
+      "cardTableYoungGen": "Young gen",
+      "cardTableNote": "Dirty cards record old-to-young references.",
+      "writeBarrierTitle": "Concurrent marking & write barriers",
+      "roots": [
+        "Local variables on thread stacks",
+        "Static fields (method area/metaspace)",
+        "JNI references"
+      ],
+      "graph": [
+        { "id": "R", "state": "root" },
+        { "id": "A", "state": "gray" },
+        { "id": "B", "state": "gray" },
+        { "id": "C", "state": "black" },
+        { "id": "D", "state": "white" },
+        { "id": "E", "state": "black" },
+        { "id": "F", "state": "white" },
+        { "id": "G", "state": "gray" },
+        { "id": "H", "state": "black" },
+        { "id": "I", "state": "white" },
+        { "id": "J", "state": "black" },
+        { "id": "K", "state": "white" }
+      ],
+      "tricolorSteps": [
+        "Roots mark their directly reachable objects as gray",
+        "Scan gray objects; referenced objects become gray",
+        "When finished scanning, mark the object black",
+        "Remaining white objects are reclaimable"
+      ],
+      "writeBarrier": [
+        "SATB: record old reference before mutation to avoid missing",
+        "Incremental update: new reference marks target gray",
+        "Old→young refs update card table to avoid scanning all old gen",
+        "Tri-color invariant: black objects must not point to white"
+      ]
+    }
   },
   "sections": {
     "runtimeDiagram": "JVM components overview (click runtime data areas for details)",
