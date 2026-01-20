@@ -1,15 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
-import { motion } from "motion/react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Layout from "@/components/Layout";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ROUTES } from "@/config/constants";
 import {
   bytecodeLines,
@@ -18,6 +12,25 @@ import {
   getOpcodeFromLine,
   sourceLines,
 } from "@/config/jvmLesson";
+import GcAlgorithmsDemo from "@/pages/what-is-it/jvm/GcAlgorithmsDemo";
+import GcReachability from "@/pages/what-is-it/jvm/GcReachability";
+import DelegationDemo from "@/pages/what-is-it/jvm/DelegationDemo";
+import ExecutionDemo from "@/pages/what-is-it/jvm/ExecutionDemo";
+import ClassFileVerify from "@/pages/what-is-it/jvm/ClassFileVerify";
+import PrepareDiagram from "@/pages/what-is-it/jvm/PrepareDiagram";
+import GcGenerations from "@/pages/what-is-it/jvm/GcGenerations";
+import type {
+  ClassFileInfo,
+  ClassLoadingStep,
+  DelegationDemoLoader,
+  DelegationDemoScenario,
+  GcDetail,
+  GcSection,
+  PageTab,
+  ResolutionInfo,
+  RuntimeArea,
+  RuntimeAreaDetail,
+} from "@/pages/what-is-it/jvm/types";
 
 const parseLocals = (locals: string[]) =>
   locals.map((entry, index) => {
@@ -66,87 +79,6 @@ const getClassFileTypeTooltip = (
   return "";
 };
 
-type RuntimeArea = {
-  id: string;
-  name: string;
-  stored: string;
-  ownership: string;
-  notes: string[];
-  scopeTag: string;
-};
-
-type DetailTab = {
-  id: string;
-  label: string;
-  items?: string[];
-  diagram?: string[];
-};
-
-type PageTab = {
-  id: string;
-  label: string;
-  description?: string;
-};
-
-type ClassLoadingStep = {
-  id: string;
-  title: string;
-  summary: string;
-  items: string[];
-};
-
-type DelegationDemoLoader = {
-  id: string;
-  title: string;
-  desc: string;
-};
-
-type DelegationDemoStep = {
-  loaderId: string;
-  direction: "up" | "down" | "load";
-  action: string;
-  result: string;
-};
-
-type DelegationDemoScenario = {
-  id: string;
-  label: string;
-  className: string;
-  desc: string;
-  steps: DelegationDemoStep[];
-};
-
-type ClassFileInfo = {
-  table: {
-    headers: string[];
-    rows: string[][];
-  };
-  constantPool: string[];
-};
-
-type ResolutionInfo = {
-  constantTypes: string[];
-  deferred: string[];
-  note?: string;
-};
-
-type GcSection = {
-  id: string;
-  title: string;
-  items: string[];
-};
-
-type GcDetail = {
-  title: string;
-  summary: string;
-  items: string[];
-  legend?: { label: string; color: string }[];
-};
-
-type RuntimeAreaDetail = {
-  summary: string;
-  tabs: DetailTab[];
-};
 
 export default function JvmLessonPage() {
   const { t } = useTranslation("jvm");
@@ -219,6 +151,64 @@ export default function JvmLessonPage() {
     youngAlgorithms: string[];
     oldAlgorithms: string[];
     steps: Record<string, string[]>;
+    note: string;
+  };
+  const gcReachabilityLabels = {
+    rootsTitle: t("gc.reachability.rootsTitle"),
+    tricolorTitle: t("gc.reachability.tricolorTitle"),
+    cardTableTitle: t("gc.reachability.cardTableTitle"),
+    writeBarrierTitle: t("gc.reachability.writeBarrierTitle"),
+    cardTableOldGen: t("gc.reachability.cardTableOldGen"),
+    cardTableYoungGen: t("gc.reachability.cardTableYoungGen"),
+    cardTableNote: t("gc.reachability.cardTableNote"),
+  };
+  const gcReachabilityControls = {
+    play: t("classLoading.delegationDemo.controls.play"),
+    pause: t("classLoading.delegationDemo.controls.pause"),
+    step: t("classLoading.delegationDemo.controls.step"),
+    back: t("classLoading.delegationDemo.controls.back"),
+    reset: t("classLoading.delegationDemo.controls.reset"),
+  };
+  const delegationDemoLabels = {
+    overviewTitle: t("classLoading.overview.title"),
+    flowTitle: t("classLoading.delegationDemo.flowTitle"),
+    stepTitle: t("classLoading.delegationDemo.stepTitle"),
+    empty: t("classLoading.delegationDemo.empty"),
+    loaded: t("classLoading.delegationDemo.loaded"),
+    loadedBy: t("classLoading.delegationDemo.loadedBy"),
+    controls: {
+      play: t("classLoading.delegationDemo.controls.play"),
+      pause: t("classLoading.delegationDemo.controls.pause"),
+      step: t("classLoading.delegationDemo.controls.step"),
+      back: t("classLoading.delegationDemo.controls.back"),
+      reset: t("classLoading.delegationDemo.controls.reset"),
+    },
+  };
+  const executionLabels = {
+    sectionTitle: t("sections.execution"),
+    sourceLabel: t("execution.sourceLabel"),
+    bytecodeLabel: t("execution.bytecodeLabel"),
+    currentInstruction: t("execution.currentInstruction"),
+    instructionNote: t("execution.instructionNote"),
+  };
+  const classFileLabels = {
+    sectionTitle: t("classLoading.sections.classFile"),
+    structureTitle: t("classLoading.classFile.structureTitle"),
+    constantPoolTitle: t("classLoading.classFile.constantPoolTitle"),
+  };
+  const prepareDiagramLabels = {
+    title: t("classLoading.prepareDiagram.title"),
+    jdk6Title: t("classLoading.prepareDiagram.jdk6Title"),
+    jdk8Title: t("classLoading.prepareDiagram.jdk8Title"),
+    jvmMemory: t("classLoading.prepareDiagram.labels.jvmMemory"),
+    methodArea: t("classLoading.prepareDiagram.labels.methodArea"),
+    metadata: t("classLoading.prepareDiagram.labels.metadata"),
+    runtimeData: t("classLoading.prepareDiagram.labels.runtimeData"),
+    heap: t("classLoading.prepareDiagram.labels.heap"),
+    classObjects: t("classLoading.prepareDiagram.labels.classObjects"),
+    nativeMemory: t("classLoading.prepareDiagram.labels.nativeMemory"),
+    metaspace: t("classLoading.prepareDiagram.labels.metaspace"),
+    note: t("classLoading.prepareDiagram.note"),
   };
   const [activeLoadingStepId, setActiveLoadingStepId] = useState(
     classLoadingSteps[0]?.id ?? "load"
@@ -308,6 +298,40 @@ export default function JvmLessonPage() {
   const [activeGcAlgoId, setActiveGcAlgoId] = useState("copy");
   const [gcAlgoStepIndex, setGcAlgoStepIndex] = useState(0);
   const [isGcAlgoPlaying, setIsGcAlgoPlaying] = useState(false);
+  const gcGenerationsLabels = {
+    whyTitle: t("gc.generations.whyTitle"),
+    triggersTitle: t("gc.generations.triggersTitle"),
+    youngTitle: t("gc.generations.youngTitle"),
+    oldTitle: t("gc.generations.oldTitle"),
+    promoteTitle: t("gc.generations.promoteTitle"),
+    stwTitle: t("gc.generations.stwTitle"),
+    safepointTabs: t("gc.generations.safepointTabs", {
+      returnObjects: true,
+    }) as { id: string; label: string }[],
+    safepointTitle: t(
+      `gc.generations.safepointContent.${activeSafepointTabId}.title`
+    ),
+    safepointSummary: t(
+      `gc.generations.safepointContent.${activeSafepointTabId}.summary`
+    ),
+    safepointItems: t(
+      `gc.generations.safepointContent.${activeSafepointTabId}.items`,
+      { returnObjects: true }
+    ) as string[],
+  };
+  const gcGenerationsStwContent = (
+    <div className="mt-2 rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2 text-xs text-graytext space-y-2">
+      <div className="text-[11px] uppercase text-graytext">
+        {gcGenerationsLabels.safepointTitle}
+      </div>
+      <div>{gcGenerationsLabels.safepointSummary}</div>
+      <ul className="list-disc pl-4 space-y-1">
+        {gcGenerationsLabels.safepointItems.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
   const handleGcSectionChange = (sectionId: string) => {
     setIsGcMarkPlaying(false);
     setGcMarkStepIndex(0);
@@ -845,71 +869,14 @@ export default function JvmLessonPage() {
       </div>
     </div>
   );
-  const isCopyAlgo = activeGcAlgoId === "copy";
-  const isMarkSweepAlgo = activeGcAlgoId === "mark-sweep";
-  const copyStep = gcAlgoStepIndex;
-  const copyFromIsS0 = copyStep < 3;
-  const copyShowMarked = copyStep >= 1;
-  const copyShowCopy = copyStep >= 2;
-  const copyCleared = copyStep >= 3;
-  const markCompactStep = gcAlgoStepIndex;
-  const markCompactMarked = markCompactStep >= 1;
-  const markCompactCompacted = markCompactStep >= 2;
-  const markSweepStep = gcAlgoStepIndex;
-  const markSweepMarked = markSweepStep >= 1;
-  const markSweepSwept = markSweepStep >= 2;
-  const gcPalette = {
-    idle: "bg-muted",
-    live: "bg-accent",
-    garbage: "bg-ring",
-    moved: "bg-accent",
+  const gcAlgoControls = {
+    play: t("classLoading.delegationDemo.controls.play"),
+    pause: t("classLoading.delegationDemo.controls.pause"),
+    step: t("classLoading.delegationDemo.controls.step"),
+    back: t("classLoading.delegationDemo.controls.back"),
+    reset: t("classLoading.delegationDemo.controls.reset"),
+    stepsTitle: t("gc.algorithms.stepsTitle"),
   };
-  const copyObjects = [
-    { id: "e1", from: { col: 1, row: 1 }, live: true, toIndex: 0 },
-    { id: "e2", from: { col: 3, row: 1 }, live: true, toIndex: 1 },
-    { id: "e3", from: { col: 7, row: 1 }, live: true, toIndex: 2 },
-    { id: "e4", from: { col: 4, row: 2 }, live: true, toIndex: 3 },
-    { id: "e5", from: { col: 6, row: 2 }, live: true, toIndex: 4 },
-    { id: "e6", from: { col: 1, row: 4 }, live: true, toIndex: 5 },
-    { id: "e7", from: { col: 5, row: 1 }, live: false },
-    { id: "e8", from: { col: 2, row: 2 }, live: false },
-    { id: "e9", from: { col: 8, row: 2 }, live: false },
-    { id: "e10", from: { col: 3, row: 4 }, live: false },
-    { id: "e11", from: { col: 6, row: 4 }, live: false },
-    { id: "e12", from: { col: 8, row: 5 }, live: false },
-    { id: "s1", from: { col: 9, row: 1 }, live: true, toIndex: 6 },
-    { id: "s2", from: { col: 10, row: 2 }, live: true, toIndex: 7 },
-    { id: "s3", from: { col: 9, row: 3 }, live: true, toIndex: 8 },
-    { id: "s4", from: { col: 10, row: 4 }, live: true, toIndex: 9 },
-    { id: "s5", from: { col: 10, row: 1 }, live: false },
-    { id: "s6", from: { col: 9, row: 5 }, live: false },
-  ];
-  const oldObjects = [
-    { id: "o1", from: { col: 1, row: 1 }, live: false },
-    { id: "o2", from: { col: 2, row: 1 }, live: true, toIndex: 0 },
-    { id: "o3", from: { col: 4, row: 1 }, live: false },
-    { id: "o4", from: { col: 6, row: 1 }, live: true, toIndex: 1 },
-    { id: "o5", from: { col: 8, row: 1 }, live: false },
-    { id: "o6", from: { col: 10, row: 1 }, live: true, toIndex: 2 },
-    { id: "o7", from: { col: 12, row: 1 }, live: false },
-    { id: "o8", from: { col: 3, row: 2 }, live: true, toIndex: 3 },
-    { id: "o9", from: { col: 5, row: 2 }, live: false },
-    { id: "o10", from: { col: 7, row: 2 }, live: true, toIndex: 4 },
-    { id: "o11", from: { col: 9, row: 2 }, live: false },
-    { id: "o12", from: { col: 11, row: 2 }, live: true, toIndex: 5 },
-    { id: "o13", from: { col: 1, row: 3 }, live: true, toIndex: 6 },
-    { id: "o14", from: { col: 4, row: 3 }, live: false },
-    { id: "o15", from: { col: 6, row: 3 }, live: true, toIndex: 7 },
-    { id: "o16", from: { col: 8, row: 3 }, live: false },
-    { id: "o17", from: { col: 10, row: 3 }, live: true, toIndex: 8 },
-    { id: "o18", from: { col: 2, row: 4 }, live: false },
-    { id: "o19", from: { col: 5, row: 4 }, live: true, toIndex: 9 },
-    { id: "o20", from: { col: 7, row: 4 }, live: false },
-    { id: "o21", from: { col: 9, row: 4 }, live: true, toIndex: 10 },
-    { id: "o22", from: { col: 11, row: 4 }, live: false },
-    { id: "o23", from: { col: 3, row: 5 }, live: true, toIndex: 11 },
-    { id: "o24", from: { col: 6, row: 5 }, live: false },
-  ];
 
   return (
     <Layout variant="lesson">
@@ -1016,389 +983,38 @@ export default function JvmLessonPage() {
 
             {activeLoadingStepId === "load" ? (
               <>
-                <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-                  <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-                    {delegationDemo.title}
-                  </div>
-                  <div className="p-4 space-y-4">
-                    <div className="text-xs text-graytext">
-                      {delegationDemo.description}
-                    </div>
-                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2">
-                      <div className="text-xs font-mono text-graytext">
-                        {t("classLoading.overview.title")}
-                      </div>
-                      <ul className="list-disc pl-4 space-y-1">
-                        {classLoadingOverviewItems.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {delegationDemo.scenarios.map((scenario) => {
-                        const isActive = scenario.id === activeScenarioId;
-                        return (
-                          <button
-                            key={scenario.id}
-                            type="button"
-                            onClick={() => handleScenarioChange(scenario.id)}
-                            className={`rounded-md border px-3 py-1 text-xs ${
-                              isActive
-                                ? "border-gray-500 bg-accent text-text"
-                                : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
-                            }`}
-                          >
-                            {scenario.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {activeScenario ? (
-                      <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="text-sm font-medium text-text">
-                            {activeScenario.className}
-                          </div>
-                          {loadedById && hasResolvedLoad ? (
-                            <div className="rounded-full border border-emerald-500/80 bg-emerald-500/10 px-2 py-0.5 text-[10px] uppercase text-emerald-600">
-                              {t("classLoading.delegationDemo.loadedBy")}{" "}
-                              {
-                                delegationDemo.loaders.find(
-                                  (loader) => loader.id === loadedById
-                                )?.title
-                              }
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="mt-1">{activeScenario.desc}</div>
-                      </div>
-                    ) : null}
-
-                    <div className="grid gap-4 lg:grid-cols-[1.1fr_1.4fr]">
-                      <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                        <div className="text-xs font-mono text-graytext mb-3">
-                          {t("classLoading.delegationDemo.flowTitle")}
-                        </div>
-                        <div className="space-y-2">
-                          {delegationDemo.loaders.map((loader, index) => {
-                            const isActive =
-                              loader.id === currentDemoStep?.loaderId;
-                            const isVisited =
-                              demoSteps
-                                .slice(0, demoStepIndex + 1)
-                                .some((step) => step.loaderId === loader.id) ??
-                              false;
-                            const isLoadedBy =
-                              hasResolvedLoad && loader.id === loadedById;
-                            const showConnector =
-                              index < delegationDemo.loaders.length - 1;
-                            const isConnectorActive =
-                              activeConnectorIndex === index &&
-                              currentDemoStep?.direction !== "load";
-                            const isUpVisited = visitedConnectors.up.has(index);
-                            const isDownVisited =
-                              visitedConnectors.down.has(index);
-                            const isUpActive =
-                              isConnectorActive &&
-                              currentDemoStep?.direction === "up";
-                            const isDownActive =
-                              isConnectorActive &&
-                              currentDemoStep?.direction === "down";
-                            return (
-                              <div key={loader.id}>
-                                <div
-                                  className={`rounded-md border px-3 py-2 text-xs transition ${
-                                    isActive
-                                      ? "border-gray-500 bg-accent text-text"
-                                      : isLoadedBy
-                                        ? "border-emerald-500/80 bg-emerald-500/10 text-text"
-                                        : isVisited
-                                          ? "border-gray-400 bg-muted text-text"
-                                          : "border-gray-300 dark:border-white/12 bg-background text-graytext"
-                                  }`}
-                                >
-                                  <div className="text-sm font-medium">
-                                    {loader.title}
-                                  </div>
-                                  <div className="mt-1 text-[11px]">
-                                    {loader.desc}
-                                  </div>
-                                  {isLoadedBy ? (
-                                    <div className="mt-2 inline-flex rounded-full border border-emerald-500/60 px-2 py-0.5 text-[10px] uppercase text-emerald-600">
-                                      {t("classLoading.delegationDemo.loaded")}
-                                    </div>
-                                  ) : null}
-                                </div>
-                                {showConnector ? (
-                                  <div className="flex items-center justify-center py-2 gap-1">
-                                    <ArrowUp
-                                      className={`h-3 w-3 ${
-                                        isUpVisited || isUpActive
-                                          ? "text-gray-500"
-                                          : "text-gray-300 dark:text-white/20"
-                                      }`}
-                                    />
-                                    <ArrowDown
-                                      className={`h-3 w-3 ${
-                                        isDownVisited || isDownActive
-                                          ? "text-gray-500"
-                                          : "text-gray-300 dark:text-white/20"
-                                      }`}
-                                    />
-                                  </div>
-                                ) : null}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs font-mono text-graytext">
-                              {t("classLoading.delegationDemo.stepTitle")}
-                            </div>
-                            <div className="text-xs text-graytext">
-                              {demoSteps.length ? demoStepIndex + 1 : 0}/
-                              {demoSteps.length}
-                            </div>
-                          </div>
-                          {currentDemoStep ? (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-sm text-text">
-                                {currentDemoStep.direction === "up" ? (
-                                  <ArrowUp className="h-4 w-4" />
-                                ) : currentDemoStep.direction === "down" ? (
-                                  <ArrowDown className="h-4 w-4" />
-                                ) : (
-                                  <ArrowRight className="h-4 w-4" />
-                                )}
-                                <span>{currentDemoStep.action}</span>
-                              </div>
-                              <div>{currentDemoStep.result}</div>
-                            </div>
-                          ) : (
-                            <div>{t("classLoading.delegationDemo.empty")}</div>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setIsDemoPlaying((prev) => !prev)}
-                            className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                          >
-                            {isDemoPlaying
-                              ? t("classLoading.delegationDemo.controls.pause")
-                              : t("classLoading.delegationDemo.controls.play")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDemoStepIndex((prev) =>
-                                prev < demoSteps.length - 1 ? prev + 1 : prev
-                              )
-                            }
-                            className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                          >
-                            {t("classLoading.delegationDemo.controls.step")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDemoStepIndex((prev) =>
-                                prev > 0 ? prev - 1 : prev
-                              )
-                            }
-                            className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                          >
-                            {t("classLoading.delegationDemo.controls.back")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsDemoPlaying(false);
-                              setDemoStepIndex(0);
-                            }}
-                            className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                          >
-                            {t("classLoading.delegationDemo.controls.reset")}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
+                <DelegationDemo
+                  data={delegationDemo}
+                  overviewItems={classLoadingOverviewItems}
+                  labels={delegationDemoLabels}
+                  activeScenarioId={activeScenarioId}
+                  onScenarioChange={handleScenarioChange}
+                  activeScenario={activeScenario}
+                  loadedById={loadedById}
+                  hasResolvedLoad={hasResolvedLoad}
+                  currentDemoStep={currentDemoStep}
+                  demoSteps={demoSteps}
+                  demoStepIndex={demoStepIndex}
+                  isDemoPlaying={isDemoPlaying}
+                  setIsDemoPlaying={setIsDemoPlaying}
+                  setDemoStepIndex={setDemoStepIndex}
+                  activeConnectorIndex={activeConnectorIndex}
+                  visitedConnectors={visitedConnectors}
+                />
               </>
             ) : null}
 
             {activeLoadingStepId === "verify" ? (
-              <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-                <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-                  {t("classLoading.sections.classFile")}
-                </div>
-                <div className="p-4 grid gap-3 md:grid-cols-2">
-                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 overflow-x-auto">
-                    <div className="text-xs font-mono text-graytext mb-2">
-                      {t("classLoading.classFile.structureTitle")}
-                    </div>
-                    <table className="w-full border-collapse text-xs text-graytext">
-                      <thead>
-                        <tr className="text-[10px] uppercase">
-                          {classLoadingClassFile.table.headers.map((head) => (
-                            <th
-                              key={head}
-                              className="px-2 py-1 text-left border-b border-dashed border-gray-300 dark:border-white/10"
-                            >
-                              {head}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {classLoadingClassFile.table.rows.map((row) => (
-                          <tr
-                            key={`${row[0]}-${row[1]}`}
-                            className="border-b border-dashed border-gray-300 dark:border-white/10"
-                          >
-                            {row.map((cell, cellIndex) => {
-                              const tooltip =
-                                cellIndex === 2
-                                  ? getClassFileTypeTooltip(
-                                      cell,
-                                      classFileTypeHints
-                                    )
-                                  : "";
-                              const cellNode = (
-                                <td
-                                  key={`${row[0]}-${cellIndex}`}
-                                  className={`px-2 py-1 ${
-                                    cellIndex === 1 ? "font-mono text-text" : ""
-                                  } ${tooltip ? "cursor-help" : ""}`}
-                                >
-                                  {cell}
-                                </td>
-                              );
-                              if (!tooltip) {
-                                return cellNode;
-                              }
-                              return (
-                                <Tooltip key={`${row[0]}-${cellIndex}`}>
-                                  <TooltipTrigger asChild>
-                                    {cellNode}
-                                  </TooltipTrigger>
-                                  <TooltipContent
-                                    side="top"
-                                    align="start"
-                                    sideOffset={6}
-                                    className="max-w-xs whitespace-pre-line"
-                                  >
-                                    {tooltip}
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-2">
-                    <div className="text-xs font-mono text-graytext">
-                      {t("classLoading.classFile.constantPoolTitle")}
-                    </div>
-                    <ul className="list-disc pl-4 space-y-1">
-                      {classLoadingClassFile.constantPool.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </section>
+              <ClassFileVerify
+                classFile={classLoadingClassFile}
+                typeHints={classFileTypeHints}
+                labels={classFileLabels}
+                getClassFileTypeTooltip={getClassFileTypeTooltip}
+              />
             ) : null}
 
             {activeLoadingStepId === "prepare" ? (
-              <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-                <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-                  {t("classLoading.prepareDiagram.title")}
-                </div>
-                <div className="p-4 grid gap-3 md:grid-cols-2">
-                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                    <div className="text-xs font-mono text-graytext mb-2">
-                      {t("classLoading.prepareDiagram.jdk6Title")}
-                    </div>
-                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-card/80 p-3 space-y-3 text-xs text-graytext">
-                      <div className="text-[10px] uppercase tracking-wide text-graytext">
-                        {t("classLoading.prepareDiagram.labels.jvmMemory")}
-                      </div>
-                      <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-1">
-                        <div className="font-medium text-text">
-                          {t("classLoading.prepareDiagram.labels.methodArea")}
-                        </div>
-                        <div className="text-[11px]">
-                          {t("classLoading.prepareDiagram.labels.metadata")}
-                        </div>
-                        <div className="text-[11px]">
-                          {t("classLoading.prepareDiagram.labels.runtimeData")}
-                        </div>
-                      </div>
-                      <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-3 py-2 text-xs text-graytext">
-                        <div className="font-medium text-text">
-                          {t("classLoading.prepareDiagram.labels.heap")}
-                        </div>
-                        <div className="text-[11px]">
-                          {t("classLoading.prepareDiagram.labels.classObjects")}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                    <div className="text-xs font-mono text-graytext mb-2">
-                      {t("classLoading.prepareDiagram.jdk8Title")}
-                    </div>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-card/80 p-3 space-y-2 text-xs text-graytext">
-                        <div className="text-[10px] uppercase tracking-wide text-graytext">
-                          {t("classLoading.prepareDiagram.labels.jvmMemory")}
-                        </div>
-                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-3 py-2 text-xs text-graytext">
-                          <div className="font-medium text-text">
-                            {t("classLoading.prepareDiagram.labels.heap")}
-                          </div>
-                          <div className="text-[11px]">
-                            {t(
-                              "classLoading.prepareDiagram.labels.classObjects"
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-card/80 p-3 space-y-2 text-xs text-graytext">
-                        <div className="text-[10px] uppercase tracking-wide text-graytext">
-                          {t("classLoading.prepareDiagram.labels.nativeMemory")}
-                        </div>
-                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext space-y-1">
-                          <div className="font-medium text-text">
-                            {t("classLoading.prepareDiagram.labels.metaspace")}
-                          </div>
-                          <div className="text-[11px]">
-                            {t("classLoading.prepareDiagram.labels.metadata")}
-                          </div>
-                          <div className="text-[11px]">
-                            {t(
-                              "classLoading.prepareDiagram.labels.runtimeData"
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="md:col-span-2 text-xs text-graytext">
-                    {t("classLoading.prepareDiagram.note")}
-                  </div>
-                </div>
-              </section>
+              <PrepareDiagram labels={prepareDiagramLabels} />
             ) : null}
 
             {activeLoadingStepId === "resolve" ? (
@@ -1635,161 +1251,23 @@ export default function JvmLessonPage() {
               </div>
             </section>
 
-            <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
-              <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
-                {t("sections.execution")}
-              </div>
-              <div className="p-4 grid gap-4">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                    <div className="text-xs font-mono text-graytext mb-2">
-                      {t("execution.sourceLabel")}
-                    </div>
-                    <div className="text-xs leading-6 text-text overflow-x-auto font-mono whitespace-pre">
-                      {sourceLines.map((line, index) => {
-                        const targetStepIndex = sourceLineToStep.get(index);
-                        const isClickable = targetStepIndex !== undefined;
-                        const tooltipText = sourceLineTooltips[String(index)];
-                        const lineNode = (
-                          <div
-                            onClick={() => {
-                              if (!isClickable) {
-                                return;
-                              }
-                              setIsPlaying(false);
-                              setStepIndex(targetStepIndex);
-                            }}
-                            className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
-                              index === currentStep.sourceLineIndex
-                                ? "bg-accent text-text"
-                                : ""
-                            } ${isClickable ? "cursor-pointer" : ""}`}
-                          >
-                            <span className="inline-block w-6 text-graytext">
-                              {String(index + 1).padStart(2, "0")}
-                            </span>
-                            {tooltipText ? (
-                              <TooltipTrigger asChild>
-                                <span className="cursor-help">{line}</span>
-                              </TooltipTrigger>
-                            ) : (
-                              <span>{line}</span>
-                            )}
-                          </div>
-                        );
-
-                        if (!tooltipText) {
-                          return <div key={`${line}-${index}`}>{lineNode}</div>;
-                        }
-
-                        return (
-                          <Tooltip key={`${line}-${index}`}>
-                            {lineNode}
-                            <TooltipContent
-                              side="top"
-                              align="start"
-                              sideOffset={6}
-                              className="max-w-xs whitespace-pre-line"
-                            >
-                              {tooltipText}
-                            </TooltipContent>
-                          </Tooltip>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                    <div className="text-xs font-mono text-graytext mb-2">
-                      {t("execution.bytecodeLabel")}
-                    </div>
-                    <div className="text-xs leading-6 text-text overflow-x-auto font-mono whitespace-pre">
-                      {bytecodeLines.map((line, index) => {
-                        const opcode = getOpcodeFromLine(line);
-                        const tooltipText = getBytecodeTooltip(line);
-                        const targetStepIndex = bytecodeLineToStep.get(index);
-                        const isClickable = targetStepIndex !== undefined;
-                        const handleJump = () => {
-                          if (!isClickable) {
-                            return;
-                          }
-                          setIsPlaying(false);
-                          setStepIndex(targetStepIndex);
-                        };
-
-                        if (!opcode) {
-                          return (
-                            <div
-                              key={`${line}-${index}`}
-                              onClick={handleJump}
-                              className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
-                                index === currentStep.bytecodeLineIndex
-                                  ? "bg-accent text-text"
-                                  : ""
-                              } ${isClickable ? "cursor-pointer" : ""}`}
-                            >
-                              <span className="inline-block w-6 text-graytext">
-                                {String(index + 1).padStart(2, "0")}
-                              </span>
-                              {line}
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <Tooltip key={`${line}-${index}`}>
-                            <div
-                              onClick={handleJump}
-                              className={`px-2 rounded border border-transparent hover:border-gray-300 dark:hover:border-white/15 ${
-                                index === currentStep.bytecodeLineIndex
-                                  ? "bg-accent text-text"
-                                  : ""
-                              } ${isClickable ? "cursor-pointer" : ""}`}
-                            >
-                              <span className="inline-block w-6 text-graytext">
-                                {String(index + 1).padStart(2, "0")}
-                              </span>
-                              <TooltipTrigger asChild>
-                                <span className="cursor-help">{line}</span>
-                              </TooltipTrigger>
-                            </div>
-                            <TooltipContent
-                              side="top"
-                              align="start"
-                              sideOffset={6}
-                              className="max-w-xs whitespace-pre-line"
-                            >
-                              {tooltipText}
-                            </TooltipContent>
-                          </Tooltip>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {!isStackFloating ? controlsContent : null}
-
-                {!isStackFloating ? (
-                  <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-sm">
-                    <div className="text-xs font-mono text-graytext">
-                      {t("execution.currentInstruction")}
-                    </div>
-                    <div className="mt-1 font-mono text-sm">
-                      {currentStep.bytecode}
-                    </div>
-                    <div className="mt-1 text-xs text-graytext">
-                      {currentStepTitle}
-                    </div>
-                  </div>
-                ) : null}
-
-                {!isStackFloating ? callStackContent : null}
-
-                <div className="text-xs text-graytext">
-                  {t("execution.instructionNote")}
-                </div>
-              </div>
-            </section>
+            <ExecutionDemo
+              sourceLines={sourceLines}
+              bytecodeLines={bytecodeLines}
+              sourceLineTooltips={sourceLineTooltips}
+              sourceLineToStep={sourceLineToStep}
+              bytecodeLineToStep={bytecodeLineToStep}
+              currentStep={currentStep}
+              currentStepTitle={currentStepTitle}
+              getOpcodeFromLine={getOpcodeFromLine}
+              getBytecodeTooltip={getBytecodeTooltip}
+              isStackFloating={isStackFloating}
+              controlsContent={controlsContent}
+              callStackContent={callStackContent}
+              setIsPlaying={setIsPlaying}
+              setStepIndex={setStepIndex}
+              labels={executionLabels}
+            />
           </>
         ) : null}
 
@@ -1838,881 +1316,41 @@ export default function JvmLessonPage() {
                 </section>
 
                 {activeGcSectionId === "reachability" ? (
-                  <>
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {t("gc.reachability.rootsTitle")}
-                      </div>
-                      <div className="grid gap-2 sm:grid-cols-3 text-xs text-graytext">
-                        {gcReachabilityRoots.map((root) => (
-                          <div
-                            key={root}
-                            className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-1 text-[11px] text-text"
-                          >
-                            {root}
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {t("gc.reachability.tricolorTitle")}
-                      </div>
-                      <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
-                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card p-2">
-                          <svg
-                            viewBox="0 0 300 200"
-                            className="w-full h-56"
-                            aria-hidden="true"
-                          >
-                            <defs>
-                              <marker
-                                id="arrow"
-                                markerWidth="6"
-                                markerHeight="6"
-                                refX="5"
-                                refY="3"
-                                orient="auto"
-                              >
-                                <path d="M0,0 L6,3 L0,6 Z" fill="#9ca3af" />
-                              </marker>
-                            </defs>
-                            {(
-                              [
-                                { from: "R", to: "A" },
-                                { from: "R", to: "B" },
-                                { from: "A", to: "C" },
-                                { from: "A", to: "D" },
-                                { from: "B", to: "E" },
-                                { from: "C", to: "F" },
-                                { from: "E", to: "G" },
-                              ] as Array<{
-                                from:
-                                  | "R"
-                                  | "A"
-                                  | "B"
-                                  | "C"
-                                  | "D"
-                                  | "E"
-                                  | "F"
-                                  | "G";
-                                to:
-                                  | "R"
-                                  | "A"
-                                  | "B"
-                                  | "C"
-                                  | "D"
-                                  | "E"
-                                  | "F"
-                                  | "G";
-                              }>
-                            ).map((edge) => {
-                              const nodes: Record<
-                                "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G",
-                                { x: number; y: number }
-                              > = {
-                                R: { x: 30, y: 20 },
-                                A: { x: 120, y: 60 },
-                                B: { x: 220, y: 60 },
-                                C: { x: 80, y: 130 },
-                                D: { x: 160, y: 130 },
-                                E: { x: 240, y: 130 },
-                                F: { x: 60, y: 180 },
-                                G: { x: 200, y: 180 },
-                              };
-                              const from = nodes[edge.from];
-                              const to = nodes[edge.to];
-                              return (
-                                <line
-                                  key={`${edge.from}-${edge.to}`}
-                                  x1={from.x}
-                                  y1={from.y}
-                                  x2={to.x}
-                                  y2={to.y}
-                                  stroke="#9ca3af"
-                                  strokeWidth="1"
-                                  markerEnd="url(#arrow)"
-                                />
-                              );
-                            })}
-                            {(
-                              [
-                                { id: "R", x: 20, y: 8 },
-                                { id: "A", x: 110, y: 48 },
-                                { id: "B", x: 210, y: 48 },
-                                { id: "C", x: 70, y: 118 },
-                                { id: "D", x: 150, y: 118 },
-                                { id: "E", x: 230, y: 118 },
-                                { id: "F", x: 50, y: 168 },
-                                { id: "G", x: 190, y: 168 },
-                              ] as Array<{
-                                id:
-                                  | "R"
-                                  | "A"
-                                  | "B"
-                                  | "C"
-                                  | "D"
-                                  | "E"
-                                  | "F"
-                                  | "G";
-                                x: number;
-                                y: number;
-                              }>
-                            ).map((node) => {
-                              const frameStates: Array<
-                                Record<
-                                  "R" | "A" | "B" | "C" | "D" | "E" | "F" | "G",
-                                  "root" | "white" | "gray" | "black"
-                                >
-                              > = [
-                                {
-                                  R: "root",
-                                  A: "white",
-                                  B: "white",
-                                  C: "white",
-                                  D: "white",
-                                  E: "white",
-                                  F: "white",
-                                  G: "white",
-                                },
-                                {
-                                  R: "root",
-                                  A: "gray",
-                                  B: "gray",
-                                  C: "white",
-                                  D: "white",
-                                  E: "white",
-                                  F: "white",
-                                  G: "white",
-                                },
-                                {
-                                  R: "root",
-                                  A: "black",
-                                  B: "gray",
-                                  C: "gray",
-                                  D: "gray",
-                                  E: "white",
-                                  F: "white",
-                                  G: "white",
-                                },
-                                {
-                                  R: "root",
-                                  A: "black",
-                                  B: "black",
-                                  C: "black",
-                                  D: "gray",
-                                  E: "gray",
-                                  F: "white",
-                                  G: "white",
-                                },
-                                {
-                                  R: "root",
-                                  A: "black",
-                                  B: "black",
-                                  C: "black",
-                                  D: "black",
-                                  E: "black",
-                                  F: "gray",
-                                  G: "gray",
-                                },
-                                {
-                                  R: "root",
-                                  A: "black",
-                                  B: "black",
-                                  C: "black",
-                                  D: "black",
-                                  E: "black",
-                                  F: "black",
-                                  G: "black",
-                                },
-                              ];
-                              const state =
-                                frameStates[
-                                  gcMarkStepIndex % frameStates.length
-                                ][node.id];
-                              const fill =
-                                state === "root"
-                                  ? "#d1fae5"
-                                  : state === "gray"
-                                    ? "#fde68a"
-                                    : state === "black"
-                                      ? "#374151"
-                                      : "#f3f4f6";
-                              const stroke =
-                                state === "black" ? "#111827" : "#9ca3af";
-                              const text =
-                                state === "black" ? "#f9fafb" : "#111827";
-                              return (
-                                <g key={node.id}>
-                                  <rect
-                                    x={node.x}
-                                    y={node.y}
-                                    rx="6"
-                                    ry="6"
-                                    width="32"
-                                    height="24"
-                                    fill={fill}
-                                    stroke={stroke}
-                                  />
-                                  <text
-                                    x={node.x + 16}
-                                    y={node.y + 16}
-                                    textAnchor="middle"
-                                    fontSize="10"
-                                    fill={text}
-                                  >
-                                    {node.id}
-                                  </text>
-                                </g>
-                              );
-                            })}
-                          </svg>
-                          <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
-                            {gcDetails.reachability?.legend?.map((legend) => (
-                              <div
-                                key={legend.label}
-                                className="flex items-center gap-1 rounded-full border border-gray-300 dark:border-white/15 px-2 py-0.5"
-                              >
-                                <span
-                                  className={`inline-block h-2 w-2 rounded-full ${legend.color}`}
-                                />
-                                <span>{legend.label}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="grid gap-2">
-                            {gcReachabilitySteps.map((step, index) => (
-                              <div
-                                key={step}
-                                className={`rounded-md border px-2 py-1 text-[11px] ${
-                                  index === gcMarkStepIndex
-                                    ? "border-gray-500 bg-accent text-text"
-                                    : "border-gray-300 dark:border-white/15 bg-background text-graytext"
-                                }`}
-                              >
-                                {step}
-                              </div>
-                            ))}
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setIsGcMarkPlaying((prev) => !prev)
-                              }
-                              className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                            >
-                              {isGcMarkPlaying
-                                ? t(
-                                    "classLoading.delegationDemo.controls.pause"
-                                  )
-                                : t(
-                                    "classLoading.delegationDemo.controls.play"
-                                  )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setGcMarkStepIndex((prev) =>
-                                  prev < gcReachabilitySteps.length - 1
-                                    ? prev + 1
-                                    : prev
-                                )
-                              }
-                              className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                            >
-                              {t("classLoading.delegationDemo.controls.step")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setGcMarkStepIndex((prev) =>
-                                  prev > 0 ? prev - 1 : prev
-                                )
-                              }
-                              className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                            >
-                              {t("classLoading.delegationDemo.controls.back")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsGcMarkPlaying(false);
-                                setGcMarkStepIndex(0);
-                              }}
-                              className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                            >
-                              {t("classLoading.delegationDemo.controls.reset")}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </section>
-
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {t("gc.reachability.cardTableTitle")}
-                      </div>
-                      <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
-                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2">
-                          <svg
-                            viewBox="0 0 340 150"
-                            className="w-full h-40"
-                            aria-hidden="true"
-                          >
-                            <defs>
-                              <marker
-                                id="card-arrow"
-                                markerWidth="6"
-                                markerHeight="6"
-                                refX="5"
-                                refY="3"
-                                orient="auto"
-                              >
-                                <path d="M0,0 L6,3 L0,6 Z" fill="#f59e0b" />
-                              </marker>
-                            </defs>
-                            <rect
-                              x="8"
-                              y="18"
-                              width="200"
-                              height="128"
-                              rx="8"
-                              fill="#f8fafc"
-                              stroke="#cbd5f5"
-                            />
-                            <text x="18" y="34" fontSize="10" fill="#64748b">
-                              {t("gc.reachability.cardTableOldGen")}
-                            </text>
-                            {Array.from({ length: 40 }).map((_, idx) => {
-                              const col = idx % 8;
-                              const row = Math.floor(idx / 8);
-                              const x = 20 + col * 22;
-                              const y = 46 + row * 18;
-                              const isDirty = [3, 7, 12, 18, 24, 29].includes(
-                                idx
-                              );
-                              return (
-                                <rect
-                                  key={idx}
-                                  x={x}
-                                  y={y}
-                                  width="18"
-                                  height="14"
-                                  rx="3"
-                                  fill={isDirty ? "#fecaca" : "#f1f5f9"}
-                                  stroke={isDirty ? "#f43f5e" : "#cbd5f5"}
-                                />
-                              );
-                            })}
-                            <text x="238" y="28" fontSize="10" fill="#0e7490">
-                              {t("gc.reachability.cardTableYoungGen")}
-                            </text>
-                            <rect
-                              x="230"
-                              y="50"
-                              width="110"
-                              height="44"
-                              rx="10"
-                              fill="#ecfeff"
-                              stroke="#67e8f9"
-                            />
-                            <line
-                              x1="318"
-                              y1="50"
-                              x2="318"
-                              y2="94"
-                              stroke="#67e8f9"
-                              strokeWidth="1"
-                            />
-                            <line
-                              x1="329"
-                              y1="50"
-                              x2="329"
-                              y2="94"
-                              stroke="#67e8f9"
-                              strokeWidth="1"
-                            />
-                            <text x="242" y="76" fontSize="10" fill="#0e7490">
-                              Eden
-                            </text>
-                            <text
-                              x="323.5"
-                              y="76"
-                              fontSize="8"
-                              textAnchor="middle"
-                              fill="#0e7490"
-                            >
-                              S0
-                            </text>
-                            <text
-                              x="334.5"
-                              y="76"
-                              fontSize="8"
-                              textAnchor="middle"
-                              fill="#0e7490"
-                            >
-                              S1
-                            </text>
-                            {[
-                              { idx: 7, target: { x: 260, y: 72 } },
-                              { idx: 29, target: { x: 324, y: 72 } },
-                            ].map((edge) => {
-                              const col = edge.idx % 8;
-                              const row = Math.floor(edge.idx / 8);
-                              const x1 = 20 + col * 22 + 9;
-                              const y1 = 46 + row * 18 + 7;
-                              return (
-                                <line
-                                  key={edge.idx}
-                                  x1={x1}
-                                  y1={y1}
-                                  x2={edge.target.x}
-                                  y2={edge.target.y}
-                                  stroke="#f59e0b"
-                                  strokeWidth="1.5"
-                                  markerEnd="url(#card-arrow)"
-                                />
-                              );
-                            })}
-                          </svg>
-                        </div>
-                        <div className="text-[11px] text-graytext space-y-2">
-                          <div>{t("gc.reachability.cardTableNote")}</div>
-                          <ul className="list-disc pl-4 space-y-1">
-                            {gcCardTableWhy.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </section>
-
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {t("gc.reachability.writeBarrierTitle")}
-                      </div>
-                      <div className="grid gap-2 sm:grid-cols-2 text-xs text-graytext">
-                        {gcReachabilityBarriers.map((item) => (
-                          <div
-                            key={item}
-                            className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-1 text-[11px]"
-                          >
-                            {item}
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  </>
+                  <GcReachability
+                    roots={gcReachabilityRoots}
+                    steps={gcReachabilitySteps}
+                    barriers={gcReachabilityBarriers}
+                    cardTableWhy={gcCardTableWhy}
+                    legend={gcDetails.reachability?.legend}
+                    labels={gcReachabilityLabels}
+                    controls={gcReachabilityControls}
+                    gcMarkStepIndex={gcMarkStepIndex}
+                    setGcMarkStepIndex={setGcMarkStepIndex}
+                    isGcMarkPlaying={isGcMarkPlaying}
+                    setIsGcMarkPlaying={setIsGcMarkPlaying}
+                  />
                 ) : activeGcSectionId === "generations" ? (
-                  <>
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {t("gc.generations.whyTitle")}
-                      </div>
-                      <ul className="list-disc pl-4 text-xs text-graytext space-y-1">
-                        {gcGenerationsWhy.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </section>
-
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {t("gc.generations.triggersTitle")}
-                      </div>
-                      <div className="grid gap-3 lg:grid-cols-2 text-xs text-graytext">
-                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2 space-y-2">
-                          <div className="text-[11px] uppercase text-graytext">
-                            {t("gc.generations.youngTitle")}
-                          </div>
-                          <ul className="list-disc pl-4 space-y-1">
-                            {gcGenerationsYoung.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2 space-y-2">
-                          <div className="text-[11px] uppercase text-graytext">
-                            {t("gc.generations.oldTitle")}
-                          </div>
-                          <ul className="list-disc pl-4 space-y-1">
-                            {gcGenerationsOld.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </section>
-
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {t("gc.generations.promoteTitle")}
-                      </div>
-                      <ul className="list-disc pl-4 text-xs text-graytext space-y-1">
-                        {gcPromoteReasons.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </section>
-
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {t("gc.generations.stwTitle")}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {(
-                          t("gc.generations.safepointTabs", {
-                            returnObjects: true,
-                          }) as { id: string; label: string }[]
-                        ).map((tab) => {
-                          const isActive = tab.id === activeSafepointTabId;
-                          return (
-                            <button
-                              key={tab.id}
-                              type="button"
-                              onClick={() => setActiveSafepointTabId(tab.id)}
-                              className={`rounded-md border px-2 py-1 text-[11px] ${
-                                isActive
-                                  ? "border-gray-500 bg-accent text-text"
-                                  : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
-                              }`}
-                            >
-                              {tab.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="mt-2 rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-2 text-xs text-graytext space-y-2">
-                        <div className="text-[11px] uppercase text-graytext">
-                          {t(
-                            `gc.generations.safepointContent.${activeSafepointTabId}.title`
-                          )}
-                        </div>
-                        <div>
-                          {t(
-                            `gc.generations.safepointContent.${activeSafepointTabId}.summary`
-                          )}
-                        </div>
-                        <ul className="list-disc pl-4 space-y-1">
-                          {(
-                            t(
-                              `gc.generations.safepointContent.${activeSafepointTabId}.items`,
-                              { returnObjects: true }
-                            ) as string[]
-                          ).map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </section>
-                  </>
+                  <GcGenerations
+                    labels={gcGenerationsLabels}
+                    whyItems={gcGenerationsWhy}
+                    triggersYoung={gcGenerationsYoung}
+                    triggersOld={gcGenerationsOld}
+                    promoteItems={gcPromoteReasons}
+                    activeSafepointTabId={activeSafepointTabId}
+                    onSafepointTabChange={setActiveSafepointTabId}
+                    stwContent={gcGenerationsStwContent}
+                  />
                 ) : activeGcSectionId === "algorithms" ? (
-                  <>
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="text-xs font-mono text-graytext mb-2">
-                        {gcAlgorithms.title}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {gcAlgorithms.tabs.map((tab) => {
-                          const isActive = tab.id === activeGcAlgoId;
-                          return (
-                            <button
-                              key={tab.id}
-                              type="button"
-                              onClick={() => {
-                                setIsGcAlgoPlaying(false);
-                                setGcAlgoStepIndex(0);
-                                setActiveGcAlgoId(tab.id);
-                              }}
-                              className={`rounded-md border px-2 py-1 text-[11px] ${
-                                isActive
-                                  ? "border-gray-500 bg-accent text-text"
-                                  : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
-                              }`}
-                            >
-                              {tab.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </section>
-
-                    <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-                      <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
-                        <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card p-2">
-                          {isCopyAlgo ? (
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-[11px] text-graytext">
-                                <span>{gcAlgorithms.youngTitle}</span>
-                                <span>8:1:1</span>
-                              </div>
-                              <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
-                                <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                                  <div className="col-span-8 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
-                                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                                      Eden
-                                    </span>
-                                  </div>
-                                  <div className="col-span-2 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card/80 relative">
-                                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                                      S0
-                                    </span>
-                                    <span
-                                      className={`absolute left-2 bottom-1 text-[10px] ${
-                                        copyFromIsS0
-                                          ? "text-text"
-                                          : "text-gray-500"
-                                      }`}
-                                    >
-                                      {copyFromIsS0 ? "From" : "To"}
-                                    </span>
-                                  </div>
-                                  <div className="col-span-2 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card/80 relative">
-                                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                                      S1
-                                    </span>
-                                    <span
-                                      className={`absolute left-2 bottom-1 text-[10px] ${
-                                        copyFromIsS0
-                                          ? "text-gray-500"
-                                          : "text-text"
-                                      }`}
-                                    >
-                                      {copyFromIsS0 ? "To" : "From"}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                                  {copyObjects.map((obj) => {
-                                    const toColumns = [11, 12];
-                                    const target =
-                                      obj.live && obj.toIndex !== undefined
-                                        ? {
-                                            col: toColumns[obj.toIndex % 2],
-                                            row:
-                                              Math.floor(obj.toIndex / 2) + 1,
-                                          }
-                                        : obj.from;
-                                    const position =
-                                      copyShowCopy && obj.live
-                                        ? target
-                                        : obj.from;
-                                    const fillClass =
-                                      copyShowCopy && obj.live
-                                        ? gcPalette.moved
-                                        : copyShowMarked
-                                          ? obj.live
-                                            ? gcPalette.live
-                                            : gcPalette.garbage
-                                          : gcPalette.idle;
-                                    const opacity =
-                                      copyCleared && !obj.live ? 0 : 1;
-                                    return (
-                                      <motion.div
-                                        key={obj.id}
-                                        layout
-                                        transition={{
-                                          duration: 0.6,
-                                          ease: "easeInOut",
-                                        }}
-                                        className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
-                                        style={{
-                                          gridColumnStart: position.col,
-                                          gridRowStart: position.row,
-                                          opacity,
-                                        }}
-                                      />
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                          ) : isMarkSweepAlgo ? (
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-[11px] text-graytext">
-                                <span>{gcAlgorithms.oldTitle}</span>
-                              </div>
-                              <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
-                                <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                                  <div className="col-span-12 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
-                                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                                      {gcAlgorithms.oldTitle}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                                  {oldObjects.map((obj) => {
-                                    const fillClass = markSweepMarked
-                                      ? obj.live
-                                        ? gcPalette.live
-                                        : gcPalette.garbage
-                                      : gcPalette.idle;
-                                    const opacity =
-                                      markSweepSwept && !obj.live ? 0 : 1;
-                                    return (
-                                      <motion.div
-                                        key={obj.id}
-                                        layout
-                                        transition={{
-                                          duration: 0.6,
-                                          ease: "easeInOut",
-                                        }}
-                                        className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
-                                        style={{
-                                          gridColumnStart: obj.from.col,
-                                          gridRowStart: obj.from.row,
-                                          opacity,
-                                        }}
-                                      />
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-[11px] text-graytext">
-                                <span>{gcAlgorithms.oldTitle}</span>
-                              </div>
-                              <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
-                                <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                                  <div className="col-span-12 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
-                                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                                      {gcAlgorithms.oldTitle}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                                  {oldObjects.map((obj) => {
-                                    const target =
-                                      obj.live && obj.toIndex !== undefined
-                                        ? {
-                                            col: (obj.toIndex % 12) + 1,
-                                            row:
-                                              Math.floor(obj.toIndex / 12) + 1,
-                                          }
-                                        : obj.from;
-                                    const position =
-                                      markCompactCompacted && obj.live
-                                        ? target
-                                        : obj.from;
-                                    const fillClass =
-                                      markCompactCompacted && obj.live
-                                        ? gcPalette.moved
-                                        : markCompactMarked
-                                          ? obj.live
-                                            ? gcPalette.live
-                                            : gcPalette.garbage
-                                          : gcPalette.idle;
-                                    const opacity =
-                                      markCompactCompacted && !obj.live ? 0 : 1;
-                                    return (
-                                      <motion.div
-                                        key={obj.id}
-                                        layout
-                                        transition={{
-                                          duration: 0.6,
-                                          ease: "easeInOut",
-                                        }}
-                                        className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
-                                        style={{
-                                          gridColumnStart: position.col,
-                                          gridRowStart: position.row,
-                                          opacity,
-                                        }}
-                                      />
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="space-y-2 text-xs text-graytext">
-                          <div className="text-[11px] uppercase text-graytext">
-                            {t("gc.algorithms.stepsTitle")}
-                          </div>
-                          <ul className="list-disc pl-4 space-y-1">
-                            {(gcAlgorithms.steps[activeGcAlgoId] ?? []).map(
-                              (item, index) => (
-                                <li
-                                  key={item}
-                                  className={
-                                    index === gcAlgoStepIndex
-                                      ? "text-text"
-                                      : "text-graytext"
-                                  }
-                                >
-                                  {item}
-                                </li>
-                              )
-                            )}
-                          </ul>
-                          <div className="flex flex-wrap items-center gap-2 pt-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setIsGcAlgoPlaying((prev) => !prev)
-                              }
-                              className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                            >
-                              {isGcAlgoPlaying
-                                ? t(
-                                    "classLoading.delegationDemo.controls.pause"
-                                  )
-                                : t(
-                                    "classLoading.delegationDemo.controls.play"
-                                  )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setGcAlgoStepIndex((prev) =>
-                                  prev <
-                                  (gcAlgorithms.steps[activeGcAlgoId]?.length ??
-                                    0) -
-                                    1
-                                    ? prev + 1
-                                    : prev
-                                )
-                              }
-                              className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                            >
-                              {t("classLoading.delegationDemo.controls.step")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setGcAlgoStepIndex((prev) =>
-                                  prev > 0 ? prev - 1 : prev
-                                )
-                              }
-                              className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                            >
-                              {t("classLoading.delegationDemo.controls.back")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsGcAlgoPlaying(false);
-                                setGcAlgoStepIndex(0);
-                              }}
-                              className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
-                            >
-                              {t("classLoading.delegationDemo.controls.reset")}
-                            </button>
-                          </div>
-                          <div className="pt-2 text-[11px] text-graytext">
-                            {t("gc.algorithms.note")}
-                          </div>
-                        </div>
-                      </div>
-                    </section>
-                  </>
+                  <GcAlgorithmsDemo
+                    gcAlgorithms={gcAlgorithms}
+                    activeGcAlgoId={activeGcAlgoId}
+                    setActiveGcAlgoId={setActiveGcAlgoId}
+                    gcAlgoStepIndex={gcAlgoStepIndex}
+                    setGcAlgoStepIndex={setGcAlgoStepIndex}
+                    isGcAlgoPlaying={isGcAlgoPlaying}
+                    setIsGcAlgoPlaying={setIsGcAlgoPlaying}
+                    controls={gcAlgoControls}
+                  />
                 ) : (
                   <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext">
                     {t("gc.placeholder")}
