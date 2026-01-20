@@ -450,11 +450,20 @@
       },
       {
         "id": "algorithms",
-        "title": "Algorithms/collectors",
+        "title": "Algorithms",
         "items": [
           "Mark-sweep, copying, mark-compact",
-          "Serial / Parallel / CMS / G1 / ZGC / Shenandoah",
-          "Throughput vs latency tradeoffs"
+          "Typical choices for young vs old gen",
+          "Understand algorithms via demos"
+        ]
+      },
+      {
+        "id": "collectors",
+        "title": "Common collectors",
+        "items": [
+          "Collectors combine different algorithms",
+          "Key goals: throughput / pause time / footprint",
+          "Choice depends on workload and JDK version"
         ]
       }
     ],
@@ -476,6 +485,60 @@
           { "label": "Green: GC Roots", "color": "bg-emerald-300/70" }
         ]
       }
+    },
+    "collectors": {
+      "title": "Collector comparison (algorithms & tradeoffs)",
+      "subtitle": "Focus on algorithm mix, target goals, and typical pros/cons.",
+      "labels": {
+        "generations": "Generations",
+        "algorithms": "Algorithms",
+        "pros": "Pros",
+        "cons": "Cons",
+        "focus": "Focus",
+        "command": "Command"
+      },
+      "items": [
+        {
+          "id": "serial",
+          "name": "Serial / Serial Old",
+          "focus": "simplicity",
+          "generations": "Young + Old",
+          "algorithms": "Copying (young) + Mark-compact (old)",
+          "command": "java -XX:+UseSerialGC -version",
+          "pros": ["Low overhead, simple", "Stable on small heaps/single core"],
+          "cons": ["Long STW pauses", "Poor scalability (single-threaded)"]
+        },
+        {
+          "id": "parallel",
+          "name": "Parallel Scavenge / Parallel Old",
+          "focus": "throughput",
+          "generations": "Young + Old",
+          "algorithms": "Copying (young) + Mark-compact (old)",
+          "command": "java -XX:+UseParallelGC -version",
+          "pros": ["High throughput", "Good for batch/offline jobs"],
+          "cons": ["Longer pauses", "Not ideal for latency-sensitive apps"]
+        },
+        {
+          "id": "cms",
+          "name": "CMS (Concurrent Mark-Sweep)",
+          "focus": "low pause",
+          "generations": "Old (often with ParNew for young)",
+          "algorithms": "Concurrent mark-sweep (old)",
+          "command": "java -XX:+UseConcMarkSweepGC -version",
+          "pros": ["Lower pauses", "Smoother responsiveness"],
+          "cons": ["Fragmentation", "CPU-sensitive", "Deprecated in newer JDKs"]
+        },
+        {
+          "id": "g1",
+          "name": "G1",
+          "focus": "predictable pauses",
+          "generations": "Whole heap (region-based)",
+          "algorithms": "Mark-compact + Copying (region evacuation)",
+          "command": "java -XX:+UseG1GC -version",
+          "pros": ["Predictable pauses", "Good for large heaps", "Less fragmentation"],
+          "cons": ["Complex", "Tuning cost"]
+        }
+      ]
     },
     "generations": {
       "whyTitle": "Why generations",
@@ -569,6 +632,11 @@
       "title": "Algorithm demos",
       "stepsTitle": "Steps",
       "note": "Young gen favors copying; old gen often uses mark-sweep/mark-compact.",
+      "labels": {
+        "copy": "Copying",
+        "markCompact": "Mark-compact",
+        "markSweep": "Mark-sweep"
+      },
       "youngTitle": "Young Gen",
       "oldTitle": "Old Gen",
       "youngAlgorithms": ["Copying", "Eden → Survivor → Old"],

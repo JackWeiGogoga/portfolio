@@ -19,6 +19,7 @@ import ExecutionDemo from "@/pages/what-is-it/jvm/ExecutionDemo";
 import ClassFileVerify from "@/pages/what-is-it/jvm/ClassFileVerify";
 import PrepareDiagram from "@/pages/what-is-it/jvm/PrepareDiagram";
 import GcGenerations from "@/pages/what-is-it/jvm/GcGenerations";
+import GcCollectors from "@/pages/what-is-it/jvm/GcCollectors";
 import type {
   ClassFileInfo,
   ClassLoadingStep,
@@ -145,13 +146,38 @@ export default function JvmLessonPage() {
     returnObjects: true,
   }) as {
     title: string;
-    tabs: { id: string; label: string }[];
     youngTitle: string;
     oldTitle: string;
     youngAlgorithms: string[];
     oldAlgorithms: string[];
     steps: Record<string, string[]>;
     note: string;
+    labels: {
+      copy: string;
+      markCompact: string;
+      markSweep: string;
+    };
+  };
+  const gcCollectors = t("gc.collectors", { returnObjects: true }) as {
+    title: string;
+    subtitle?: string;
+    labels?: {
+      generations: string;
+      algorithms: string;
+      pros: string;
+      cons: string;
+      focus: string;
+    };
+    items: Array<{
+      id: string;
+      name: string;
+      generations: string;
+      algorithms: string;
+      focus: string;
+      pros: string[];
+      cons: string[];
+      notes?: string[];
+    }>;
   };
   const gcReachabilityLabels = {
     rootsTitle: t("gc.reachability.rootsTitle"),
@@ -295,9 +321,12 @@ export default function JvmLessonPage() {
   const [gcMarkStepIndex, setGcMarkStepIndex] = useState(0);
   const [isGcMarkPlaying, setIsGcMarkPlaying] = useState(false);
   const [activeSafepointTabId, setActiveSafepointTabId] = useState("why");
-  const [activeGcAlgoId, setActiveGcAlgoId] = useState("copy");
-  const [gcAlgoStepIndex, setGcAlgoStepIndex] = useState(0);
-  const [isGcAlgoPlaying, setIsGcAlgoPlaying] = useState(false);
+  const [copyAlgoStepIndex, setCopyAlgoStepIndex] = useState(0);
+  const [isCopyAlgoPlaying, setIsCopyAlgoPlaying] = useState(false);
+  const [compactAlgoStepIndex, setCompactAlgoStepIndex] = useState(0);
+  const [isCompactAlgoPlaying, setIsCompactAlgoPlaying] = useState(false);
+  const [sweepAlgoStepIndex, setSweepAlgoStepIndex] = useState(0);
+  const [isSweepAlgoPlaying, setIsSweepAlgoPlaying] = useState(false);
   const gcGenerationsLabels = {
     whyTitle: t("gc.generations.whyTitle"),
     triggersTitle: t("gc.generations.triggersTitle"),
@@ -480,17 +509,41 @@ export default function JvmLessonPage() {
   }, [isGcMarkPlaying, gcReachabilitySteps.length]);
 
   useEffect(() => {
-    if (!isGcAlgoPlaying) {
+    if (!isCopyAlgoPlaying) {
       return;
     }
-    const algoSteps = gcAlgorithms.steps[activeGcAlgoId] ?? [];
+    const steps = gcAlgorithms.steps.copy ?? [];
     const timer = window.setInterval(() => {
-      setGcAlgoStepIndex((prev) =>
-        prev < algoSteps.length - 1 ? prev + 1 : 0
+      setCopyAlgoStepIndex((prev) => (prev < steps.length - 1 ? prev + 1 : 0));
+    }, 1400);
+    return () => window.clearInterval(timer);
+  }, [gcAlgorithms.steps.copy, isCopyAlgoPlaying]);
+
+  useEffect(() => {
+    if (!isCompactAlgoPlaying) {
+      return;
+    }
+    const steps = gcAlgorithms.steps["mark-compact"] ?? [];
+    const timer = window.setInterval(() => {
+      setCompactAlgoStepIndex((prev) =>
+        prev < steps.length - 1 ? prev + 1 : 0
       );
     }, 1400);
     return () => window.clearInterval(timer);
-  }, [activeGcAlgoId, gcAlgorithms.steps, isGcAlgoPlaying]);
+  }, [gcAlgorithms.steps, isCompactAlgoPlaying]);
+
+  useEffect(() => {
+    if (!isSweepAlgoPlaying) {
+      return;
+    }
+    const steps = gcAlgorithms.steps["mark-sweep"] ?? [];
+    const timer = window.setInterval(() => {
+      setSweepAlgoStepIndex((prev) =>
+        prev < steps.length - 1 ? prev + 1 : 0
+      );
+    }, 1400);
+    return () => window.clearInterval(timer);
+  }, [gcAlgorithms.steps, isSweepAlgoPlaying]);
 
   useEffect(() => {
     const updateViewport = () => {
@@ -1343,14 +1396,28 @@ export default function JvmLessonPage() {
                 ) : activeGcSectionId === "algorithms" ? (
                   <GcAlgorithmsDemo
                     gcAlgorithms={gcAlgorithms}
-                    activeGcAlgoId={activeGcAlgoId}
-                    setActiveGcAlgoId={setActiveGcAlgoId}
-                    gcAlgoStepIndex={gcAlgoStepIndex}
-                    setGcAlgoStepIndex={setGcAlgoStepIndex}
-                    isGcAlgoPlaying={isGcAlgoPlaying}
-                    setIsGcAlgoPlaying={setIsGcAlgoPlaying}
+                    copyState={{
+                      stepIndex: copyAlgoStepIndex,
+                      setStepIndex: setCopyAlgoStepIndex,
+                      isPlaying: isCopyAlgoPlaying,
+                      setIsPlaying: setIsCopyAlgoPlaying,
+                    }}
+                    compactState={{
+                      stepIndex: compactAlgoStepIndex,
+                      setStepIndex: setCompactAlgoStepIndex,
+                      isPlaying: isCompactAlgoPlaying,
+                      setIsPlaying: setIsCompactAlgoPlaying,
+                    }}
+                    sweepState={{
+                      stepIndex: sweepAlgoStepIndex,
+                      setStepIndex: setSweepAlgoStepIndex,
+                      isPlaying: isSweepAlgoPlaying,
+                      setIsPlaying: setIsSweepAlgoPlaying,
+                    }}
                     controls={gcAlgoControls}
                   />
+                ) : activeGcSectionId === "collectors" ? (
+                  <GcCollectors data={gcCollectors} />
                 ) : (
                   <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 text-xs text-graytext">
                     {t("gc.placeholder")}

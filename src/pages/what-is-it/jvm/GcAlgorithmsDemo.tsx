@@ -2,11 +2,15 @@ import { motion } from "motion/react";
 
 type GcAlgorithmsData = {
   title: string;
-  tabs: { id: string; label: string }[];
   youngTitle: string;
   oldTitle: string;
   steps: Record<string, string[]>;
   note: string;
+  labels: {
+    copy: string;
+    markCompact: string;
+    markSweep: string;
+  };
 };
 
 type ControlLabels = {
@@ -20,12 +24,24 @@ type ControlLabels = {
 
 type GcAlgorithmsDemoProps = {
   gcAlgorithms: GcAlgorithmsData;
-  activeGcAlgoId: string;
-  setActiveGcAlgoId: (id: string) => void;
-  gcAlgoStepIndex: number;
-  setGcAlgoStepIndex: (next: (prev: number) => number) => void;
-  isGcAlgoPlaying: boolean;
-  setIsGcAlgoPlaying: (next: (prev: boolean) => boolean) => void;
+  copyState: {
+    stepIndex: number;
+    setStepIndex: (next: (prev: number) => number) => void;
+    isPlaying: boolean;
+    setIsPlaying: (next: (prev: boolean) => boolean) => void;
+  };
+  compactState: {
+    stepIndex: number;
+    setStepIndex: (next: (prev: number) => number) => void;
+    isPlaying: boolean;
+    setIsPlaying: (next: (prev: boolean) => boolean) => void;
+  };
+  sweepState: {
+    stepIndex: number;
+    setStepIndex: (next: (prev: number) => number) => void;
+    isPlaying: boolean;
+    setIsPlaying: (next: (prev: boolean) => boolean) => void;
+  };
   controls: ControlLabels;
 };
 
@@ -86,235 +102,118 @@ const oldObjects = [
 
 export default function GcAlgorithmsDemo({
   gcAlgorithms,
-  activeGcAlgoId,
-  setActiveGcAlgoId,
-  gcAlgoStepIndex,
-  setGcAlgoStepIndex,
-  isGcAlgoPlaying,
-  setIsGcAlgoPlaying,
+  copyState,
+  compactState,
+  sweepState,
   controls,
 }: GcAlgorithmsDemoProps) {
-  const isCopyAlgo = activeGcAlgoId === "copy";
-  const isMarkSweepAlgo = activeGcAlgoId === "mark-sweep";
-  const copyFromIsS0 = gcAlgoStepIndex < 3;
-  const copyShowMarked = gcAlgoStepIndex >= 1;
-  const copyShowCopy = gcAlgoStepIndex >= 2;
-  const copyCleared = gcAlgoStepIndex >= 3;
-  const markCompactMarked = gcAlgoStepIndex >= 1;
-  const markCompactCompacted = gcAlgoStepIndex >= 2;
-  const markSweepMarked = gcAlgoStepIndex >= 1;
-  const markSweepSwept = gcAlgoStepIndex >= 2;
+  const copyFromIsS0 = copyState.stepIndex < 3;
+  const copyShowMarked = copyState.stepIndex >= 1;
+  const copyShowCopy = copyState.stepIndex >= 2;
+  const copyCleared = copyState.stepIndex >= 3;
+  const markCompactMarked = compactState.stepIndex >= 1;
+  const markCompactCompacted = compactState.stepIndex >= 2;
+  const markSweepMarked = sweepState.stepIndex >= 1;
+  const markSweepSwept = sweepState.stepIndex >= 2;
 
   return (
     <>
       <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
-        <div className="text-xs font-mono text-graytext mb-2">
+        <div className="text-xs font-mono text-graytext mb-1">
           {gcAlgorithms.title}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {gcAlgorithms.tabs.map((tab) => {
-            const isActive = tab.id === activeGcAlgoId;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  setIsGcAlgoPlaying(() => false);
-                  setGcAlgoStepIndex(() => 0);
-                  setActiveGcAlgoId(tab.id);
-                }}
-                className={`rounded-md border px-2 py-1 text-[11px] ${
-                  isActive
-                    ? "border-gray-500 bg-accent text-text"
-                    : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
-                }`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+        <div className="text-[11px] text-graytext">{gcAlgorithms.note}</div>
       </section>
 
       <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
         <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
           <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card p-2">
-            {isCopyAlgo ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[11px] text-graytext">
-                  <span>{gcAlgorithms.youngTitle}</span>
-                  <span>8:1:1</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-graytext">
+                <span className="text-[10px] text-text">
+                  {gcAlgorithms.labels.copy}
+                </span>
+                <span>{gcAlgorithms.youngTitle}</span>
+              </div>
+              <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
+                <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
+                  <div className="col-span-8 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
+                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
+                      Eden
+                    </span>
+                  </div>
+                  <div className="col-span-2 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card/80 relative">
+                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
+                      S0
+                    </span>
+                    <span
+                      className={`absolute left-2 bottom-1 text-[10px] ${
+                        copyFromIsS0 ? "text-text" : "text-gray-500"
+                      }`}
+                    >
+                      {copyFromIsS0 ? "From" : "To"}
+                    </span>
+                  </div>
+                  <div className="col-span-2 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card/80 relative">
+                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
+                      S1
+                    </span>
+                    <span
+                      className={`absolute left-2 bottom-1 text-[10px] ${
+                        copyFromIsS0 ? "text-gray-500" : "text-text"
+                      }`}
+                    >
+                      {copyFromIsS0 ? "To" : "From"}
+                    </span>
+                  </div>
                 </div>
-                <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
-                  <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                    <div className="col-span-8 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
-                      <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                        Eden
-                      </span>
-                    </div>
-                    <div className="col-span-2 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card/80 relative">
-                      <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                        S0
-                      </span>
-                      <span
-                        className={`absolute left-2 bottom-1 text-[10px] ${
-                          copyFromIsS0 ? "text-text" : "text-gray-500"
-                        }`}
-                      >
-                        {copyFromIsS0 ? "From" : "To"}
-                      </span>
-                    </div>
-                    <div className="col-span-2 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card/80 relative">
-                      <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                        S1
-                      </span>
-                      <span
-                        className={`absolute left-2 bottom-1 text-[10px] ${
-                          copyFromIsS0 ? "text-gray-500" : "text-text"
-                        }`}
-                      >
-                        {copyFromIsS0 ? "To" : "From"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                    {copyObjects.map((obj) => {
-                      const target =
-                        obj.live && obj.toIndex !== undefined
-                          ? {
-                              col: 11 + (obj.toIndex % 2),
-                              row: Math.floor(obj.toIndex / 2) + 1,
-                            }
-                          : obj.from;
-                      const position =
-                        copyShowCopy && obj.live ? target : obj.from;
-                      const fillClass =
-                        copyShowCopy && obj.live
-                          ? gcPalette.moved
-                          : copyShowMarked
-                            ? obj.live
-                              ? gcPalette.live
-                              : gcPalette.garbage
-                            : gcPalette.idle;
-                      const opacity = copyCleared && !obj.live ? 0 : 1;
-                      return (
-                        <motion.div
-                          key={obj.id}
-                          layout
-                          transition={{ duration: 0.6, ease: "easeInOut" }}
-                          className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
-                          style={{
-                            gridColumnStart: position.col,
-                            gridRowStart: position.row,
-                            opacity,
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
+                <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
+                  {copyObjects.map((obj) => {
+                    const target =
+                      obj.live && obj.toIndex !== undefined
+                        ? {
+                            col: 11 + (obj.toIndex % 2),
+                            row: Math.floor(obj.toIndex / 2) + 1,
+                          }
+                        : obj.from;
+                    const position = copyShowCopy && obj.live ? target : obj.from;
+                    const fillClass =
+                      copyShowCopy && obj.live
+                        ? gcPalette.moved
+                        : copyShowMarked
+                          ? obj.live
+                            ? gcPalette.live
+                            : gcPalette.garbage
+                          : gcPalette.idle;
+                    const opacity = copyCleared && !obj.live ? 0 : 1;
+                    return (
+                      <motion.div
+                        key={obj.id}
+                        layout
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                        className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
+                        style={{
+                          gridColumnStart: position.col,
+                          gridRowStart: position.row,
+                          opacity,
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
-            ) : isMarkSweepAlgo ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[11px] text-graytext">
-                  <span>{gcAlgorithms.oldTitle}</span>
-                </div>
-                <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
-                  <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                    <div className="col-span-12 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
-                      <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                        {gcAlgorithms.oldTitle}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                    {oldObjects.map((obj) => {
-                      const fillClass = markSweepMarked
-                        ? obj.live
-                          ? gcPalette.live
-                          : gcPalette.garbage
-                        : gcPalette.idle;
-                      const opacity = markSweepSwept && !obj.live ? 0 : 1;
-                      return (
-                        <motion.div
-                          key={obj.id}
-                          layout
-                          transition={{ duration: 0.6, ease: "easeInOut" }}
-                          className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
-                          style={{
-                            gridColumnStart: obj.from.col,
-                            gridRowStart: obj.from.row,
-                            opacity,
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[11px] text-graytext">
-                  <span>{gcAlgorithms.oldTitle}</span>
-                </div>
-                <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
-                  <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                    <div className="col-span-12 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
-                      <span className="absolute left-2 top-1 text-[10px] text-gray-300">
-                        {gcAlgorithms.oldTitle}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
-                    {oldObjects.map((obj) => {
-                      const target =
-                        obj.live && obj.toIndex !== undefined
-                          ? {
-                              col: (obj.toIndex % 12) + 1,
-                              row: Math.floor(obj.toIndex / 12) + 1,
-                            }
-                          : obj.from;
-                      const position =
-                        markCompactCompacted && obj.live ? target : obj.from;
-                      const fillClass =
-                        markCompactCompacted && obj.live
-                          ? gcPalette.moved
-                          : markCompactMarked
-                            ? obj.live
-                              ? gcPalette.live
-                              : gcPalette.garbage
-                            : gcPalette.idle;
-                      const opacity =
-                        markCompactCompacted && !obj.live ? 0 : 1;
-                      return (
-                        <motion.div
-                          key={obj.id}
-                          layout
-                          transition={{ duration: 0.6, ease: "easeInOut" }}
-                          className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
-                          style={{
-                            gridColumnStart: position.col,
-                            gridRowStart: position.row,
-                            opacity,
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
           <div className="space-y-2 text-xs text-graytext">
             <div className="text-[11px] uppercase text-graytext">
               {controls.stepsTitle}
             </div>
             <ul className="list-disc pl-4 space-y-1">
-              {(gcAlgorithms.steps[activeGcAlgoId] ?? []).map((item, index) => (
+              {(gcAlgorithms.steps.copy ?? []).map((item, index) => (
                 <li
                   key={item}
                   className={
-                    index === gcAlgoStepIndex ? "text-text" : "text-graytext"
+                    index === copyState.stepIndex ? "text-text" : "text-graytext"
                   }
                 >
                   {item}
@@ -324,16 +223,16 @@ export default function GcAlgorithmsDemo({
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <button
                 type="button"
-                onClick={() => setIsGcAlgoPlaying((prev) => !prev)}
+                onClick={() => copyState.setIsPlaying((prev) => !prev)}
                 className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
               >
-                {isGcAlgoPlaying ? controls.pause : controls.play}
+                {copyState.isPlaying ? controls.pause : controls.play}
               </button>
               <button
                 type="button"
                 onClick={() =>
-                  setGcAlgoStepIndex((prev) =>
-                    prev < (gcAlgorithms.steps[activeGcAlgoId]?.length ?? 0) - 1
+                  copyState.setStepIndex((prev) =>
+                    prev < (gcAlgorithms.steps.copy?.length ?? 0) - 1
                       ? prev + 1
                       : prev
                   )
@@ -345,7 +244,7 @@ export default function GcAlgorithmsDemo({
               <button
                 type="button"
                 onClick={() =>
-                  setGcAlgoStepIndex((prev) => (prev > 0 ? prev - 1 : prev))
+                  copyState.setStepIndex((prev) => (prev > 0 ? prev - 1 : prev))
                 }
                 className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
               >
@@ -354,16 +253,235 @@ export default function GcAlgorithmsDemo({
               <button
                 type="button"
                 onClick={() => {
-                  setIsGcAlgoPlaying(() => false);
-                  setGcAlgoStepIndex(() => 0);
+                  copyState.setIsPlaying(() => false);
+                  copyState.setStepIndex(() => 0);
                 }}
                 className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
               >
                 {controls.reset}
               </button>
             </div>
-            <div className="pt-2 text-[11px] text-graytext">
-              {gcAlgorithms.note}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+        <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
+          <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card p-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-graytext">
+                <span className="text-[10px] text-text">
+                  {gcAlgorithms.labels.markCompact}
+                </span>
+                <span>{gcAlgorithms.oldTitle}</span>
+              </div>
+              <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
+                <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
+                  <div className="col-span-12 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
+                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
+                      {gcAlgorithms.oldTitle}
+                    </span>
+                  </div>
+                </div>
+                <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
+                  {oldObjects.map((obj) => {
+                    const target =
+                      obj.live && obj.toIndex !== undefined
+                        ? {
+                            col: (obj.toIndex % 12) + 1,
+                            row: Math.floor(obj.toIndex / 12) + 1,
+                          }
+                        : obj.from;
+                    const position =
+                      markCompactCompacted && obj.live ? target : obj.from;
+                    const fillClass =
+                      markCompactCompacted && obj.live
+                        ? gcPalette.moved
+                        : markCompactMarked
+                          ? obj.live
+                            ? gcPalette.live
+                            : gcPalette.garbage
+                          : gcPalette.idle;
+                    const opacity = markCompactCompacted && !obj.live ? 0 : 1;
+                    return (
+                      <motion.div
+                        key={obj.id}
+                        layout
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                        className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
+                        style={{
+                          gridColumnStart: position.col,
+                          gridRowStart: position.row,
+                          opacity,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2 text-xs text-graytext">
+            <div className="text-[11px] uppercase text-graytext">
+              {controls.stepsTitle}
+            </div>
+            <ul className="list-disc pl-4 space-y-1">
+              {(gcAlgorithms.steps["mark-compact"] ?? []).map((item, index) => (
+                <li
+                  key={item}
+                  className={
+                    index === compactState.stepIndex ? "text-text" : "text-graytext"
+                  }
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => compactState.setIsPlaying((prev) => !prev)}
+                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+              >
+                {compactState.isPlaying ? controls.pause : controls.play}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  compactState.setStepIndex((prev) =>
+                    prev < (gcAlgorithms.steps["mark-compact"]?.length ?? 0) - 1
+                      ? prev + 1
+                      : prev
+                  )
+                }
+                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+              >
+                {controls.step}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  compactState.setStepIndex((prev) => (prev > 0 ? prev - 1 : prev))
+                }
+                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+              >
+                {controls.back}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  compactState.setIsPlaying(() => false);
+                  compactState.setStepIndex(() => 0);
+                }}
+                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+              >
+                {controls.reset}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3">
+        <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
+          <div className="rounded-md border border-gray-300 dark:border-white/15 bg-card p-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-graytext">
+                <span className="text-[10px] text-text">
+                  {gcAlgorithms.labels.markSweep}
+                </span>
+                <span>{gcAlgorithms.oldTitle}</span>
+              </div>
+              <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
+                <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
+                  <div className="col-span-12 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
+                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
+                      {gcAlgorithms.oldTitle}
+                    </span>
+                  </div>
+                </div>
+                <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
+                  {oldObjects.map((obj) => {
+                    const fillClass = markSweepMarked
+                      ? obj.live
+                        ? gcPalette.live
+                        : gcPalette.garbage
+                      : gcPalette.idle;
+                    const opacity = markSweepSwept && !obj.live ? 0 : 1;
+                    return (
+                      <motion.div
+                        key={obj.id}
+                        layout
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                        className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
+                        style={{
+                          gridColumnStart: obj.from.col,
+                          gridRowStart: obj.from.row,
+                          opacity,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2 text-xs text-graytext">
+            <div className="text-[11px] uppercase text-graytext">
+              {controls.stepsTitle}
+            </div>
+            <ul className="list-disc pl-4 space-y-1">
+              {(gcAlgorithms.steps["mark-sweep"] ?? []).map((item, index) => (
+                <li
+                  key={item}
+                  className={
+                    index === sweepState.stepIndex ? "text-text" : "text-graytext"
+                  }
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => sweepState.setIsPlaying((prev) => !prev)}
+                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+              >
+                {sweepState.isPlaying ? controls.pause : controls.play}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  sweepState.setStepIndex((prev) =>
+                    prev < (gcAlgorithms.steps["mark-sweep"]?.length ?? 0) - 1
+                      ? prev + 1
+                      : prev
+                  )
+                }
+                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+              >
+                {controls.step}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  sweepState.setStepIndex((prev) => (prev > 0 ? prev - 1 : prev))
+                }
+                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+              >
+                {controls.back}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sweepState.setIsPlaying(() => false);
+                  sweepState.setStepIndex(() => 0);
+                }}
+                className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
+              >
+                {controls.reset}
+              </button>
             </div>
           </div>
         </div>

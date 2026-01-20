@@ -446,11 +446,20 @@
       },
       {
         "id": "algorithms",
-        "title": "常见算法/收集器",
+        "title": "常见算法",
         "items": [
           "标记-清除、复制、标记-整理",
-          "Serial / Parallel / CMS / G1 / ZGC / Shenandoah",
-          "吞吐量 vs 延迟的权衡"
+          "新生代/老年代典型算法选择",
+          "通过演示理解算法流程"
+        ]
+      },
+      {
+        "id": "collectors",
+        "title": "常见垃圾回收器",
+        "items": [
+          "不同收集器基于不同算法组合",
+          "关注指标：吞吐量 / 停顿延迟 / 内存占用",
+          "选择与业务场景、JDK 版本相关"
         ]
       }
     ],
@@ -472,6 +481,60 @@
           { "label": "绿色：GC Roots", "color": "bg-emerald-300/70" }
         ]
       }
+    },
+    "collectors": {
+      "title": "收集器对比（算法与权衡）",
+      "subtitle": "重点关注：使用的算法组合、面向的指标，以及典型优缺点。",
+      "labels": {
+        "generations": "分代范围",
+        "algorithms": "算法",
+        "pros": "优点",
+        "cons": "缺点",
+        "focus": "目标",
+        "command": "命令"
+      },
+      "items": [
+        {
+          "id": "serial",
+          "name": "Serial / Serial Old",
+          "focus": "简单",
+          "generations": "新生代 + 老年代",
+          "algorithms": "复制（新生代） + 标记-整理（老年代）",
+          "command": "java -XX:+UseSerialGC -version",
+          "pros": ["实现简单、额外开销小", "在小堆/单核环境表现稳定"],
+          "cons": ["STW 时间长", "扩展性差（单线程）"]
+        },
+        {
+          "id": "parallel",
+          "name": "Parallel Scavenge / Parallel Old",
+          "focus": "吞吐量",
+          "generations": "新生代 + 老年代",
+          "algorithms": "复制（新生代） + 标记-整理（老年代）",
+          "command": "java -XX:+UseParallelGC -version",
+          "pros": ["高吞吐量", "适合批处理/后台任务"],
+          "cons": ["停顿时间可能较长", "对延迟敏感业务不友好"]
+        },
+        {
+          "id": "cms",
+          "name": "CMS（Concurrent Mark-Sweep）",
+          "focus": "低停顿",
+          "generations": "老年代（新生代常配 ParNew）",
+          "algorithms": "并发标记-清除（老年代）",
+          "command": "java -XX:+UseConcMarkSweepGC -version",
+          "pros": ["降低停顿时间", "响应更平滑"],
+          "cons": ["碎片化严重", "对 CPU 资源敏感", "已在新版本中废弃"]
+        },
+        {
+          "id": "g1",
+          "name": "G1",
+          "focus": "可预测停顿",
+          "generations": "整堆（Region 化）",
+          "algorithms": "标记-整理 + 复制（分区回收）",
+          "command": "java -XX:+UseG1GC -version",
+          "pros": ["停顿可预测", "适合大堆", "碎片较少"],
+          "cons": ["实现复杂", "调参成本较高"]
+        }
+      ]
     },
     "generations": {
       "whyTitle": "为什么要分代",
@@ -565,6 +628,11 @@
       "title": "常见算法演示",
       "stepsTitle": "执行步骤",
       "note": "新生代倾向复制算法，老年代常用标记-清除/标记-整理。",
+      "labels": {
+        "copy": "复制算法（Copy）",
+        "markCompact": "标记-整理（Mark-compact）",
+        "markSweep": "标记-清除（Mark-sweep）"
+      },
       "youngTitle": "新生代",
       "oldTitle": "老年代",
       "youngAlgorithms": ["复制算法（Copy）", "Eden → Survivor → Old"],
