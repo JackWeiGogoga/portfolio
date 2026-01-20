@@ -565,6 +565,28 @@
         "Exit safepoint and resume threads."
       ]
     },
+    "algorithms": {
+      "title": "Algorithm demos",
+      "stepsTitle": "Steps",
+      "note": "Young gen favors copying; old gen often uses mark-compact.",
+      "youngTitle": "Young Gen",
+      "oldTitle": "Old Gen",
+      "youngAlgorithms": ["Copying", "Eden → Survivor → Old"],
+      "oldAlgorithms": ["Mark-compact"],
+      "tabs": [
+        { "id": "copy", "label": "Copy" },
+        { "id": "mark-compact", "label": "Mark-compact" }
+      ],
+      "steps": {
+        "copy": [
+          "Objects spread in Eden/From-Survivor",
+          "Mark live objects",
+          "Copy live objects to To-Survivor",
+          "Clear Eden & From, then swap Survivor roles"
+        ],
+        "mark-compact": ["Mark live objects", "Compact to one side", "Clear trailing space"]
+      }
+    },
     "reachability": {
       "diagramTitle": "Object graph & tri-color marking",
       "rootsTitle": "GC Roots",

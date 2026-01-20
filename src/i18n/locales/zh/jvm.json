@@ -561,6 +561,28 @@
         "完成后解除 Safepoint，线程恢复执行。"
       ]
     },
+    "algorithms": {
+      "title": "常见算法演示",
+      "stepsTitle": "执行步骤",
+      "note": "新生代倾向复制算法，老年代常用标记-整理。",
+      "youngTitle": "新生代",
+      "oldTitle": "老年代",
+      "youngAlgorithms": ["复制算法（Copy）", "Eden → Survivor → Old"],
+      "oldAlgorithms": ["标记-整理"],
+      "tabs": [
+        { "id": "copy", "label": "复制" },
+        { "id": "mark-compact", "label": "标记-整理" }
+      ],
+      "steps": {
+        "copy": [
+          "Eden/From-Survivor 内对象分布",
+          "标记存活对象",
+          "复制存活对象到 To-Survivor",
+          "清空 Eden 与 From，并交换 Survivor 角色"
+        ],
+        "mark-compact": ["标记存活对象", "向一端整理存活对象", "清理尾部空洞"]
+      }
+    },
     "reachability": {
       "diagramTitle": "对象图与三色标记",
       "rootsTitle": "GC Roots",
