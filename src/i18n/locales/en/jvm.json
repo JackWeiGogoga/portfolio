@@ -568,16 +568,18 @@
     "algorithms": {
       "title": "Algorithm demos",
       "stepsTitle": "Steps",
-      "note": "Young gen favors copying; old gen often uses mark-compact.",
+      "note": "Young gen favors copying; old gen often uses mark-sweep/mark-compact.",
       "youngTitle": "Young Gen",
       "oldTitle": "Old Gen",
       "youngAlgorithms": ["Copying", "Eden → Survivor → Old"],
-      "oldAlgorithms": ["Mark-compact"],
+      "oldAlgorithms": ["Mark-sweep", "Mark-compact"],
       "tabs": [
         { "id": "copy", "label": "Copy" },
-        { "id": "mark-compact", "label": "Mark-compact" }
+        { "id": "mark-compact", "label": "Mark-compact" },
+        { "id": "mark-sweep", "label": "Mark-sweep" }
       ],
       "steps": {
+        "mark-sweep": ["Mark live objects", "Identify garbage", "Sweep garbage, fragmentation left"],
         "copy": [
           "Objects spread in Eden/From-Survivor",
           "Mark live objects",

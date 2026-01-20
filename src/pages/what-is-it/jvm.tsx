@@ -846,6 +846,7 @@ export default function JvmLessonPage() {
     </div>
   );
   const isCopyAlgo = activeGcAlgoId === "copy";
+  const isMarkSweepAlgo = activeGcAlgoId === "mark-sweep";
   const copyStep = gcAlgoStepIndex;
   const copyFromIsS0 = copyStep < 3;
   const copyShowMarked = copyStep >= 1;
@@ -854,6 +855,9 @@ export default function JvmLessonPage() {
   const markCompactStep = gcAlgoStepIndex;
   const markCompactMarked = markCompactStep >= 1;
   const markCompactCompacted = markCompactStep >= 2;
+  const markSweepStep = gcAlgoStepIndex;
+  const markSweepMarked = markSweepStep >= 1;
+  const markSweepSwept = markSweepStep >= 2;
   const gcPalette = {
     idle: "bg-muted",
     live: "bg-accent",
@@ -2519,6 +2523,48 @@ export default function JvmLessonPage() {
                                         style={{
                                           gridColumnStart: position.col,
                                           gridRowStart: position.row,
+                                          opacity,
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          ) : isMarkSweepAlgo ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-[11px] text-graytext">
+                                <span>{gcAlgorithms.oldTitle}</span>
+                              </div>
+                              <div className="relative rounded-md border border-gray-300 dark:border-white/15 bg-background p-3">
+                                <div className="grid grid-cols-12 grid-rows-5 gap-1 h-36">
+                                  <div className="col-span-12 row-span-5 rounded-md border border-gray-300 dark:border-white/15 bg-card relative">
+                                    <span className="absolute left-2 top-1 text-[10px] text-gray-300">
+                                      {gcAlgorithms.oldTitle}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="pointer-events-none absolute inset-3 grid grid-cols-12 grid-rows-5 gap-1 h-36">
+                                  {oldObjects.map((obj) => {
+                                    const fillClass = markSweepMarked
+                                      ? obj.live
+                                        ? gcPalette.live
+                                        : gcPalette.garbage
+                                      : gcPalette.idle;
+                                    const opacity =
+                                      markSweepSwept && !obj.live ? 0 : 1;
+                                    return (
+                                      <motion.div
+                                        key={obj.id}
+                                        layout
+                                        transition={{
+                                          duration: 0.6,
+                                          ease: "easeInOut",
+                                        }}
+                                        className={`w-full h-full rounded-[3px] border border-gray-300 dark:border-white/15 ${fillClass}`}
+                                        style={{
+                                          gridColumnStart: obj.from.col,
+                                          gridRowStart: obj.from.row,
                                           opacity,
                                         }}
                                       />

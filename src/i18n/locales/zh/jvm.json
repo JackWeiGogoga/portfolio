@@ -564,16 +564,18 @@
     "algorithms": {
       "title": "常见算法演示",
       "stepsTitle": "执行步骤",
-      "note": "新生代倾向复制算法，老年代常用标记-整理。",
+      "note": "新生代倾向复制算法，老年代常用标记-清除/标记-整理。",
       "youngTitle": "新生代",
       "oldTitle": "老年代",
       "youngAlgorithms": ["复制算法（Copy）", "Eden → Survivor → Old"],
-      "oldAlgorithms": ["标记-整理"],
+      "oldAlgorithms": ["标记-清除", "标记-整理"],
       "tabs": [
         { "id": "copy", "label": "复制" },
-        { "id": "mark-compact", "label": "标记-整理" }
+        { "id": "mark-compact", "label": "标记-整理" },
+        { "id": "mark-sweep", "label": "标记-清除" }
       ],
       "steps": {
+        "mark-sweep": ["标记存活对象", "标记垃圾对象", "清除垃圾，产生碎片"],
         "copy": [
           "Eden/From-Survivor 内对象分布",
           "标记存活对象",
