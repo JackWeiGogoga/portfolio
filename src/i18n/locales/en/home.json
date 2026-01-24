@@ -1,19 +1,20 @@
 {
   "profile": {
     "name": "JackWei",
-    "roleAt": "Software Engineer @",
-    "avatarAlt": "Profile Picture",
+    "roleAt": "Backend Technical Expert @",
+    "avatarAlt": "Avatar",
     "companyAlt": "Netease Logo"
   },
   "newPost": {
-    "label": "New post:"
+    "label": "Latest post:"
   },
   "intro": {
     "title": "Profile",
     "paragraphs": [
-      "A full stack software engineer based in Beijing. I shape mess into simple, meaningful experiences.",
-      "When I'm offline, I'm usually busy with citywalk, gaming and drawing.",
-      "Latest portfolio of work available upon request."
+      "I am a backend engineer currently working and living in Beijing, China.",
+      "With 11 years of internet-industry development experience, I have a solid software engineering foundation, value code quality and architecture, and possess full-stack capabilities.",
+      "At work, I take ownership, collaborate efficiently, and prioritize knowledge sharing and cross-team communication. I identify business bottlenecks and optimize processes with a product mindset. I maintain strong interest in internet technologies, Web3, and AI, and continually learn best practices from open-source projects.",
+      "Outside of work, I enjoy walking with my family, listening to music, and occasionally drawing."
     ]
   },
   "skills": {
@@ -29,92 +30,92 @@
       "language": "Language",
       "framework": "Framework",
       "database": "Database",
-      "messageQueue": "MessageQueue",
-      "ssr": "SSR",
+      "messageQueue": "Message Queue",
+      "ssr": "Server-Side Rendering",
       "build": "Build",
       "ui": "UI",
       "miniProgram": "Mini Program",
-      "test": "Test",
+      "test": "Testing",
       "wallet": "Wallet",
       "storage": "Storage",
-      "provider": "Provider",
+      "provider": "Service Provider",
       "model": "Model",
-      "train": "Train"
+      "train": "Training"
     }
   },
   "works": {
-    "title": "Works",
+    "title": "Recent Work",
     "items": [
       {
         "title": "Content Moderation LLM Fine-tuning",
-        "description": "Led fine-tuning of a moderation-focused LLM to improve precision and recall, with SFT and GRPO for business-specific standards.",
+        "description": "As project lead, drove fine-tuning of a moderation LLM to improve precision and recall in a vertical domain. Analyzed human review standards and refined the risk taxonomy; improved prompt quality with RAG and few-shot. Built an annotation platform using LLM pre-labeling and AI-assisted tooling, boosting labeling efficiency by 40%. Risk detection precision rose from 60% to 80%, and recall from 20% to 70%.",
         "type": "AI"
       },
       {
-        "title": "Content Moderation Efficiency Initiative",
-        "description": "Led a machine moderation strategy and LLM platform to reduce manual review, improve throughput, and raise review quality.",
+        "title": "Content Moderation Efficiency",
+        "description": "Led the design of machine moderation strategies to reduce human review costs while maintaining safety and quality. Instrumented and analyzed the review pipeline, delivered 30+ automated rules covering 6+ business types. Built an LLM moderation platform supporting multi-agent configurations, model switching, and prompt tuning, covering ~100 review criteria. Human review cost dropped by 83%, backlog rate from 20% to 0, and review time by 40%.",
         "type": "Backend"
       },
       {
-        "title": "LLM-Powered Data Analysis Agent",
-        "description": "Built an LLM agent that answers questions, generates SQL, runs queries, and renders rich visualizations.",
+        "title": "LLM-Driven Data Analysis Agent",
+        "description": "Built a data analysis agent that answers natural-language queries, generates SQL, executes queries, and renders multiple visualizations. Implemented a LangChain ReAct agent, auto-injecting visible schema into prompts and using RAG for domain knowledge. Added long-term and short-term memory for multi-turn conversations. Replaced part of routine analysis work, improving product and operations efficiency by 30%, and filed a national patent.",
         "type": "AI"
       }
     ]
   },
   "sideProjects": {
-    "title": "Side Projects",
-    "seeAll": "See All",
+    "title": "Personal Projects",
+    "seeAll": "View All",
     "items": [
       {
         "title": "Flowlet - Visual Workflow Orchestration",
-        "description": "A lightweight drag-and-drop workflow system for building and running data-processing pipelines with LLM and API nodes.",
+        "description": "A lightweight drag-and-drop workflow system for building and running data pipelines with LLM and API nodes.",
         "type": "AI"
       },
       {
-        "title": "Crowdfunding - Tier-based & Custom Funding",
-        "description": "A flexible crowdfunding system supporting multiple funding tiers, custom contributions, campaign management, and refunds for failed campaigns.",
+        "title": "Crowdfunding - Tiered & Custom Funding",
+        "description": "A flexible crowdfunding system with multi-tier and custom contributions, campaign management, and failure refunds. Supports tiered/custom donations, failed refund flows, and successful withdrawals; uses a state machine plus CEI and Pausable/Ownable to control fund risk.",
         "type": "Web3"
       },
       {
-        "title": "Gogoga Token - ERC20 Token with Sale",
-        "description": "An ERC20 token implementation with built-in token sale functionality, featuring pausable transfers, minting capabilities, and configurable purchase limits.",
+        "title": "Gogoga Token - ERC20 with Token Sale",
+        "description": "An ERC20 token with built-in sale functionality, pausable transfers, minting, and configurable purchase limits. ERC20 extensions support sale, minting, and purchase caps; airdrops use Merkle Tree whitelist verification.",
         "type": "Web3"
       },
       {
-        "title": "Gogoga NFT - ERC721 Collection with Royalties",
-        "description": "An ERC721 NFT collection with EIP-2981 royalty support, pausable minting, batch operations, and burnable tokens for enhanced creator control.",
+        "title": "Gogoga NFT - ERC721 with Royalties",
+        "description": "An ERC721 NFT collection with EIP-2981 royalties, pausable minting, batch operations, and burnable tokens.",
         "type": "Web3"
       },
       {
         "title": "Voting System - On-chain Decentralized Voting",
-        "description": "A decentralized voting system with candidate and voter registration, time-limited voting sessions, pausable controls, and transparent result tallying.",
+        "description": "A decentralized voting system with candidate/voter registration, time-boxed voting, pause controls, and transparent tallying.",
         "type": "Web3"
       }
     ]
   },
   "experiences": {
-    "title": "Educations & Experiences",
+    "title": "Education & Experience",
     "items": [
       {
         "title": "Technical Expert",
         "period": "2016 - Present",
-        "description": "Led the development of enterprise-scale web applications, mentored junior developers."
+        "description": "Led enterprise-scale web application development and mentored junior engineers."
       },
       {
-        "title": "Java Developer",
+        "title": "Java Engineer",
         "period": "2015 - 2016",
-        "description": "Developed and maintained multiple client projects, implemented responsive designs."
+        "description": "Developed and maintained multiple client projects, delivering responsive design implementations."
       },
       {
         "title": "M.S. in Computer Technology",
         "period": "2013 - 2015",
-        "description": "Developed and maintained multiple client projects, implemented responsive designs."
+        "description": "Developed and maintained multiple client projects, delivering responsive design implementations."
       },
       {
         "title": "B.S. in Computer Technology",
         "period": "2009 - 2013",
-        "description": "Developed and maintained multiple client projects, implemented responsive designs."
+        "description": "Developed and maintained multiple client projects, delivering responsive design implementations."
       }
     ]
   },
@@ -123,7 +124,7 @@
     "items": [
       {
         "label": "Name",
-        "value": "Jack Wei"
+        "value": "JackWei"
       },
       {
         "label": "Phone",
@@ -139,15 +140,15 @@
       },
       {
         "label": "Education",
-        "value": "M.S. in Computer Technology, NEU"
+        "value": "M.S. in Computer Technology, Northeastern University"
       },
       {
         "label": "Language",
-        "value": "English(CET-6), Chinese"
+        "value": "English (CET-6), Chinese"
       }
     ]
   },
   "footer": {
-    "quote": "Man proposes, God disposes."
+    "quote": "Do your best, and leave the rest to fate."
   }
 }
