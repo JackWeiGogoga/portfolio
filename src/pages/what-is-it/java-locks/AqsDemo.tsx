@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { getThreadTone } from "./threadTone";
 
 export type AqsDemoStep = {
   id: string;
@@ -56,6 +57,15 @@ export default function AqsDemo({
 }: AqsDemoProps) {
   const step = steps[stepIndex] ?? steps[0];
   const queueCount = step.queue.length;
+  const renderThread = (thread: string) => {
+    const tone = getThreadTone(thread);
+    return (
+      <span className={`inline-flex items-center gap-1 ${tone.text}`}>
+        <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+        {thread}
+      </span>
+    );
+  };
 
   return (
     <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
@@ -82,7 +92,7 @@ export default function AqsDemo({
                   {labels.ownerLabel}
                 </div>
                 <div className="text-sm font-semibold text-text">
-                  {step.owner ?? labels.ownerEmpty}
+                  {step.owner ? renderThread(step.owner) : labels.ownerEmpty}
                 </div>
               </div>
             </div>
@@ -106,6 +116,7 @@ export default function AqsDemo({
                   const isHead = index === 0;
                   const isTail = index === queueCount - 1;
                   const isParked = step.parked.includes(thread);
+                  const tone = getThreadTone(thread);
                   const nodeClass = isHead
                     ? "bg-accent text-text"
                     : isParked
@@ -116,9 +127,9 @@ export default function AqsDemo({
                       key={thread}
                       layout
                       transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className={`relative rounded-md border border-gray-300 dark:border-white/15 px-2 py-1 text-xs font-mono ${nodeClass}`}
+                      className={`relative rounded-md border px-2 py-1 text-xs font-mono ${nodeClass} ${tone.border}`}
                     >
-                      {thread}
+                      {renderThread(thread)}
                       <div className="absolute -top-2 left-1 flex gap-1 text-[9px] uppercase text-graytext">
                         {isHead ? <span>{labels.headTag}</span> : null}
                         {isTail ? <span>{labels.tailTag}</span> : null}
@@ -150,9 +161,9 @@ export default function AqsDemo({
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-3 py-1 text-xs font-mono text-text"
+                  className={`rounded-md border bg-card px-3 py-1 text-xs font-mono text-text ${getThreadTone(step.arrivingThread).border}`}
                 >
-                  {step.arrivingThread}
+                  {renderThread(step.arrivingThread)}
                 </motion.div>
               ) : (
                 <div className="text-xs text-graytext">-</div>

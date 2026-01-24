@@ -1,0 +1,154 @@
+{
+  "profile": {
+    "name": "魏东军",
+    "roleAt": "后端技术专家 @",
+    "avatarAlt": "头像",
+    "companyAlt": "网易 Logo"
+  },
+  "newPost": {
+    "label": "最新文章："
+  },
+  "intro": {
+    "title": "简介",
+    "paragraphs": [
+      "我是一名后端开发工程师，目前工作和生活在中国北京。",
+      "拥有 11 年互联网相关开发经验，具备扎实的软件工程基础，注重代码质量与架构设计，具备一定的全栈能力。",
+      "在工作中主动负责、协作高效，重视知识分享与跨团队沟通，善于发现业务瓶颈并以产品视角优化流程。对互联网技术、Web3 与 AI 保持浓厚兴趣，持续学习并从开源项目吸收最佳实践。",
+      "工作之余，我喜欢和家人散步，听音乐，偶尔画画。"
+    ]
+  },
+  "skills": {
+    "title": "技能",
+    "empty": "暂无技能。",
+    "categories": {
+      "backend": "后端",
+      "frontend": "前端",
+      "web3": "Web3",
+      "ai": "AI"
+    },
+    "types": {
+      "language": "语言",
+      "framework": "框架",
+      "database": "数据库",
+      "messageQueue": "消息队列",
+      "ssr": "服务端渲染",
+      "build": "构建",
+      "ui": "UI",
+      "miniProgram": "小程序",
+      "test": "测试",
+      "wallet": "钱包",
+      "storage": "存储",
+      "provider": "服务提供商",
+      "model": "模型",
+      "train": "训练"
+    }
+  },
+  "works": {
+    "title": "近期工作",
+    "items": [
+      {
+        "title": "内容审核大模型微调",
+        "description": "作为项目负责人主导审核大模型微调，提升审核垂类领域的精确率与召回率。分析人工审核尺度，梳理风险标签体系；使用 RAG 与 Few-Shot 增强提示词质量。采用大模型预标注与 AI 辅助编程搭建标注平台，标注效率提升 40%。风险识别准确率从 60% 提升到 80%，召回率从 20% 提升到 70%。",
+        "type": "AI"
+      },
+      {
+        "title": "内容审核提效",
+        "description": "主导设计机器审核策略，在保证安全与质量的前提下降低人工审核成本。对审核链路埋点分析并定位瓶颈，落地 30+ 自动规则，覆盖 6+ 业务类型。搭建 LLM 审核平台，支持多 Agent 配置、模型切换与提示词调优，覆盖约 100 项审核尺度。人工审核成本降低 83%，积压率从 20% 降至 0，审核时长下降 40%。",
+        "type": "后端"
+      },
+      {
+        "title": "LLM 驱动的数据分析 Agent",
+        "description": "构建支持自然语言提问的数据分析 Agent，生成 SQL、执行查询并渲染多种可视化图表。基于 LangChain 实现 ReAct Agent，将可见表结构自动注入 Prompt，并用 RAG 引入领域知识。加入长期和短期记忆系统，支持多轮对话。替代部分日常分析工作，产品与运营效率提升 30%，并申请国家专利。",
+        "type": "AI"
+      }
+    ]
+  },
+  "sideProjects": {
+    "title": "个人项目",
+    "seeAll": "查看全部",
+    "items": [
+      {
+        "title": "Flowlet - 可视化工作流编排",
+        "description": "轻量级拖拽式工作流系统，用于构建并运行包含 LLM 与 API 节点的数据处理流水线。",
+        "type": "AI"
+      },
+      {
+        "title": "Crowdfunding - 分层与自定义众筹",
+        "description": "支持多档位、自由金额、活动管理与失败退款的灵活众筹系统。分层/自定义捐赠、失败退款、达标提现；使用状态机 + CEI 与 Pausable/Ownable 控制资金风险。",
+        "type": "Web3"
+      },
+      {
+        "title": "Gogoga Token - 含售卖功能的 ERC20",
+        "description": "内置代币售卖的 ERC20 实现，支持可暂停转账、铸造与可配置购买限额。ERC20 扩展支持售卖、铸造、购买限额；空投使用 Merkle Tree 白名单校验。",
+        "type": "Web3"
+      },
+      {
+        "title": "Gogoga NFT - 带版税的 ERC721",
+        "description": "支持 EIP-2981 版税、可暂停铸造、批量操作与销毁的 ERC721 NFT 合集。",
+        "type": "Web3"
+      },
+      {
+        "title": "Voting System - 链上去中心化投票",
+        "description": "支持候选人/投票人登记、限时投票、暂停控制与透明统计的去中心化投票系统。",
+        "type": "Web3"
+      }
+    ]
+  },
+  "experiences": {
+    "title": "教育与经历",
+    "items": [
+      {
+        "title": "技术专家",
+        "period": "2016 - 至今",
+        "description": "主导企业级 Web 应用开发并培养初级工程师。"
+      },
+      {
+        "title": "Java 开发工程师",
+        "period": "2015 - 2016",
+        "description": "负责多个客户端项目开发与维护，完成响应式设计落地。"
+      },
+      {
+        "title": "计算机技术硕士",
+        "period": "2013 - 2015",
+        "description": "负责多个客户端项目开发与维护，完成响应式设计落地。"
+      },
+      {
+        "title": "计算机技术学士",
+        "period": "2009 - 2013",
+        "description": "负责多个客户端项目开发与维护，完成响应式设计落地。"
+      }
+    ]
+  },
+  "contact": {
+    "title": "关于我",
+    "items": [
+      {
+        "label": "姓名",
+        "value": "魏东军"
+      },
+      {
+        "label": "电话",
+        "value": "+86 18500151385"
+      },
+      {
+        "label": "邮箱",
+        "value": "jackweigogoga@gmail.com"
+      },
+      {
+        "label": "地址",
+        "value": "中国，北京"
+      },
+      {
+        "label": "学历",
+        "value": "东北大学 计算机技术 硕士"
+      },
+      {
+        "label": "语言",
+        "value": "英语（CET-6）、中文"
+      }
+    ]
+  },
+  "footer": {
+    "quote": "尽人事，听天命。"
+  }
+}

@@ -10,6 +10,8 @@ import javaLocksEn from "./locales/en/javaLocks.json";
 import javaLocksZh from "./locales/zh/javaLocks.json";
 import whatIsItEn from "./locales/en/whatIsIt.json";
 import whatIsItZh from "./locales/zh/whatIsIt.json";
+import homeEn from "./locales/en/home.json";
+import homeZh from "./locales/zh/home.json";
 
 const getInitialLanguage = () => {
   if (typeof window === "undefined") {
@@ -30,6 +32,7 @@ void i18n.use(initReactI18next).init({
       jvm: jvmEn,
       javaLocks: javaLocksEn,
       whatIsIt: whatIsItEn,
+      home: homeEn,
     },
     zh: {
       common: commonZh,
@@ -37,6 +40,7 @@ void i18n.use(initReactI18next).init({
       jvm: jvmZh,
       javaLocks: javaLocksZh,
       whatIsIt: whatIsItZh,
+      home: homeZh,
     },
   },
   lng: getInitialLanguage(),

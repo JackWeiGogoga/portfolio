@@ -8,6 +8,12 @@ import AqsDemo, { type AqsDemoStep } from "@/pages/what-is-it/java-locks/AqsDemo
 import LockUpgradeDemo, {
   type LockUpgradeStep,
 } from "@/pages/what-is-it/java-locks/LockUpgradeDemo";
+import LockImplDemo, {
+  type LockImplStep,
+} from "@/pages/what-is-it/java-locks/LockImplDemo";
+import ReentrantAqsDemo, {
+  type ReentrantAqsStep,
+} from "@/pages/what-is-it/java-locks/ReentrantAqsDemo";
 
 type PageTab = {
   id: string;
@@ -158,6 +164,78 @@ export default function JavaLocksLessonPage() {
 
   const aqsConcepts = t("aqs.concepts", { returnObjects: true }) as string[];
   const aqsNodeTable = t("aqs.nodeTable", { returnObjects: true }) as TableData;
+  const aqsDemoStructureTable = t("aqs.demo.structureTable", {
+    returnObjects: true,
+  }) as TableData;
+  const aqsDemoStepDetails = t("aqs.demo.stepDetails", {
+    returnObjects: true,
+  }) as string[];
+  const aqsImplTabs = t("aqs.implementations.tabs", {
+    returnObjects: true,
+  }) as { id: string; label: string }[];
+  const [activeAqsImplId, setActiveAqsImplId] = useState(
+    aqsImplTabs[0]?.id ?? "reentrant"
+  );
+  const aqsImplContent = t(
+    `aqs.implementations.content.${activeAqsImplId}`,
+    { returnObjects: true }
+  ) as {
+    summary: string;
+    features: string[];
+    codeTitle: string;
+    code: string;
+    demo: {
+      title: string;
+      note: string;
+      structureTitle: string;
+      structure: string[];
+      usageTitle: string;
+      usage: string[];
+      steps: LockImplStep[];
+    };
+  };
+  const aqsReentrantDemo = t("aqs.implementations.reentrantDemo", {
+    returnObjects: true,
+  }) as {
+    title: string;
+    note: string;
+    codeTitle: string;
+    stateLabel: string;
+    ownerLabel: string;
+    queueTitle: string;
+    nodeFieldsTitle: string;
+    stepsTitle: string;
+    headTag: string;
+    tailTag: string;
+    fields: {
+      waitStatus: string;
+      prev: string;
+      next: string;
+      thread: string;
+      nextWaiter: string;
+    };
+    tabs: { id: string; label: string }[];
+    content: Record<
+      string,
+      {
+        codeLines: string[];
+        codeTooltips: Record<string, string>;
+        steps: ReentrantAqsStep[];
+      }
+    >;
+  };
+  const [aqsImplStepIndex, setAqsImplStepIndex] = useState(0);
+  const [isAqsImplPlaying, setIsAqsImplPlaying] = useState(false);
+  const [reentrantStepIndex, setReentrantStepIndex] = useState(0);
+  const [isReentrantPlaying, setIsReentrantPlaying] = useState(false);
+  const [activeDemoId, setActiveDemoId] = useState<
+    "lockUpgrade" | "aqsCore" | "aqsImpl" | "reentrant" | null
+  >(null);
+  const [activeReentrantTabId, setActiveReentrantTabId] = useState(
+    aqsReentrantDemo.tabs[0]?.id ?? "nonfair"
+  );
+  const reentrantTabContent =
+    aqsReentrantDemo.content[activeReentrantTabId];
 
   const interviewSections = t("interview.sections", {
     returnObjects: true,
@@ -261,6 +339,42 @@ export default function JavaLocksLessonPage() {
   }, [isAqsPlaying, aqsSteps.length]);
 
   useEffect(() => {
+    setAqsImplStepIndex(0);
+    setIsAqsImplPlaying(false);
+    setReentrantStepIndex(0);
+    setIsReentrantPlaying(false);
+  }, [activeAqsImplId]);
+
+  useEffect(() => {
+    setReentrantStepIndex(0);
+    setIsReentrantPlaying(false);
+  }, [activeReentrantTabId]);
+
+  useEffect(() => {
+    if (!isAqsImplPlaying) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      setAqsImplStepIndex((prev) =>
+        prev < aqsImplContent.demo.steps.length - 1 ? prev + 1 : 0
+      );
+    }, 1600);
+    return () => window.clearInterval(timer);
+  }, [isAqsImplPlaying, aqsImplContent.demo.steps.length]);
+
+  useEffect(() => {
+    if (!isReentrantPlaying) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      setReentrantStepIndex((prev) =>
+        prev < reentrantTabContent.steps.length - 1 ? prev + 1 : 0
+      );
+    }, 1600);
+    return () => window.clearInterval(timer);
+  }, [isReentrantPlaying, reentrantTabContent.steps.length]);
+
+  useEffect(() => {
     if (!isLockUpgradePlaying) {
       return;
     }
@@ -271,6 +385,80 @@ export default function JavaLocksLessonPage() {
     }, 1600);
     return () => window.clearInterval(timer);
   }, [isLockUpgradePlaying, lockUpgradeSteps.length]);
+
+  useEffect(() => {
+    if (activeTabId === "synchronized") {
+      setActiveDemoId("lockUpgrade");
+      return;
+    }
+    if (activeTabId === "aqs") {
+      setActiveDemoId("aqsCore");
+      return;
+    }
+    setActiveDemoId(null);
+  }, [activeTabId]);
+
+  useEffect(() => {
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const delta = event.key === "ArrowRight" ? 1 : -1;
+      const advance = (
+        setIndex: (next: (prev: number) => number) => void,
+        length: number
+      ) => {
+        setIndex((prev) => {
+          if (delta > 0) {
+            return prev < length - 1 ? prev + 1 : prev;
+          }
+          return prev > 0 ? prev - 1 : prev;
+        });
+      };
+
+      switch (activeDemoId) {
+        case "lockUpgrade":
+          setIsLockUpgradePlaying(false);
+          advance(setLockUpgradeIndex, lockUpgradeSteps.length);
+          break;
+        case "aqsCore":
+          setIsAqsPlaying(false);
+          advance(setAqsStepIndex, aqsSteps.length);
+          break;
+        case "aqsImpl":
+          setIsAqsImplPlaying(false);
+          advance(setAqsImplStepIndex, aqsImplContent.demo.steps.length);
+          break;
+        case "reentrant":
+          setIsReentrantPlaying(false);
+          advance(setReentrantStepIndex, reentrantTabContent.steps.length);
+          break;
+        default:
+          return;
+      }
+
+      event.preventDefault();
+    };
+
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, [
+    activeDemoId,
+    aqsImplContent.demo.steps.length,
+    aqsSteps.length,
+    lockUpgradeSteps.length,
+    reentrantTabContent.steps.length,
+  ]);
 
   const aqsControls = {
     play: t("labels.controls.play"),
@@ -300,6 +488,12 @@ export default function JavaLocksLessonPage() {
     tailTag: t("aqs.demo.tailTag"),
     parkedTag: t("aqs.demo.parkedTag"),
     signalTitle: t("aqs.demo.signalTitle"),
+  };
+  const implDemoLabels = {
+    queueTitle: t("aqs.implementations.demo.queueTitle"),
+    queueEmpty: t("aqs.implementations.demo.queueEmpty"),
+    fieldsTitle: t("aqs.implementations.demo.fieldsTitle"),
+    stepsTitle: t("aqs.implementations.demo.stepsTitle"),
   };
   const lockUpgradeLabels = {
     markWordTitle: t("synchronized.upgradeDemo.title"),
@@ -472,15 +666,20 @@ export default function JavaLocksLessonPage() {
                   <div className="text-[11px] uppercase text-graytext">
                     {t("synchronized.upgradeDemo.note")}
                   </div>
-                  <LockUpgradeDemo
-                    steps={lockUpgradeSteps}
-                    stepIndex={lockUpgradeIndex}
-                    setStepIndex={setLockUpgradeIndex}
-                    isPlaying={isLockUpgradePlaying}
-                    setIsPlaying={setIsLockUpgradePlaying}
-                    controls={lockUpgradeControls}
-                    labels={lockUpgradeLabels}
-                  />
+                  <div
+                    onMouseEnter={() => setActiveDemoId("lockUpgrade")}
+                    onFocusCapture={() => setActiveDemoId("lockUpgrade")}
+                  >
+                    <LockUpgradeDemo
+                      steps={lockUpgradeSteps}
+                      stepIndex={lockUpgradeIndex}
+                      setStepIndex={setLockUpgradeIndex}
+                      isPlaying={isLockUpgradePlaying}
+                      setIsPlaying={setIsLockUpgradePlaying}
+                      controls={lockUpgradeControls}
+                      labels={lockUpgradeLabels}
+                    />
+                  </div>
                 </div>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <CodeBlock
@@ -675,15 +874,175 @@ export default function JavaLocksLessonPage() {
               </div>
               <div className="p-4 space-y-3">
                 <p className="text-sm text-graytext">{t("aqs.demo.note")}</p>
-                <AqsDemo
-                  steps={aqsSteps}
-                  stepIndex={aqsStepIndex}
-                  setStepIndex={setAqsStepIndex}
-                  isPlaying={isAqsPlaying}
-                  setIsPlaying={setIsAqsPlaying}
-                  controls={aqsControls}
-                  labels={aqsDiagramLabels}
-                />
+                <div
+                  onMouseEnter={() => setActiveDemoId("aqsCore")}
+                  onFocusCapture={() => setActiveDemoId("aqsCore")}
+                >
+                  <AqsDemo
+                    steps={aqsSteps}
+                    stepIndex={aqsStepIndex}
+                    setStepIndex={setAqsStepIndex}
+                    isPlaying={isAqsPlaying}
+                    setIsPlaying={setIsAqsPlaying}
+                    controls={aqsControls}
+                    labels={aqsDiagramLabels}
+                  />
+                </div>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-2">
+                    <div className="text-[11px] uppercase text-graytext">
+                      {t("aqs.demo.structureTitle")}
+                    </div>
+                    <SimpleTable data={aqsDemoStructureTable} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-[11px] uppercase text-graytext">
+                      {t("aqs.demo.stepDetailsTitle")}
+                    </div>
+                    <ul className="list-disc pl-4 text-xs text-graytext space-y-1">
+                      {aqsDemoStepDetails.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium">
+                {t("aqs.implementations.title")}
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {aqsImplTabs.map((tab) => {
+                    const isActive = tab.id === activeAqsImplId;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveAqsImplId(tab.id);
+                          setActiveDemoId(
+                            tab.id === "reentrant" ? "reentrant" : "aqsImpl"
+                          );
+                        }}
+                        className={`rounded-md border px-2 py-1 text-xs ${
+                          isActive
+                            ? "border-gray-500 bg-accent text-text"
+                            : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="rounded-lg border border-dashed border-gray-300 dark:border-white/15 bg-background px-3 py-3 space-y-3">
+                  <div className="text-xs text-graytext">
+                    {aqsImplContent.summary}
+                  </div>
+                  <ul className="list-disc pl-4 text-xs text-graytext space-y-1">
+                    {aqsImplContent.features.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <CodeBlock
+                    title={aqsImplContent.codeTitle}
+                    code={aqsImplContent.code}
+                  />
+                  {activeAqsImplId === "reentrant" ? (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {aqsReentrantDemo.tabs.map((tab) => {
+                          const isActive = tab.id === activeReentrantTabId;
+                          return (
+                            <button
+                              key={tab.id}
+                              type="button"
+                              onClick={() => {
+                                setActiveReentrantTabId(tab.id);
+                                setActiveDemoId("reentrant");
+                              }}
+                              className={`rounded-md border px-2 py-1 text-xs ${
+                                isActive
+                                  ? "border-gray-500 bg-accent text-text"
+                                  : "border-gray-300 dark:border-white/20 hover:bg-muted text-graytext"
+                              }`}
+                            >
+                              {tab.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div
+                        onMouseEnter={() => setActiveDemoId("reentrant")}
+                        onFocusCapture={() => setActiveDemoId("reentrant")}
+                      >
+                        <ReentrantAqsDemo
+                          codeLines={reentrantTabContent.codeLines}
+                          codeTooltips={Object.fromEntries(
+                            Object.entries(reentrantTabContent.codeTooltips).map(
+                              ([key, value]) => [Number(key), value]
+                            )
+                          )}
+                          steps={reentrantTabContent.steps}
+                          stepIndex={reentrantStepIndex}
+                          setStepIndex={setReentrantStepIndex}
+                          isPlaying={isReentrantPlaying}
+                          setIsPlaying={setIsReentrantPlaying}
+                          controls={aqsControls}
+                          labels={aqsReentrantDemo}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <div className="text-[11px] uppercase text-graytext">
+                          {aqsImplContent.demo.structureTitle}
+                        </div>
+                        <ul className="list-disc pl-4 text-xs text-graytext space-y-1">
+                          {aqsImplContent.demo.structure.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="text-[11px] uppercase text-graytext">
+                          {aqsImplContent.demo.usageTitle}
+                        </div>
+                        <ul className="list-disc pl-4 text-xs text-graytext space-y-1">
+                          {aqsImplContent.demo.usage.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="text-[11px] uppercase text-graytext">
+                          {aqsImplContent.demo.title}
+                        </div>
+                        <div className="text-xs text-graytext">
+                          {aqsImplContent.demo.note}
+                        </div>
+                      <div
+                        onMouseEnter={() => setActiveDemoId("aqsImpl")}
+                        onFocusCapture={() => setActiveDemoId("aqsImpl")}
+                      >
+                        <LockImplDemo
+                          steps={aqsImplContent.demo.steps}
+                          stepIndex={aqsImplStepIndex}
+                          setStepIndex={setAqsImplStepIndex}
+                          isPlaying={isAqsImplPlaying}
+                          setIsPlaying={setIsAqsImplPlaying}
+                          controls={aqsControls}
+                          labels={implDemoLabels}
+                        />
+                      </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </section>
           </>

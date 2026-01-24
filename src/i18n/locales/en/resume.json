@@ -48,7 +48,7 @@
         "tech": ["Python", "SFT", "LlamaFactory"],
         "responsibilities": [
           "Led fine-tuning of a moderation-focused LLM to improve domain precision and recall, raising overall review quality.",
-          "Analyzed human review standards and defined a risk taxonomy; enhanced prompts with RAG and few-shot context to improve prompt quality.",
+          "Analyzed human review standards and defined a risk taxonomy; enhanced prompts with RAG and Few-Shot context to improve prompt quality.",
           "Used LLMs for data pre-labeling and built an annotation platform with AI-assisted coding, increasing labeling efficiency by 40%.",
           "Fine-tuned the Qwen3 model via SFT + GRPO to improve moderation accuracy on business-specific standards.",
           "Fine-tuned small-parameter models for simple scenarios to reduce hardware cost (e.g., BERT for AI-written copy and spam ads) with 90%+ accuracy."

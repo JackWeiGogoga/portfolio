@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { getThreadTone } from "./threadTone";
 
 export type LockUpgradeStep = {
   id: string;
@@ -70,6 +71,15 @@ export default function LockUpgradeDemo({
     { label: labels.threadId, value: step.threadId, tone: "bg-muted" },
     { label: labels.ptr, value: step.ptr, tone: "bg-ring/20" },
   ];
+  const renderThread = (thread: string) => {
+    const tone = getThreadTone(thread);
+    return (
+      <span className={`inline-flex items-center gap-1 ${tone.text}`}>
+        <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+        {thread}
+      </span>
+    );
+  };
 
   return (
     <section className="rounded-xl border border-gray-300 dark:border-white/12 bg-card">
@@ -93,9 +103,9 @@ export default function LockUpgradeDemo({
                       key={`owner-${step.ownerThread}`}
                       layout
                       transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="rounded-md border border-gray-300 dark:border-white/15 bg-accent px-2 py-1 text-xs font-mono text-text"
+                      className={`rounded-md border bg-accent px-2 py-1 text-xs font-mono text-text ${getThreadTone(step.ownerThread).border}`}
                     >
-                      {step.ownerThread}
+                      {renderThread(step.ownerThread)}
                     </motion.div>
                   ) : (
                     <div className="text-xs text-graytext">
@@ -115,9 +125,9 @@ export default function LockUpgradeDemo({
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
-                      className="rounded-md border border-gray-300 dark:border-white/15 bg-card px-2 py-1 text-xs font-mono text-text"
+                      className={`rounded-md border bg-card px-2 py-1 text-xs font-mono text-text ${getThreadTone(step.arrivingThread).border}`}
                     >
-                      {step.arrivingThread}
+                      {renderThread(step.arrivingThread)}
                     </motion.div>
                   ) : (
                     <div className="text-xs text-graytext">-</div>
@@ -135,9 +145,9 @@ export default function LockUpgradeDemo({
                         key={`wait-${thread}`}
                         layout
                         transition={{ duration: 0.4, ease: "easeInOut" }}
-                        className="rounded-md border border-gray-300 dark:border-white/15 bg-muted px-2 py-1 text-xs font-mono text-text"
+                        className={`rounded-md border bg-muted px-2 py-1 text-xs font-mono text-text ${getThreadTone(thread).border}`}
                       >
-                        {thread}
+                        {renderThread(thread)}
                       </motion.div>
                     ))
                   ) : (

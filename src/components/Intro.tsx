@@ -1,22 +1,23 @@
 
-
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const Intro: React.FC = () => {
+  const { t } = useTranslation("home");
+  const paragraphs = t("intro.paragraphs", {
+    returnObjects: true,
+  }) as string[];
+
   return (
     <div className="my-6">
-      <h5 className="mb-2 text-sm text-graytext font-mono">Profile</h5>
-      <p className="my-3 text-sm">
-        A full stack software engineer based in Beijing. I shape mess into
-        simple, meaningful experiences.
-      </p>
-      <p className="my-3 text-sm">
-        When I&apos;m offline, I&apos;m usually busy with citywalk, gaming and
-        drawing.
-      </p>
-      <p className="my-3 text-sm">
-        Latest portfolio of work available upon request.
-      </p>
+      <h5 className="mb-2 text-sm text-graytext font-mono">
+        {t("intro.title")}
+      </h5>
+      {paragraphs.map((paragraph, index) => (
+        <p key={index} className="my-3 text-sm">
+          {paragraph}
+        </p>
+      ))}
     </div>
   );
 };

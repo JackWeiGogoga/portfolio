@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Post {
   title: string;
@@ -6,7 +7,7 @@ interface Post {
   link: string;
 }
 
-async function getLatestPost(): Promise<Post | null> {
+async function getLatestPost(locale: string): Promise<Post | null> {
   try {
     // 添加超时控制，避免长时间等待
     const controller = new AbortController();
@@ -30,7 +31,7 @@ async function getLatestPost(): Promise<Post | null> {
     if (data.items && data.items.length > 0) {
       return {
         title: data.items[0].title,
-        pubDate: new Date(data.items[0].pubDate).toLocaleDateString(),
+        pubDate: new Date(data.items[0].pubDate).toLocaleDateString(locale),
         link: data.items[0].link,
       };
     }
@@ -42,11 +43,13 @@ async function getLatestPost(): Promise<Post | null> {
 }
 
 export default function NewPost() {
+  const { t, i18n } = useTranslation("home");
   const [latestPost, setLatestPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const locale = i18n.language.startsWith("zh") ? "zh-CN" : "en-US";
 
   useEffect(() => {
-    getLatestPost()
+    getLatestPost(locale)
       .then((post) => {
         setLatestPost(post);
         setLoading(false);
@@ -54,7 +57,7 @@ export default function NewPost() {
       .catch(() => {
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   if (loading || !latestPost) return null;
 
@@ -62,7 +65,7 @@ export default function NewPost() {
     <div className="bg-muted px-3 py-2 rounded-md my-5 font-mono border border-outline w-fit text-xs">
       <span className="text-graytext">{latestPost.pubDate} - </span>
       <span>
-        New post:{" "}
+        {t("newPost.label")}{" "}
         <a
           href={latestPost.link}
           className="hover:underline cursor-pointer"

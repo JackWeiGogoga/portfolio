@@ -51,7 +51,11 @@
       {
         "title": "乐观锁 vs 悲观锁",
         "table": {
-          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "headers": [
+            "类型",
+            "实现方式/典型类",
+            "适用场景与要点"
+          ],
           "rows": [
             [
               "乐观锁",
@@ -69,7 +73,11 @@
       {
         "title": "可重入锁 vs 非可重入锁",
         "table": {
-          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "headers": [
+            "类型",
+            "实现方式/典型类",
+            "适用场景与要点"
+          ],
           "rows": [
             [
               "可重入锁",
@@ -87,7 +95,11 @@
       {
         "title": "公平锁 vs 非公平锁",
         "table": {
-          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "headers": [
+            "类型",
+            "实现方式/典型类",
+            "适用场景与要点"
+          ],
           "rows": [
             [
               "公平锁",
@@ -105,7 +117,11 @@
       {
         "title": "独享锁 vs 共享锁",
         "table": {
-          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "headers": [
+            "类型",
+            "实现方式/典型类",
+            "适用场景与要点"
+          ],
           "rows": [
             [
               "独享锁",
@@ -123,7 +139,11 @@
       {
         "title": "无锁/偏向/轻量/重量",
         "table": {
-          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "headers": [
+            "类型",
+            "实现方式/典型类",
+            "适用场景与要点"
+          ],
           "rows": [
             [
               "无锁",
@@ -151,7 +171,11 @@
       {
         "title": "自旋锁 vs 适应性自旋锁",
         "table": {
-          "headers": ["类型", "实现方式/典型类", "适用场景与要点"],
+          "headers": [
+            "类型",
+            "实现方式/典型类",
+            "适用场景与要点"
+          ],
           "rows": [
             [
               "自旋锁",
@@ -169,12 +193,42 @@
     ],
     "landscapeTitle": "锁类型对比",
     "landscape": {
-      "headers": ["类型", "语义", "可重入", "公平性", "典型场景"],
+      "headers": [
+        "类型",
+        "语义",
+        "可重入",
+        "公平性",
+        "典型场景"
+      ],
       "rows": [
-        ["synchronized", "JVM 监视器", "是", "非公平", "普通互斥、对象内锁"],
-        ["ReentrantLock", "显式锁", "是", "可选公平", "需要超时/中断/条件"],
-        ["ReadWriteLock", "读写分离", "是", "可选公平", "读多写少"],
-        ["StampedLock", "乐观读", "否", "非公平", "读多且允许乐观读"]
+        [
+          "synchronized",
+          "JVM 监视器",
+          "是",
+          "非公平",
+          "普通互斥、对象内锁"
+        ],
+        [
+          "ReentrantLock",
+          "显式锁",
+          "是",
+          "可选公平",
+          "需要超时/中断/条件"
+        ],
+        [
+          "ReadWriteLock",
+          "读写分离",
+          "是",
+          "可选公平",
+          "读多写少"
+        ],
+        [
+          "StampedLock",
+          "乐观读",
+          "否",
+          "非公平",
+          "读多且允许乐观读"
+        ]
       ]
     },
     "checklistTitle": "锁选择速查",
@@ -190,22 +244,72 @@
     "summary": "synchronized 是 JVM 内建的监视器锁，依赖对象头 Mark Word 与 Monitor 的状态转换。",
     "objectHeaderTitle": "对象头组成（64-bit + 压缩指针）",
     "objectHeaderTable": {
-      "headers": ["字段", "位宽", "说明"],
+      "headers": [
+        "字段",
+        "位宽",
+        "说明"
+      ],
       "rows": [
-        ["Mark Word", "64", "哈希、GC 年龄、锁标志、偏向线程信息"],
-        ["Klass Pointer", "32", "指向类元数据"],
-        ["Padding", "32", "对齐填充"],
-        ["数组长度", "32", "仅数组对象持有"]
+        [
+          "Mark Word",
+          "64",
+          "哈希、GC 年龄、锁标志、偏向线程信息"
+        ],
+        [
+          "Klass Pointer",
+          "32",
+          "指向类元数据"
+        ],
+        [
+          "Padding",
+          "32",
+          "对齐填充"
+        ],
+        [
+          "数组长度",
+          "32",
+          "仅数组对象持有"
+        ]
       ]
     },
     "markWordTitle": "Mark Word 与锁状态",
     "markWordTable": {
-      "headers": ["锁状态", "标志位", "偏向位", "主要内容", "触发条件"],
+      "headers": [
+        "锁状态",
+        "标志位",
+        "偏向位",
+        "主要内容",
+        "触发条件"
+      ],
       "rows": [
-        ["无锁", "01", "0", "hash、年龄等", "对象刚创建"],
-        ["偏向锁", "01", "1", "线程 ID、epoch", "单线程重入"],
-        ["轻量级锁", "00", "0", "指向栈锁记录", "CAS 竞争"],
-        ["重量级锁", "10", "0", "指向 Monitor", "自旋失败/竞争激烈"]
+        [
+          "无锁",
+          "01",
+          "0",
+          "hash、年龄等",
+          "对象刚创建"
+        ],
+        [
+          "偏向锁",
+          "01",
+          "1",
+          "线程 ID、epoch",
+          "单线程重入"
+        ],
+        [
+          "轻量级锁",
+          "00",
+          "0",
+          "指向栈锁记录",
+          "CAS 竞争"
+        ],
+        [
+          "重量级锁",
+          "10",
+          "0",
+          "指向 Monitor",
+          "自旋失败/竞争激烈"
+        ]
       ]
     },
     "upgradeTitle": "锁升级路径",
@@ -269,7 +373,9 @@
           "title": "轻量级锁",
           "description": "另一个线程 CAS 失败，Mark Word 指向栈锁记录。",
           "arrivingThread": "T2",
-          "contenders": ["T2"],
+          "contenders": [
+            "T2"
+          ],
           "ownerThread": "T1",
           "lockBits": "00",
           "biased": "0",
@@ -283,7 +389,10 @@
           "title": "重量级锁",
           "description": "自旋失败后膨胀为 Monitor，Mark Word 指向监视器。",
           "arrivingThread": "T3",
-          "contenders": ["T2", "T3"],
+          "contenders": [
+            "T2",
+            "T3"
+          ],
           "ownerThread": "T1",
           "lockBits": "10",
           "biased": "0",
@@ -300,8 +409,14 @@
     "bytecodeListing": "0: aload_0\n1: getfield #2\n4: dup\n5: astore_1\n6: monitorenter\n7: aload_0\n8: dup\n9: getfield #3\n12: iconst_1\n13: iadd\n14: putfield #3\n17: aload_1\n18: monitorexit\n19: goto 27\n22: astore_2\n23: aload_1\n24: monitorexit\n25: aload_2\n26: athrow\n27: return",
     "scopeTitle": "synchronized 的作用范围",
     "scopeTabs": [
-      { "id": "object", "label": "对象锁" },
-      { "id": "class", "label": "类锁" }
+      {
+        "id": "object",
+        "label": "对象锁"
+      },
+      {
+        "id": "class",
+        "label": "类锁"
+      }
     ],
     "scopeContent": {
       "object": {
@@ -368,14 +483,42 @@
     "summary": "显式锁提供中断、超时、公平性与条件队列，适合更精细的并发控制。",
     "comparisonTitle": "synchronized vs ReentrantLock",
     "comparisonTable": {
-      "headers": ["能力", "synchronized", "ReentrantLock"],
+      "headers": [
+        "能力",
+        "synchronized",
+        "ReentrantLock"
+      ],
       "rows": [
-        ["可重入", "是", "是"],
-        ["中断", "否", "支持 lockInterruptibly"],
-        ["超时", "否", "支持 tryLock(timeout)"],
-        ["公平性", "不可控", "可选公平"],
-        ["条件队列", "wait/notify", "Condition 多队列"],
-        ["诊断", "较少", "支持 getQueueLength 等"]
+        [
+          "可重入",
+          "是",
+          "是"
+        ],
+        [
+          "中断",
+          "否",
+          "支持 lockInterruptibly"
+        ],
+        [
+          "超时",
+          "否",
+          "支持 tryLock(timeout)"
+        ],
+        [
+          "公平性",
+          "不可控",
+          "可选公平"
+        ],
+        [
+          "条件队列",
+          "wait/notify",
+          "Condition 多队列"
+        ],
+        [
+          "诊断",
+          "较少",
+          "支持 getQueueLength 等"
+        ]
       ]
     },
     "reentrantTitle": "ReentrantLock 示例",
@@ -407,12 +550,32 @@
     ],
     "nodeTableTitle": "Node 关键字段",
     "nodeTable": {
-      "headers": ["字段", "含义", "常见值"],
+      "headers": [
+        "字段",
+        "含义",
+        "常见值"
+      ],
       "rows": [
-        ["waitStatus", "节点状态", "SIGNAL、CANCELLED、CONDITION"],
-        ["prev/next", "双向指针", "维护 CLH 队列"],
-        ["thread", "持有线程", "入队线程引用"],
-        ["nextWaiter", "条件队列", "共享/条件节点"]
+        [
+          "waitStatus",
+          "节点状态",
+          "SIGNAL、CANCELLED、CONDITION"
+        ],
+        [
+          "prev/next",
+          "双向指针",
+          "维护 CLH 队列"
+        ],
+        [
+          "thread",
+          "持有线程",
+          "入队线程引用"
+        ],
+        [
+          "nextWaiter",
+          "条件队列",
+          "共享/条件节点"
+        ]
       ]
     },
     "acquireTitle": "获取锁伪代码",
@@ -422,6 +585,45 @@
     "demo": {
       "title": "AQS 分步执行演示",
       "note": "模拟三线程竞争独占锁：CAS、入队、park/unpark 的节奏。",
+      "structureTitle": "数据结构视角",
+      "structureTable": {
+        "headers": [
+          "组件",
+          "作用",
+          "关键字段"
+        ],
+        "rows": [
+          [
+            "AQS 本体",
+            "维护同步状态",
+            "volatile state, head, tail"
+          ],
+          [
+            "Node",
+            "队列节点",
+            "waitStatus, prev/next, thread"
+          ],
+          [
+            "CLH 队列",
+            "FIFO 排队",
+            "head/tail + 双向链表"
+          ],
+          [
+            "Condition 队列",
+            "条件等待",
+            "nextWaiter 链表"
+          ]
+        ]
+      },
+      "stepDetailsTitle": "步骤拆解",
+      "stepDetails": [
+        "T1 直接 tryAcquire 成功，state=1，成为 owner。",
+        "T2 CAS 失败后入队，设置前驱为 head 并 park。",
+        "T3 入队尾部，等待前驱唤醒。",
+        "T1 release 成功，唤醒 head.next(T2)。",
+        "T2 被唤醒后再次 tryAcquire，成功后成为 owner。",
+        "T2 release 后唤醒 T3，队列逐步清空。"
+      ],
       "lockStateTitle": "锁状态",
       "stateLabel": "state",
       "ownerLabel": "owner",
@@ -460,6 +662,1358 @@
         "t3Release": {
           "title": "T3 完成释放",
           "description": "队列清空，state 归零"
+        }
+      }
+    },
+    "implementations": {
+      "title": "AQS 在不同锁中的实现",
+      "demo": {
+        "fieldsTitle": "状态字段",
+        "queueTitle": "等待队列",
+        "queueEmpty": "无等待",
+        "stepsTitle": "演示步骤"
+      },
+      "reentrantDemo": {
+        "title": "ReentrantLock 核心流程（AQS 视角）",
+        "note": "左侧随步骤更新 CLH 双向链表与 Node 字段，右侧高亮源码行。",
+        "codeTitle": "JDK8 ReentrantLock / AQS 核心源码",
+        "stateLabel": "state",
+        "ownerLabel": "owner",
+        "queueTitle": "CLH 双向链表",
+        "nodeFieldsTitle": "Node 字段",
+        "stepsTitle": "步骤",
+        "headTag": "head",
+        "tailTag": "tail",
+        "fields": {
+          "waitStatus": "waitStatus",
+          "prev": "prev",
+          "next": "next",
+          "thread": "thread",
+          "nextWaiter": "nextWaiter"
+        },
+        "tabs": [
+          {
+            "id": "nonfair",
+            "label": "非公平快速抢占"
+          },
+          {
+            "id": "fair",
+            "label": "公平排队获取"
+          },
+          {
+            "id": "queue",
+            "label": "竞争入队与阻塞"
+          },
+          {
+            "id": "reenter",
+            "label": "可重入路径"
+          }
+        ],
+        "content": {
+          "nonfair": {
+            "codeTooltips": {
+              "9": "compareAndSetState -> unsafe.compareAndSwapInt\n等价于:\nif (state == var1) { state = var2; return true; } else { return false; }\n区别:\n- CPU 指令级原子操作\n- 不会被线程切换打断\n- 无需加锁"
+            },
+            "codeLines": [
+              "ReentrantLock lock = new ReentrantLock(false);",
+              "lock.lock();",
+              "try {",
+              "    System.out.println(\"do something safely\");",
+              "} finally {",
+              "    lock.unlock();",
+              "}",
+              "",
+              "final void lock() {",
+              "    if (compareAndSetState(0, 1)) {",
+              "        setExclusiveOwnerThread(Thread.currentThread());",
+              "    } else {",
+              "        acquire(1);",
+              "    }",
+              "}",
+              "",
+              "protected final boolean tryRelease(int releases) {",
+              "    int c = getState() - releases;",
+              "    if (c == 0) setExclusiveOwnerThread(null);",
+              "    setState(c);",
+              "    return c == 0;",
+              "}"
+            ],
+            "steps": [
+              {
+                "id": "t1-call-lock",
+                "title": "调用 lock()",
+                "description": "进入非公平 lock()。",
+                "codeLineIndex": 1,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-enter-lock",
+                "title": "进入 lock()",
+                "description": "准备 CAS 抢占锁。",
+                "codeLineIndex": 8,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-cas",
+                "title": "CAS 抢占成功",
+                "description": "compareAndSetState(0,1) 成功。",
+                "codeLineIndex": 9,
+                "state": "1",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-owner",
+                "title": "设置持有者",
+                "description": "exclusiveOwnerThread = T1。",
+                "codeLineIndex": 10,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-do",
+                "title": "进入临界区",
+                "description": "执行业务逻辑。",
+                "codeLineIndex": 3,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-unlock",
+                "title": "进入 finally 释放",
+                "description": "调用 unlock()。",
+                "codeLineIndex": 5,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-tryrelease",
+                "title": "进入 tryRelease",
+                "description": "开始释放锁。",
+                "codeLineIndex": 16,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-release-c",
+                "title": "计算新 state",
+                "description": "c = state - releases。",
+                "codeLineIndex": 17,
+                "state": "0",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-clear-owner",
+                "title": "清空 owner",
+                "description": "state 为 0，owner 置空。",
+                "codeLineIndex": 18,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-setstate",
+                "title": "写回 state",
+                "description": "setState(c)。",
+                "codeLineIndex": 19,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-release-done",
+                "title": "释放完成",
+                "description": "return c == 0。",
+                "codeLineIndex": 20,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              }
+            ]
+          },
+          "fair": {
+            "codeTooltips": {
+              "22": "hasQueuedPredecessors 判断是否有前驱等待线程，避免插队。",
+              "23": "compareAndSetState 使用 CAS 原子更新 state。"
+            },
+            "codeLines": [
+              "ReentrantLock lock = new ReentrantLock(true);",
+              "lock.lock();",
+              "try {",
+              "    doWork();",
+              "} finally {",
+              "    lock.unlock();",
+              "}",
+              "",
+              "final void lock() {",
+              "    acquire(1);",
+              "}",
+              "",
+              "public final void acquire(int arg) {",
+              "    if (!tryAcquire(arg) &&",
+              "        acquireQueued(addWaiter(Node.EXCLUSIVE), arg))",
+              "        selfInterrupt();",
+              "}",
+              "",
+              "protected final boolean tryAcquire(int acquires) {",
+              "    Thread current = Thread.currentThread();",
+              "    int c = getState();",
+              "    if (c == 0) {",
+              "        if (!hasQueuedPredecessors() &&",
+              "            compareAndSetState(0, acquires)) {",
+              "            setExclusiveOwnerThread(current);",
+              "            return true;",
+              "        }",
+              "    } else if (current == getExclusiveOwnerThread()) {",
+              "        int next = c + acquires;",
+              "        setState(next);",
+              "        return true;",
+              "    }",
+              "    return false;",
+              "}",
+              "",
+              "private Node addWaiter(Node mode) {",
+              "    Node node = new Node(Thread.currentThread(), mode);",
+              "    Node pred = tail;",
+              "    if (pred != null) {",
+              "        node.prev = pred;",
+              "        if (compareAndSetTail(pred, node)) {",
+              "            pred.next = node;",
+              "            return node;",
+              "        }",
+              "    }",
+              "    enq(node);",
+              "    return node;",
+              "}"
+            ],
+            "steps": [
+              {
+                "id": "t1-call-lock",
+                "title": "调用 lock()",
+                "description": "创建公平锁并进入 lock()。",
+                "codeLineIndex": 1,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-enter-lock",
+                "title": "进入 lock()",
+                "description": "公平锁直接走 acquire(1)。",
+                "codeLineIndex": 8,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-acquire",
+                "title": "进入 acquire",
+                "description": "准备 tryAcquire。",
+                "codeLineIndex": 12,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-tryacquire",
+                "title": "进入 tryAcquire",
+                "description": "当前无锁，检查队列前驱。",
+                "codeLineIndex": 18,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-check-queue",
+                "title": "无前驱可获取",
+                "description": "hasQueuedPredecessors 返回 false。",
+                "codeLineIndex": 22,
+                "state": "0",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-cas",
+                "title": "CAS 抢占成功",
+                "description": "compareAndSetState 成功。",
+                "codeLineIndex": 23,
+                "state": "1",
+                "owner": "-",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-owner",
+                "title": "设置持有者",
+                "description": "exclusiveOwnerThread = T1。",
+                "codeLineIndex": 24,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t2-arrive",
+                "title": "T2 进入 acquire",
+                "description": "锁被占用，进入等待流程。",
+                "codeLineIndex": 12,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t2-fail",
+                "title": "tryAcquire 返回 false",
+                "description": "非重入，获取失败。",
+                "codeLineIndex": 32,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t2-addwaiter",
+                "title": "T2 入队等待",
+                "description": "addWaiter 添加到队尾。",
+                "codeLineIndex": 35,
+                "state": "1",
+                "owner": "T1",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t1-unlock",
+                "title": "T1 释放锁",
+                "description": "state 归零，等待队列仍存在。",
+                "codeLineIndex": 5,
+                "state": "0",
+                "owner": "-",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t3-try",
+                "title": "T3 尝试抢占",
+                "description": "state=0 但队列非空。",
+                "codeLineIndex": 18,
+                "state": "0",
+                "owner": "-",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t3-queue-check",
+                "title": "发现前驱阻止插队",
+                "description": "hasQueuedPredecessors 为 true。",
+                "codeLineIndex": 22,
+                "state": "0",
+                "owner": "-",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t3-addwaiter",
+                "title": "T3 继续入队",
+                "description": "addWaiter 追加到队尾。",
+                "codeLineIndex": 35,
+                "state": "0",
+                "owner": "-",
+                "headId": "H",
+                "tailId": "N3",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "N3",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  },
+                  {
+                    "id": "N3",
+                    "waitStatus": "0",
+                    "prev": "N2",
+                    "next": "-",
+                    "thread": "T3",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t2-acquire",
+                "title": "T2 依序获取",
+                "description": "队列头 T2 获取锁，避免插队。",
+                "codeLineIndex": 23,
+                "state": "1",
+                "owner": "T2",
+                "headId": "N2",
+                "tailId": "N3",
+                "nodes": [
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N3",
+                    "thread": "-",
+                    "nextWaiter": "EXCLUSIVE"
+                  },
+                  {
+                    "id": "N3",
+                    "waitStatus": "0",
+                    "prev": "N2",
+                    "next": "-",
+                    "thread": "T3",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              }
+            ]
+          },
+          "queue": {
+            "codeTooltips": {
+              "18": "compareAndSetState 使用 CAS 原子更新 state。",
+              "36": "compareAndSetTail 使用 CAS 保证尾节点追加安全。"
+            },
+            "codeLines": [
+              "final void lock() {",
+              "    if (compareAndSetState(0, 1)) {",
+              "        setExclusiveOwnerThread(Thread.currentThread());",
+              "    } else {",
+              "        acquire(1);",
+              "    }",
+              "}",
+              "",
+              "public final void acquire(int arg) {",
+              "    if (!tryAcquire(arg) &&",
+              "        acquireQueued(addWaiter(Node.EXCLUSIVE), arg))",
+              "        selfInterrupt();",
+              "}",
+              "",
+              "final boolean tryAcquire(int arg) {",
+              "    Thread current = Thread.currentThread();",
+              "    int c = getState();",
+              "    if (c == 0) {",
+              "        if (compareAndSetState(0, arg)) {",
+              "            setExclusiveOwnerThread(current);",
+              "            return true;",
+              "        }",
+              "    } else if (current == getExclusiveOwnerThread()) {",
+              "        int next = c + arg;",
+              "        if (next < 0) throw new Error(\"Maximum lock count exceeded\");",
+              "        setState(next);",
+              "        return true;",
+              "    }",
+              "    return false;",
+              "}",
+              "",
+              "private Node addWaiter(Node mode) {",
+              "    Node node = new Node(Thread.currentThread(), mode);",
+              "    Node pred = tail;",
+              "    if (pred != null) {",
+              "        node.prev = pred;",
+              "        if (compareAndSetTail(pred, node)) {",
+              "            pred.next = node;",
+              "            return node;",
+              "        }",
+              "    }",
+              "    enq(node);",
+              "    return node;",
+              "}",
+              "",
+              "private Node enq(Node node) {",
+              "    for (;;) {",
+              "        Node t = tail;",
+              "        if (t == null) {",
+              "            if (compareAndSetHead(new Node())) {",
+              "                tail = head;",
+              "            }",
+              "        } else {",
+              "            node.prev = t;",
+              "            if (compareAndSetTail(t, node)) {",
+              "                t.next = node;",
+              "                return t;",
+              "            }",
+              "        }",
+              "    }",
+              "}",
+              "",
+              "final boolean acquireQueued(Node node, int arg) {",
+              "    for (;;) {",
+              "        Node p = node.predecessor();",
+              "        if (p == head && tryAcquire(arg)) {",
+              "            setHead(node);",
+              "            p.next = null;",
+              "            return false;",
+              "        }",
+              "        if (shouldParkAfterFailedAcquire(p, node) &&",
+              "            parkAndCheckInterrupt()) {",
+              "            return true;",
+              "        }",
+              "    }",
+              "}",
+              "",
+              "protected final boolean tryRelease(int releases) {",
+              "    int c = getState() - releases;",
+              "    if (c == 0) setExclusiveOwnerThread(null);",
+              "    setState(c);",
+              "    return c == 0;",
+              "}"
+            ],
+            "steps": [
+              {
+                "id": "t1-lock",
+                "title": "T1 抢占锁",
+                "description": "CAS 成功，state=1，owner=T1。",
+                "codeLineIndex": 1,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t2-acquire",
+                "title": "T2 进入 acquire",
+                "description": "CAS 失败，进入 acquire(arg)。",
+                "codeLineIndex": 9,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "tryAcquire-enter",
+                "title": "进入 tryAcquire",
+                "description": "准备判断是否可获取。",
+                "codeLineIndex": 14,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "tryAcquire-current",
+                "title": "读取 current",
+                "description": "current = Thread.currentThread()。",
+                "codeLineIndex": 15,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "tryAcquire-state",
+                "title": "读取 state",
+                "description": "c = getState()。",
+                "codeLineIndex": 16,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "tryAcquire-return",
+                "title": "返回 false",
+                "description": "非重入，无法获取。",
+                "codeLineIndex": 28,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "addwaiter-enter",
+                "title": "进入 addWaiter",
+                "description": "创建并入队节点。",
+                "codeLineIndex": 31,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "addwaiter-new",
+                "title": "创建 Node",
+                "description": "node = new Node(T2, EXCLUSIVE)。",
+                "codeLineIndex": 32,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "addwaiter-pred",
+                "title": "读取 tail",
+                "description": "pred = tail。",
+                "codeLineIndex": 33,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "enq-enter",
+                "title": "进入 enq",
+                "description": "pred 为空，走 enq(node)。",
+                "codeLineIndex": 45,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "enq-tail-null",
+                "title": "tail 为空",
+                "description": "创建 head 并设置 tail=head。",
+                "codeLineIndex": 49,
+                "state": "1",
+                "owner": "T1",
+                "headId": "H",
+                "tailId": "H",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "-",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  }
+                ]
+              },
+              {
+                "id": "enq-link",
+                "title": "链接到尾部",
+                "description": "node.prev=tail，CAS 设置 tail，tail.next=node。",
+                "codeLineIndex": 54,
+                "state": "1",
+                "owner": "T1",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "acquireQueued-enter",
+                "title": "进入 acquireQueued",
+                "description": "开始自旋抢锁。",
+                "codeLineIndex": 62,
+                "state": "1",
+                "owner": "T1",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "acquireQueued-pre",
+                "title": "获取前驱",
+                "description": "p = node.predecessor()。",
+                "codeLineIndex": 64,
+                "state": "1",
+                "owner": "T1",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "acquireQueued-park",
+                "title": "尝试挂起",
+                "description": "head.waitStatus=SIGNAL，T2 park。",
+                "codeLineIndex": 70,
+                "state": "1",
+                "owner": "T1",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "-1",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t1-unlock",
+                "title": "T1 释放锁",
+                "description": "tryRelease 设置 state=0，owner 清空。",
+                "codeLineIndex": 77,
+                "state": "0",
+                "owner": "-",
+                "headId": "H",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "H",
+                    "waitStatus": "-1",
+                    "prev": "-",
+                    "next": "N2",
+                    "thread": "-",
+                    "nextWaiter": "-"
+                  },
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "H",
+                    "next": "-",
+                    "thread": "T2",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t2-acquire",
+                "title": "T2 成功获取",
+                "description": "p==head 且 tryAcquire 成功，setHead(node)。",
+                "codeLineIndex": 66,
+                "state": "1",
+                "owner": "T2",
+                "headId": "N2",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "-",
+                    "thread": "-",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t2-sethead",
+                "title": "断开旧 head",
+                "description": "p.next = null。",
+                "codeLineIndex": 67,
+                "state": "1",
+                "owner": "T2",
+                "headId": "N2",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "-",
+                    "thread": "-",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              },
+              {
+                "id": "t2-return",
+                "title": "退出 acquireQueued",
+                "description": "return false。",
+                "codeLineIndex": 68,
+                "state": "1",
+                "owner": "T2",
+                "headId": "N2",
+                "tailId": "N2",
+                "nodes": [
+                  {
+                    "id": "N2",
+                    "waitStatus": "0",
+                    "prev": "-",
+                    "next": "-",
+                    "thread": "-",
+                    "nextWaiter": "EXCLUSIVE"
+                  }
+                ]
+              }
+            ]
+          },
+          "reenter": {
+            "codeTooltips": {
+              "4": "compareAndSetState 是原子 CAS 更新。"
+            },
+            "codeLines": [
+              "final boolean tryAcquire(int arg) {",
+              "    Thread current = Thread.currentThread();",
+              "    int c = getState();",
+              "    if (c == 0) {",
+              "        if (compareAndSetState(0, arg)) {",
+              "            setExclusiveOwnerThread(current);",
+              "            return true;",
+              "        }",
+              "    } else if (current == getExclusiveOwnerThread()) {",
+              "        int next = c + arg;",
+              "        if (next < 0) throw new Error(\"Maximum lock count exceeded\");",
+              "        setState(next);",
+              "        return true;",
+              "    }",
+              "    return false;",
+              "}"
+            ],
+            "steps": [
+              {
+                "id": "t1-enter",
+                "title": "进入 tryAcquire",
+                "description": "准备判断重入。",
+                "codeLineIndex": 0,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-current",
+                "title": "读取 current",
+                "description": "current = Thread.currentThread()。",
+                "codeLineIndex": 1,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-getstate",
+                "title": "读取 state",
+                "description": "c = getState()。",
+                "codeLineIndex": 2,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-branch",
+                "title": "进入重入分支",
+                "description": "current==owner。",
+                "codeLineIndex": 8,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-next",
+                "title": "计算 next",
+                "description": "next = c + arg。",
+                "codeLineIndex": 9,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-check",
+                "title": "溢出检查",
+                "description": "next < 0 抛错。",
+                "codeLineIndex": 10,
+                "state": "1",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-setstate",
+                "title": "更新 state",
+                "description": "setState(next)。",
+                "codeLineIndex": 11,
+                "state": "2",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              },
+              {
+                "id": "t1-return",
+                "title": "返回成功",
+                "description": "return true。",
+                "codeLineIndex": 12,
+                "state": "2",
+                "owner": "T1",
+                "headId": null,
+                "tailId": null,
+                "nodes": []
+              }
+            ]
+          }
+        }
+      },
+      "tabs": [
+        {
+          "id": "reentrant",
+          "label": "ReentrantLock"
+        },
+        {
+          "id": "readwrite",
+          "label": "ReentrantReadWriteLock"
+        },
+        {
+          "id": "semaphore",
+          "label": "Semaphore"
+        }
+      ],
+      "content": {
+        "reentrant": {
+          "summary": "独占锁基于 AQS state 记录重入次数，公平/非公平由抢锁策略决定。",
+          "features": [
+            "state 表示持有计数，线程重入则 state++。",
+            "非公平先 CAS 抢锁，公平检查队列前驱。",
+            "ConditionObject 维护独立等待队列。"
+          ],
+          "codeTitle": "核心流程",
+          "code": "public void lock() {\n  if (!tryAcquire(1)) {\n    acquire(1); // enqueue + park\n  }\n}\n\nprotected boolean tryAcquire(int acquires) {\n  Thread current = Thread.currentThread();\n  int c = getState();\n  if (c == 0) {\n    if (compareAndSetState(0, acquires)) {\n      setExclusiveOwnerThread(current);\n      return true;\n    }\n  } else if (current == getExclusiveOwnerThread()) {\n    setState(c + acquires); // reentrant\n    return true;\n  }\n  return false;\n}",
+          "demo": {
+            "title": "ReentrantLock 演示",
+            "note": "聚焦重入计数与等待队列的变化。",
+            "structureTitle": "关键结构",
+            "structure": [
+              "state 记录持有计数",
+              "exclusiveOwnerThread 标记持有线程",
+              "CLH 队列保存等待者",
+              "ConditionObject 维护条件队列"
+            ],
+            "usageTitle": "使用方式",
+            "usage": [
+              "lock/tryLock 获取锁",
+              "unlock 释放并唤醒后继",
+              "newCondition 创建条件队列"
+            ],
+            "steps": [
+              {
+                "id": "t1-acquire",
+                "title": "T1 获取锁",
+                "description": "state=1，T1 成为持有者。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "state",
+                    "value": "1"
+                  },
+                  {
+                    "label": "owner",
+                    "value": "T1"
+                  }
+                ]
+              },
+              {
+                "id": "t1-reenter",
+                "title": "T1 重入",
+                "description": "重入使 state 递增为 2。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "state",
+                    "value": "2"
+                  },
+                  {
+                    "label": "owner",
+                    "value": "T1"
+                  }
+                ]
+              },
+              {
+                "id": "t2-queue",
+                "title": "T2 入队",
+                "description": "T2 CAS 失败并等待。",
+                "queue": [
+                  "T2"
+                ],
+                "fields": [
+                  {
+                    "label": "state",
+                    "value": "2"
+                  },
+                  {
+                    "label": "owner",
+                    "value": "T1"
+                  }
+                ]
+              },
+              {
+                "id": "t1-release",
+                "title": "T1 释放",
+                "description": "state 回到 0，T2 可以获取。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "state",
+                    "value": "0"
+                  },
+                  {
+                    "label": "owner",
+                    "value": "-"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "readwrite": {
+          "summary": "读写锁把 state 拆为高 16 位(读) + 低 16 位(写)，读走共享模式，写走独占模式。",
+          "features": [
+            "读锁使用 acquireShared/releaseShared。",
+            "写锁使用 acquire/release。",
+            "支持读写互斥与写优先策略。"
+          ],
+          "codeTitle": "状态拆分",
+          "code": "static int sharedCount(int c) { return c >>> 16; }\nstatic int exclusiveCount(int c) { return c & 0xFFFF; }\n\nprotected int tryAcquireShared(int unused) {\n  for (;;) {\n    int c = getState();\n    if (exclusiveCount(c) != 0 &&\n        getExclusiveOwnerThread() != Thread.currentThread()) {\n      return -1;\n    }\n    if (compareAndSetState(c, c + (1 << 16))) {\n      return 1;\n    }\n  }\n}",
+          "demo": {
+            "title": "读写锁演示",
+            "note": "读共享，写独占。",
+            "structureTitle": "关键结构",
+            "structure": [
+              "state 高 16 位为读计数",
+              "state 低 16 位为写计数",
+              "读走共享队列，写走独占队列"
+            ],
+            "usageTitle": "使用方式",
+            "usage": [
+              "readLock().lock() 获取共享读",
+              "writeLock().lock() 获取独占写",
+              "写锁释放后唤醒读线程"
+            ],
+            "steps": [
+              {
+                "id": "r1",
+                "title": "R1 获取读锁",
+                "description": "读计数=1。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "readCount",
+                    "value": "1"
+                  },
+                  {
+                    "label": "writeCount",
+                    "value": "0"
+                  }
+                ]
+              },
+              {
+                "id": "r2",
+                "title": "R2 并发读",
+                "description": "读计数=2。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "readCount",
+                    "value": "2"
+                  },
+                  {
+                    "label": "writeCount",
+                    "value": "0"
+                  }
+                ]
+              },
+              {
+                "id": "w1-queue",
+                "title": "W1 等待写",
+                "description": "写线程入队等待读锁释放。",
+                "queue": [
+                  "W1"
+                ],
+                "fields": [
+                  {
+                    "label": "readCount",
+                    "value": "2"
+                  },
+                  {
+                    "label": "writeCount",
+                    "value": "0"
+                  }
+                ]
+              },
+              {
+                "id": "w1-acquire",
+                "title": "W1 获得写锁",
+                "description": "读清零后写计数=1。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "readCount",
+                    "value": "0"
+                  },
+                  {
+                    "label": "writeCount",
+                    "value": "1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "semaphore": {
+          "summary": "信号量以 state 表示许可数，获取/释放走共享模式。",
+          "features": [
+            "acquireShared 尝试 CAS 减少许可。",
+            "releaseShared 增加许可并唤醒等待线程。",
+            "适合限流与资源池控制。"
+          ],
+          "codeTitle": "共享模式",
+          "code": "protected int tryAcquireShared(int acquires) {\n  for (;;) {\n    int available = getState();\n    int remaining = available - acquires;\n    if (remaining < 0) return -1;\n    if (compareAndSetState(available, remaining)) {\n      return 1;\n    }\n  }\n}\n\nprotected boolean tryReleaseShared(int releases) {\n  for (;;) {\n    int current = getState();\n    int next = current + releases;\n    if (compareAndSetState(current, next)) {\n      return true;\n    }\n  }\n}",
+          "demo": {
+            "title": "Semaphore 演示",
+            "note": "许可数作为 state，线程获取许可后继续执行。",
+            "structureTitle": "关键结构",
+            "structure": [
+              "state 表示剩余许可",
+              "CLH 队列保存等待线程",
+              "共享模式唤醒多个线程"
+            ],
+            "usageTitle": "使用方式",
+            "usage": [
+              "acquire(n) 获取 n 个许可",
+              "release(n) 归还许可",
+              "公平信号量按队列顺序获取"
+            ],
+            "steps": [
+              {
+                "id": "s1",
+                "title": "初始许可",
+                "description": "state=2，可同时允许 2 个线程。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "permits",
+                    "value": "2"
+                  }
+                ]
+              },
+              {
+                "id": "t1",
+                "title": "T1 获取许可",
+                "description": "state=1。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "permits",
+                    "value": "1"
+                  }
+                ]
+              },
+              {
+                "id": "t2",
+                "title": "T2 获取许可",
+                "description": "state=0。",
+                "queue": [],
+                "fields": [
+                  {
+                    "label": "permits",
+                    "value": "0"
+                  }
+                ]
+              },
+              {
+                "id": "t3-queue",
+                "title": "T3 等待",
+                "description": "无许可，进入队列。",
+                "queue": [
+                  "T3"
+                ],
+                "fields": [
+                  {
+                    "label": "permits",
+                    "value": "0"
+                  }
+                ]
+              }
+            ]
+          }
         }
       }
     }

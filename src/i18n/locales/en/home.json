@@ -1,0 +1,153 @@
+{
+  "profile": {
+    "name": "JackWei",
+    "roleAt": "Software Engineer @",
+    "avatarAlt": "Profile Picture",
+    "companyAlt": "Netease Logo"
+  },
+  "newPost": {
+    "label": "New post:"
+  },
+  "intro": {
+    "title": "Profile",
+    "paragraphs": [
+      "A full stack software engineer based in Beijing. I shape mess into simple, meaningful experiences.",
+      "When I'm offline, I'm usually busy with citywalk, gaming and drawing.",
+      "Latest portfolio of work available upon request."
+    ]
+  },
+  "skills": {
+    "title": "Skills",
+    "empty": "No skills found.",
+    "categories": {
+      "backend": "Backend",
+      "frontend": "Frontend",
+      "web3": "Web3",
+      "ai": "AI"
+    },
+    "types": {
+      "language": "Language",
+      "framework": "Framework",
+      "database": "Database",
+      "messageQueue": "MessageQueue",
+      "ssr": "SSR",
+      "build": "Build",
+      "ui": "UI",
+      "miniProgram": "Mini Program",
+      "test": "Test",
+      "wallet": "Wallet",
+      "storage": "Storage",
+      "provider": "Provider",
+      "model": "Model",
+      "train": "Train"
+    }
+  },
+  "works": {
+    "title": "Works",
+    "items": [
+      {
+        "title": "Content Moderation LLM Fine-tuning",
+        "description": "Led fine-tuning of a moderation-focused LLM to improve precision and recall, with SFT and GRPO for business-specific standards.",
+        "type": "AI"
+      },
+      {
+        "title": "Content Moderation Efficiency Initiative",
+        "description": "Led a machine moderation strategy and LLM platform to reduce manual review, improve throughput, and raise review quality.",
+        "type": "Backend"
+      },
+      {
+        "title": "LLM-Powered Data Analysis Agent",
+        "description": "Built an LLM agent that answers questions, generates SQL, runs queries, and renders rich visualizations.",
+        "type": "AI"
+      }
+    ]
+  },
+  "sideProjects": {
+    "title": "Side Projects",
+    "seeAll": "See All",
+    "items": [
+      {
+        "title": "Flowlet - Visual Workflow Orchestration",
+        "description": "A lightweight drag-and-drop workflow system for building and running data-processing pipelines with LLM and API nodes.",
+        "type": "AI"
+      },
+      {
+        "title": "Crowdfunding - Tier-based & Custom Funding",
+        "description": "A flexible crowdfunding system supporting multiple funding tiers, custom contributions, campaign management, and refunds for failed campaigns.",
+        "type": "Web3"
+      },
+      {
+        "title": "Gogoga Token - ERC20 Token with Sale",
+        "description": "An ERC20 token implementation with built-in token sale functionality, featuring pausable transfers, minting capabilities, and configurable purchase limits.",
+        "type": "Web3"
+      },
+      {
+        "title": "Gogoga NFT - ERC721 Collection with Royalties",
+        "description": "An ERC721 NFT collection with EIP-2981 royalty support, pausable minting, batch operations, and burnable tokens for enhanced creator control.",
+        "type": "Web3"
+      },
+      {
+        "title": "Voting System - On-chain Decentralized Voting",
+        "description": "A decentralized voting system with candidate and voter registration, time-limited voting sessions, pausable controls, and transparent result tallying.",
+        "type": "Web3"
+      }
+    ]
+  },
+  "experiences": {
+    "title": "Educations & Experiences",
+    "items": [
+      {
+        "title": "Technical Expert",
+        "period": "2016 - Present",
+        "description": "Led the development of enterprise-scale web applications, mentored junior developers."
+      },
+      {
+        "title": "Java Developer",
+        "period": "2015 - 2016",
+        "description": "Developed and maintained multiple client projects, implemented responsive designs."
+      },
+      {
+        "title": "M.S. in Computer Technology",
+        "period": "2013 - 2015",
+        "description": "Developed and maintained multiple client projects, implemented responsive designs."
+      },
+      {
+        "title": "B.S. in Computer Technology",
+        "period": "2009 - 2013",
+        "description": "Developed and maintained multiple client projects, implemented responsive designs."
+      }
+    ]
+  },
+  "contact": {
+    "title": "About Me",
+    "items": [
+      {
+        "label": "Name",
+        "value": "Jack Wei"
+      },
+      {
+        "label": "Phone",
+        "value": "+86 18500151385"
+      },
+      {
+        "label": "Email",
+        "value": "jackweigogoga@gmail.com"
+      },
+      {
+        "label": "Address",
+        "value": "Beijing, China"
+      },
+      {
+        "label": "Education",
+        "value": "M.S. in Computer Technology, NEU"
+      },
+      {
+        "label": "Language",
+        "value": "English(CET-6), Chinese"
+      }
+    ]
+  },
+  "footer": {
+    "quote": "Man proposes, God disposes."
+  }
+}

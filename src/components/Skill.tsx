@@ -11,6 +11,8 @@ interface ISkill {
 
 interface SkillProps {
   skills: ISkill[];
+  typeLabels?: Record<string, string>;
+  emptyText?: string;
 }
 
 const renderStars = (level: number) => {
@@ -37,9 +39,9 @@ const renderStars = (level: number) => {
   return stars;
 };
 
-const Skill: React.FC<SkillProps> = ({ skills }) => {
+const Skill: React.FC<SkillProps> = ({ skills, typeLabels, emptyText }) => {
   if (skills.length === 0) {
-    return <div>No skills found.</div>;
+    return <div>{emptyText ?? "No skills found."}</div>;
   }
   const skillsByType = skills.reduce<Record<string, ISkill[]>>((acc, skill) => {
     const { type } = skill;
@@ -57,7 +59,9 @@ const Skill: React.FC<SkillProps> = ({ skills }) => {
           className="grid grid-cols-[1fr_2fr] border-b border-gray-300"
         >
           <div className="flex items-center pl-4">
-            <h6 className="text-sm text-graytext font-mono">{type}</h6>
+            <h6 className="text-sm text-graytext font-mono">
+              {typeLabels?.[type] ?? type}
+            </h6>
           </div>
           <div>
             <div className="flex flex-col text-sm gap-3 py-3">
