@@ -1,0 +1,267 @@
+{
+  "header": {
+    "eyebrow": "Flowlet (2023-2025)",
+    "title": "A Visual Orchestration System for Content Processing and Data Pipelines",
+    "summary": "Built for content processing, data cleaning, async callbacks, and multi-service collaboration—turning complex workflows into a visual, executable, and observable engineering system.",
+    "links": {
+      "repo": "GitHub Repository",
+      "live": "Live Project"
+    }
+  },
+  "why": {
+    "title": "Why Flowlet",
+    "intro": "In content processing, data cleaning, async callbacks, and cross-service collaboration, traditional scripts and monoliths often hit the same bottlenecks.",
+    "painPoints": [
+      "Low visibility and poor reuse: logic is scattered across scripts or services, making change costly.",
+      "Hard-to-advance async callbacks: sending requests is easy, keeping callback state consistent is not.",
+      "High integration cost across services: API, Kafka, LLM, vectorization, and storage rarely form a traceable chain."
+    ],
+    "goal": "Flowlet aims to make complex data workflows visual, executable, observable, and reusable.",
+    "captionOverview": "A high-level view of ingestion, routing, and quality control."
+  },
+  "architecture": {
+    "title": "Architecture and Execution Model",
+    "intro": "We split the flow into three layers—visual design, structured definition, and backend execution. The core idea is “view ≠ execution,” making flows serializable, resumable, and pausable.",
+    "layersTitle": "Three layers: design, definition, execution",
+    "layers": [
+      {
+        "title": "Design layer",
+        "description": "Canvas drag-and-drop and node configuration, enabling collaboration between product and engineering."
+      },
+      {
+        "title": "Definition layer",
+        "description": "Serialize the canvas into a flow definition (node type + config + input/output mapping)."
+      },
+      {
+        "title": "Execution layer",
+        "description": "The backend engine advances along the node graph, writing outputs into a unified context."
+      }
+    ],
+    "contextTitle": "Unified execution context",
+    "contextIntro": "All runtime data goes into a unified context so node-to-node data access stays consistent.",
+    "contextFields": [
+      {
+        "name": "input",
+        "description": "Flow input"
+      },
+      {
+        "name": "nodes",
+        "description": "Outputs of previous nodes"
+      },
+      {
+        "name": "var",
+        "description": "Flow variables"
+      },
+      {
+        "name": "context",
+        "description": "Execution metadata (executionId, flowId, currentNodeId)"
+      }
+    ],
+    "stateTitle": "State transitions and recovery",
+    "stateIntro": "Real-world flows often mix sync and async nodes, so state advancement strategy is critical.",
+    "statePoints": [
+      "Synchronous nodes: advance immediately after execution.",
+      "Asynchronous nodes: enter a waiting state and advance after callback success.",
+      "Node-level persistence: supports pause/resume and prevents unknown states on callback arrival."
+    ]
+  },
+  "async": {
+    "title": "Engineering Challenges with Async Callbacks",
+    "intro": "Many orchestration systems handle synchronous flows well, but real business pipelines often involve async HTTP callbacks, Kafka events, or long-running task notifications.",
+    "channelsTitle": "Dual callback channels",
+    "channels": [
+      "HTTP callbacks: for internal systems or external services.",
+      "Kafka callbacks: for high-throughput, event-driven scenarios."
+    ],
+    "keyPointsTitle": "Key technical points",
+    "keyPoints": [
+      "Persist execution state: nodes enter a waiting-for-callback state.",
+      "Callback correlation and idempotency: callbacks must map to the correct node instance.",
+      "Controlled progression: only advance when the callback succeeds."
+    ]
+  },
+  "nodes": {
+    "title": "Core Nodes, Explained",
+    "intro": "These are the nodes we use most in real projects, described by the problem they solve, key capabilities, and how to use them.",
+    "labels": {
+      "problem": "Problem",
+      "capabilities": "Capabilities",
+      "usage": "How to use",
+      "notes": "Engineering notes"
+    },
+    "items": [
+      {
+        "title": "API Node (Sync + Async)",
+        "problem": "Call external services with either synchronous responses or async callbacks.",
+        "capabilities": [
+          "Synchronous requests: produce outputs and advance immediately.",
+          "Async mode: enter a waiting state and advance on callback.",
+          "Outputs are written into the context for downstream use."
+        ],
+        "usage": [
+          "Configure URL / Method / Headers / Body.",
+          "Choose sync or async mode.",
+          "Downstream nodes reference outputs via expressions."
+        ],
+        "notes": [
+          "A single node must support both sync and async flows.",
+          "Outputs should be structured for visual references downstream."
+        ]
+      },
+      {
+        "title": "Kafka Node (Event-driven + Async)",
+        "problem": "Send messages in event-driven systems and wait for async callbacks.",
+        "capabilities": [
+          "Send messages to a specified topic.",
+          "Callback messages can trigger flow continuation.",
+          "Can be combined with API nodes for HTTP + MQ flows."
+        ],
+        "usage": [
+          "Configure topic, key, and payload.",
+          "Payload can reference upstream node outputs.",
+          "Flow resumes automatically when callback arrives."
+        ],
+        "notes": [
+          "Callbacks must map to the correct execution instance.",
+          "Ensure idempotency and state consistency."
+        ]
+      },
+      {
+        "title": "Subflow Node (Reuse)",
+        "problem": "Break complex flows into reusable modules.",
+        "capabilities": [
+          "Invoke another defined flow.",
+          "Support input mapping and output return.",
+          "Subflows behave like function calls."
+        ],
+        "usage": [
+          "Select an existing flow as a subflow.",
+          "Configure input mappings.",
+          "Use subflow outputs in the parent flow."
+        ],
+        "notes": [
+          "Context isolation and mapping between parent and child.",
+          "Failure propagation strategy for subflows."
+        ]
+      },
+      {
+        "title": "Code Node (Python)",
+        "problem": "Handle logic that visual nodes cannot easily express.",
+        "capabilities": [
+          "Run Python via an external execution service.",
+          "Standard entry: def run(inputs, context).",
+          "Supports input mapping, timeouts, memory limits, and network limits."
+        ],
+        "usage": [
+          "Write a run function that returns structured output.",
+          "Configure input mapping and resource limits."
+        ],
+        "notes": [
+          "Execution service is decoupled from the core engine.",
+          "Strict resource and security boundaries are required."
+        ],
+        "codeSample": "def run(inputs, context):\n    user = inputs.get(\"user\", {})\n    return {\"score\": user.get(\"age\", 0) * 2}"
+      },
+      {
+        "title": "LLM Node",
+        "problem": "Embed summarization, extraction, and classification into the flow.",
+        "capabilities": [
+          "Configure model parameters and prompt templates.",
+          "Build prompts using upstream outputs.",
+          "Write structured outputs into context."
+        ],
+        "usage": [
+          "Choose model provider and prompt template.",
+          "Use variables to assemble inputs.",
+          "Downstream nodes can directly reference LLM outputs."
+        ],
+        "notes": [
+          "Stabilize structured outputs.",
+          "Keep LLM responses consistent with flow execution."
+        ]
+      },
+      {
+        "title": "Vector Storage Node (Write/Search)",
+        "problem": "Write text/image vectors to a vector store or run similarity search.",
+        "capabilities": [
+          "Supports vector write and search.",
+          "Pairs with vectorization services to build retrieval chains."
+        ],
+        "usage": [
+          "Vectorize upstream content first.",
+          "Choose write or search operations."
+        ]
+      },
+      {
+        "title": "Data Transform Node (Progressive Config)",
+        "problem": "Map or transform data structures between nodes.",
+        "capabilities": [
+          "Visual field mapping.",
+          "Advanced expression mode for flexibility.",
+          "Tree-based field selection with example values.",
+          "Live output preview."
+        ],
+        "usage": [
+          "Select an upstream node as the source.",
+          "Create a new structure via field mapping.",
+          "Output can be referenced downstream."
+        ],
+        "notes": [
+          "Translate complex expressions into visual mapping.",
+          "Balance low barrier and extensibility."
+        ]
+      },
+      {
+        "title": "JSON Parser Node",
+        "problem": "Parse JSON strings from upstream responses.",
+        "capabilities": [
+          "Parse strings into objects.",
+          "Outputs are directly usable in context."
+        ]
+      },
+      {
+        "title": "Variable Assignment Node",
+        "problem": "Explicitly store or overwrite variables in the flow.",
+        "capabilities": [
+          "Assign variables.",
+          "Useful for intermediate state storage."
+        ]
+      },
+      {
+        "title": "Simhash Deduplication Node",
+        "problem": "Detect duplicate or highly similar text.",
+        "capabilities": ["Compute Simhash.", "Similarity checks."]
+      },
+      {
+        "title": "Keyword Match Node",
+        "problem": "Detect keyword matches in text.",
+        "capabilities": ["Input text + keyword set.", "Output match results."]
+      },
+      {
+        "title": "Note Node",
+        "problem": "Improve readability and documentation of the flow.",
+        "capabilities": ["Add explanations or annotations."]
+      }
+    ]
+  },
+  "example": {
+    "title": "Example Pipeline",
+    "intro": "A typical content processing and vectorization pipeline looks like this:",
+    "steps": [
+      "Fetch content with an API node",
+      "Clean and structure with a data transform node",
+      "Extract summary/tags with an LLM node",
+      "Generate vectors with an embedding node",
+      "Write vectors to a vector store",
+      "Notify downstream via Kafka asynchronously"
+    ],
+    "note": "This chain covers sync + async execution, structured processing, AI inference, and vector retrieval."
+  },
+  "closing": {
+    "title": "Closing",
+    "paragraphs": [
+      "Flowlet is not just about drag-and-drop. It turns complex content and data workflows into an engineering-grade visual system: reusable, traceable, extensible, and observable.",
+      "If you are building content pipelines or AI workflows, happy to connect."
+    ]
+  }
+}
