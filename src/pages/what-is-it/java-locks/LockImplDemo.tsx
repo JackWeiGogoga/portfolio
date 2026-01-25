@@ -159,7 +159,7 @@ export default function LockImplDemo({
             <button
               type="button"
               onClick={() => {
-                setIsPlaying(false);
+                setIsPlaying(() => false);
                 setStepIndex(() => 0);
               }}
               className="rounded-md border border-gray-300 dark:border-white/20 px-3 py-1 text-xs hover:bg-muted"
