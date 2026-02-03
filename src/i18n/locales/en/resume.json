@@ -138,16 +138,6 @@
     ],
     "personalProjects": [
       {
-        "project": "Flowlet",
-        "time": "2025.12-2026.01",
-        "tech": ["Java", "Python", "React Flow"],
-        "url": "https://flowlet.gogoga.top/",
-        "highlights": [
-          "Flowlet is a lightweight visual workflow orchestration system that lets you design and run data-processing pipelines via drag-and-drop.",
-          "Provides nodes for LLM calls, API calls, Kafka async processing, sensitive word matching, and vector storage."
-        ]
-      },
-      {
         "project": "Web3 Side Projects",
         "time": "2025.09-2025.10",
         "tech": ["Solidity", "Hardhat", "OpenZeppelin", "Wagmi"],
@@ -158,12 +148,26 @@
           "Gogoga NFT: ERC721 preset/custom minting, IPFS metadata, and royalty strategy; batch minting, URI management, and pausing improve UX and content ops.",
           "Voting System: candidate/voter registration, time-window voting, and result tallying; batch registration and query APIs, on-chain governance auditability; custom errors reduce gas."
         ]
+      },
+      {
+        "project": "Flowlet",
+        "time": "2025.12-2026.01",
+        "tech": ["Java", "Python", "React Flow"],
+        "url": "https://flowlet.gogoga.top/",
+        "highlights": [
+          "Flowlet is a lightweight visual workflow orchestration system that lets you design and run data-processing pipelines via drag-and-drop.",
+          "Provides nodes for LLM calls, API calls, Kafka async processing, sensitive word matching, and vector storage."
+        ]
       }
     ],
     "skills": [
       {
+        "category": "Web3",
+        "items": ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"]
+      },
+      {
         "category": "Languages",
-        "items": ["Java", "TypeScript", "Python", "Solidity"]
+        "items": ["Java", "Solidity", "TypeScript", "Python"]
       },
       {
         "category": "Backend",
@@ -172,10 +176,6 @@
       {
         "category": "Frontend",
         "items": ["React", "Vite", "Tailwind", "Ant Design"]
-      },
-      {
-        "category": "Web3",
-        "items": ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"]
       },
       {
         "category": "AI / Machine Learning",

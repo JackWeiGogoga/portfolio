@@ -136,17 +136,7 @@
     ],
     "personalProjects": [
       {
-        "project": "Flowlet",
-        "time": "2025.12-2026.01",
-        "tech": ["Java", "Python", "React Flow"],
-        "url": "https://flowlet.gogoga.top/",
-        "highlights": [
-          "Flowlet 是轻量可视化流程编排系统，可通过拖拽设计并运行数据处理管道。",
-          "提供 LLM 调用、API 调用、Kafka 异步处理、敏感词匹配与向量存储等节点。"
-        ]
-      },
-      {
-        "project": "Web3 业余项目",
+        "project": "Web3 个人项目",
         "time": "2025.09-2025.10",
         "tech": ["Solidity", "Hardhat", "OpenZeppelin", "Wagmi"],
         "url": "https://gogoga.eth.limo/#/side-projects",
@@ -156,12 +146,26 @@
           "Gogoga NFT：ERC721 预设/自定义铸造、IPFS 元数据、版税策略；批量铸造、URI 管理与暂停优化体验。",
           "Voting System：候选人/投票人注册、时间窗投票、结果统计；批量注册与查询 API，链上治理可审计。"
         ]
+      },
+      {
+        "project": "Flowlet",
+        "time": "2025.12-2026.01",
+        "tech": ["Java", "Python", "React Flow"],
+        "url": "https://flowlet.gogoga.top/",
+        "highlights": [
+          "Flowlet 是轻量可视化流程编排系统，可通过拖拽设计并运行数据处理管道。",
+          "提供 LLM 调用、API 调用、Kafka 异步处理、敏感词匹配与向量存储等节点。"
+        ]
       }
     ],
     "skills": [
       {
+        "category": "Web3",
+        "items": ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"]
+      },
+      {
         "category": "编程语言",
-        "items": ["Java", "TypeScript", "Python", "Solidity"]
+        "items": ["Java", "Solidity", "TypeScript", "Python"]
       },
       {
         "category": "后端",
@@ -170,10 +174,6 @@
       {
         "category": "前端",
         "items": ["React", "Vite", "Tailwind", "Ant Design"]
-      },
-      {
-        "category": "Web3",
-        "items": ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"]
       },
       {
         "category": "AI / 机器学习",

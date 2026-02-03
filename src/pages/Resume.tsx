@@ -92,28 +92,72 @@ export default function Resume() {
         </div>
 
         <section className="pt-5">
+          <h2 className={sectionTitleClass}>{content.sectionTitles.skills}</h2>
+          <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
+            {content.skills.map((skill) => (
+              <div
+                key={skill.category}
+                className="rounded-sm border border-outline bg-background px-4 py-2.5"
+              >
+                <div className="font-mono uppercase text-graytext">
+                  {skill.category}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {skill.items.map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full border border-outline bg-card-background px-2 py-0.5 text-[10px] font-mono"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="pt-5">
           <h2 className={sectionTitleClass}>
-            {content.sectionTitles.education}
+            {content.sectionTitles.projects}
           </h2>
-          <div className="mt-2 rounded-sm border border-outline bg-background px-4 py-2.5">
-            <div className="divide-y divide-outline">
-              {content.education.map((item) => (
-                <div
-                  key={`${item.school}-${item.degree}-${item.time}`}
-                  className="grid gap-1 py-2 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,2.9fr)_minmax(110px,140px)] sm:items-baseline sm:gap-2"
-                >
-                  <div className="font-medium">{item.school}</div>
-                  <div className="text-graytext">
-                    <span>{item.degree}</span>
-                    <span className="mx-1">·</span>
-                    <span>{item.major}</span>
+          <div className="mt-2 space-y-1">
+            {content.personalProjects.map((project) => (
+              <div
+                key={project.project}
+                className="rounded-sm border border-outline px-4 py-2.5 space-y-2"
+              >
+                <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(110px,140px)] sm:items-start sm:gap-4">
+                  <div className="font-medium">{project.project}</div>
+                  <div className="text-graytext sm:justify-self-start">
+                    {project.url}
                   </div>
-                  <div className="text-graytext font-mono whitespace-nowrap sm:text-right">
-                    {item.time}
+                  <div className="text-graytext font-mono whitespace-nowrap sm:justify-self-end">
+                    {project.time}
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center gap-2">
+                  <div className="font-mono uppercase text-graytext">
+                    {content.metaLabels.tech}:
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {project.tech.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-outline bg-background px-2 py-0.5 text-[10px] font-mono"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <ul className="list-disc space-y-1 pl-5">
+                  {project.highlights.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -176,71 +220,27 @@ export default function Resume() {
 
         <section className="pt-5">
           <h2 className={sectionTitleClass}>
-            {content.sectionTitles.projects}
+            {content.sectionTitles.education}
           </h2>
-          <div className="mt-2 space-y-1">
-            {content.personalProjects.map((project) => (
-              <div
-                key={project.project}
-                className="rounded-sm border border-outline px-4 py-2.5 space-y-2"
-              >
-                <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(110px,140px)] sm:items-start sm:gap-4">
-                  <div className="font-medium">{project.project}</div>
-                  <div className="text-graytext sm:justify-self-start">
-                    {project.url}
+          <div className="mt-2 rounded-sm border border-outline bg-background px-4 py-2.5">
+            <div className="divide-y divide-outline">
+              {content.education.map((item) => (
+                <div
+                  key={`${item.school}-${item.degree}-${item.time}`}
+                  className="grid gap-1 py-2 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,2.9fr)_minmax(110px,140px)] sm:items-baseline sm:gap-2"
+                >
+                  <div className="font-medium">{item.school}</div>
+                  <div className="text-graytext">
+                    <span>{item.degree}</span>
+                    <span className="mx-1">·</span>
+                    <span>{item.major}</span>
                   </div>
-                  <div className="text-graytext font-mono whitespace-nowrap sm:justify-self-end">
-                    {project.time}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="font-mono uppercase text-graytext">
-                    {content.metaLabels.tech}:
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {project.tech.map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full border border-outline bg-background px-2 py-0.5 text-[10px] font-mono"
-                      >
-                        {item}
-                      </span>
-                    ))}
+                  <div className="text-graytext font-mono whitespace-nowrap sm:text-right">
+                    {item.time}
                   </div>
                 </div>
-                <ul className="list-disc space-y-1 pl-5">
-                  {project.highlights.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="pt-5">
-          <h2 className={sectionTitleClass}>{content.sectionTitles.skills}</h2>
-          <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
-            {content.skills.map((skill) => (
-              <div
-                key={skill.category}
-                className="rounded-sm border border-outline bg-background px-4 py-2.5"
-              >
-                <div className="font-mono uppercase text-graytext">
-                  {skill.category}
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {skill.items.map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full border border-outline bg-card-background px-2 py-0.5 text-[10px] font-mono"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
