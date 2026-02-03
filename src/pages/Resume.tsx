@@ -21,7 +21,7 @@ type ResumeWork = {
   company: string;
   tech: string[];
   responsibilities: string[];
-  impact: string[];
+  impact?: string[];
 };
 
 type ResumeProject = {
@@ -55,6 +55,7 @@ type ResumeContent = {
     responsibilities: string;
     impact: string;
     highlights: string;
+    present: string;
   };
   education: ResumeEducation[];
   workExperience: ResumeWork[];
@@ -64,10 +65,87 @@ type ResumeContent = {
 };
 
 const sectionTitleClass = "text-graytext font-mono uppercase";
+const timelineLineClass = "absolute left-3 top-2 bottom-2 w-px bg-outline";
+const timelineDotClass =
+  "absolute left-3 top-[5px] h-2 w-2 -translate-x-1/2 rounded-full bg-text";
+const timelineTimeClass =
+  "text-graytext font-mono whitespace-nowrap text-[10px] tracking-wide";
+
+type ResumeWorkGroup = {
+  company: string;
+  items: ResumeWork[];
+};
+
+const parseMonthKey = (value: string) => {
+  const [year, month] = value.split(".");
+  const yearNum = Number(year);
+  const monthNum = Number(month);
+  if (!yearNum || !monthNum) {
+    return null;
+  }
+  return yearNum * 12 + monthNum;
+};
+
+const getCompanyTimeRange = (
+  items: ResumeWork[],
+  company: string,
+  presentLabel: string,
+) => {
+  if (items.length === 0) {
+    return "";
+  }
+
+  let minStart = items[0].time.split("-")[0];
+  let maxEnd = items[0].time.split("-")[1] ?? "";
+  let minStartKey = parseMonthKey(minStart);
+  let maxEndKey = parseMonthKey(maxEnd);
+
+  items.forEach((item) => {
+    const [start, end] = item.time.split("-");
+    const startKey = parseMonthKey(start);
+    const endKey = parseMonthKey(end);
+
+    if (startKey !== null && (minStartKey === null || startKey < minStartKey)) {
+      minStart = start;
+      minStartKey = startKey;
+    }
+
+    if (endKey !== null && (maxEndKey === null || endKey > maxEndKey)) {
+      maxEnd = end;
+      maxEndKey = endKey;
+    }
+  });
+
+  if (!minStart || !maxEnd) {
+    return items[0].time;
+  }
+
+  const currentCompanies = new Set(["网易", "NetEase"]);
+  const endLabel = currentCompanies.has(company) ? presentLabel : maxEnd;
+
+  return `${minStart}-${endLabel}`;
+};
 
 export default function Resume() {
   const { t } = useTranslation("resume");
   const content = t("content", { returnObjects: true }) as ResumeContent;
+  const companyTitles: Record<string, string> = {
+    网易: "技术专家",
+    NetEase: "Technical Expert",
+    去哪儿网: "Java开发工程师",
+    Qunar: "Java Engineer",
+  };
+  const workGroups = content.workExperience.reduce<ResumeWorkGroup[]>(
+    (groups, item) => {
+      const group = groups.find((entry) => entry.company === item.company);
+      if (group) {
+        group.items.push(item);
+        return groups;
+      }
+      return [...groups, { company: item.company, items: [item] }];
+    },
+    [],
+  );
 
   return (
     <Layout variant="resume">
@@ -93,69 +171,69 @@ export default function Resume() {
 
         <section className="pt-5">
           <h2 className={sectionTitleClass}>{content.sectionTitles.skills}</h2>
-          <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
+          <ul className="mt-2 list-disc space-y-2 pl-5">
             {content.skills.map((skill) => (
-              <div
-                key={skill.category}
-                className="rounded-sm border border-outline bg-background px-4 py-2.5"
-              >
-                <div className="font-mono uppercase text-graytext">
+              <li key={skill.category}>
+                <span className="font-mono uppercase text-graytext">
                   {skill.category}
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {skill.items.map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full border border-outline bg-card-background px-2 py-0.5 text-[10px] font-mono"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                </span>
+                <span className="mx-2 text-graytext">:</span>
+                <span className="text-text">{skill.items.join(" · ")}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
 
         <section className="pt-5">
           <h2 className={sectionTitleClass}>
             {content.sectionTitles.projects}
           </h2>
-          <div className="mt-2 space-y-1">
+          <div className="mt-3 relative space-y-4">
+            <div className={timelineLineClass} />
             {content.personalProjects.map((project) => (
-              <div
-                key={project.project}
-                className="rounded-sm border border-outline px-4 py-2.5 space-y-2"
-              >
-                <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(110px,140px)] sm:items-start sm:gap-4">
-                  <div className="font-medium">{project.project}</div>
-                  <div className="text-graytext sm:justify-self-start">
-                    {project.url}
-                  </div>
-                  <div className="text-graytext font-mono whitespace-nowrap sm:justify-self-end">
-                    {project.time}
+              <div key={project.project} className="relative">
+                <span className={timelineDotClass} />
+                <div className="grid gap-2 pl-6 sm:grid-cols-1 sm:items-start">
+                  <div className="min-w-0 space-y-2">
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <span className="font-medium">{project.project}</span>
+                        <span className={timelineTimeClass}>
+                          {project.time}
+                          {project.url ? (
+                            <span className="text-graytext">
+                              {" "}
+                              · {project.url}
+                            </span>
+                          ) : null}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="font-mono uppercase text-graytext">
+                        {content.metaLabels.tech}:
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {project.tech.map((item) => (
+                          <span
+                            key={item}
+                            className="rounded-full border border-outline bg-background px-2 py-0.5 text-[10px] font-mono"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="font-mono uppercase text-graytext">
+                      {content.metaLabels.highlights}:
+                    </div>
+                    <ul className="list-disc space-y-1 pl-5">
+                      {project.highlights.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="font-mono uppercase text-graytext">
-                    {content.metaLabels.tech}:
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {project.tech.map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full border border-outline bg-background px-2 py-0.5 text-[10px] font-mono"
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <ul className="list-disc space-y-1 pl-5">
-                  {project.highlights.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
               </div>
             ))}
           </div>
@@ -163,55 +241,96 @@ export default function Resume() {
 
         <section className="pt-5">
           <h2 className={sectionTitleClass}>{content.sectionTitles.work}</h2>
-          <div className="mt-2 space-y-1">
-            {content.workExperience.map((work) => (
-              <div
-                key={work.project}
-                className="rounded-sm border border-outline px-4 py-2.5 space-y-2"
-              >
-                <div className="grid grid-cols-1 gap-1 sm:grid-cols-[minmax(0,3fr)_minmax(0,1fr)_minmax(110px,140px)] sm:items-start sm:gap-2">
-                  <div className="min-w-0 font-medium">{work.project}</div>
-                  <div className="min-w-0 text-graytext">{work.company}</div>
-                  <div className="text-graytext font-mono whitespace-nowrap sm:text-right">
-                    {work.time}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="font-mono uppercase text-graytext">
-                    {content.metaLabels.tech}:
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {work.tech.map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full border border-outline bg-background px-2 py-0.5 text-[10px] font-mono"
-                      >
-                        {item}
+          <div className="mt-3 space-y-6">
+            {workGroups.map((group) => (
+              <div key={group.company} className="space-y-3">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="text-sm font-semibold">
+                    {group.company}
+                    {companyTitles[group.company] ? (
+                      <span className="text-graytext">
+                        {" "}
+                        · {companyTitles[group.company]}
                       </span>
-                    ))}
-                  </div>
+                    ) : null}
+                  </span>
+                  <span className={timelineTimeClass}>
+                    {getCompanyTimeRange(
+                      group.items,
+                      group.company,
+                      content.metaLabels.present,
+                    )}
+                  </span>
                 </div>
-                <div className="gap-3">
-                  <div>
-                    <div className="font-mono uppercase text-graytext">
-                      {content.metaLabels.responsibilities}:
+                <div className="relative space-y-4">
+                  <div className={timelineLineClass} />
+                  {group.items.map((work) => (
+                    <div
+                      key={`${work.project}-${work.time}`}
+                      className="relative"
+                    >
+                      <span className={timelineDotClass} />
+                      <div className="grid gap-2 pl-6 sm:grid-cols-1 sm:items-start">
+                        <div className="min-w-0 space-y-2">
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                              <span className="font-medium">
+                                {work.project}
+                                {work.role ? (
+                                  <span className="text-graytext">
+                                    {" "}
+                                    ({work.role})
+                                  </span>
+                                ) : null}
+                              </span>
+                              <span className={timelineTimeClass}>
+                                {work.time}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="font-mono uppercase text-graytext">
+                              {content.metaLabels.tech}:
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {work.tech.map((item) => (
+                                <span
+                                  key={item}
+                                  className="rounded-full border border-outline bg-background px-2 py-0.5 text-[10px] font-mono"
+                                >
+                                  {item}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="gap-3">
+                            <div>
+                              <div className="font-mono uppercase text-graytext">
+                                {content.metaLabels.responsibilities}:
+                              </div>
+                              <ul className="mt-2 list-disc space-y-1 pl-5">
+                                {work.responsibilities.map((item) => (
+                                  <li key={item}>{item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                          {work.impact && work.impact.length > 0 ? (
+                            <div className="gap-3">
+                              <div className="font-mono uppercase text-graytext">
+                                {content.metaLabels.impact}:
+                              </div>
+                              <ul className="mt-2 list-disc space-y-1 pl-5 font-semibold">
+                                {work.impact.map((item) => (
+                                  <li key={item}>{item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
-                    <ul className="mt-2 list-disc space-y-1 pl-5">
-                      {work.responsibilities.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className="gap-3">
-                  <div className="font-mono uppercase text-graytext">
-                    {content.metaLabels.impact}:
-                  </div>
-                  <ul className="mt-2 list-disc space-y-1 pl-5">
-                    {work.impact.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
+                  ))}
                 </div>
               </div>
             ))}
@@ -222,37 +341,39 @@ export default function Resume() {
           <h2 className={sectionTitleClass}>
             {content.sectionTitles.education}
           </h2>
-          <div className="mt-2 rounded-sm border border-outline bg-background px-4 py-2.5">
-            <div className="divide-y divide-outline">
-              {content.education.map((item) => (
-                <div
-                  key={`${item.school}-${item.degree}-${item.time}`}
-                  className="grid gap-1 py-2 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,2.9fr)_minmax(110px,140px)] sm:items-baseline sm:gap-2"
-                >
-                  <div className="font-medium">{item.school}</div>
-                  <div className="text-graytext">
-                    <span>{item.degree}</span>
-                    <span className="mx-1">·</span>
-                    <span>{item.major}</span>
-                  </div>
-                  <div className="text-graytext font-mono whitespace-nowrap sm:text-right">
-                    {item.time}
+          <div className="mt-3 relative space-y-4">
+            <div className={timelineLineClass} />
+            {content.education.map((item) => (
+              <div
+                key={`${item.school}-${item.degree}-${item.time}`}
+                className="relative"
+              >
+                <span className={timelineDotClass} />
+                <div className="grid gap-2 pl-6 sm:grid-cols-1 sm:items-baseline">
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="font-medium">{item.school}</span>
+                      <span className={timelineTimeClass}>{item.time}</span>
+                    </div>
+                    <div className="text-graytext">
+                      <span>{item.degree}</span>
+                      <span className="mx-1">·</span>
+                      <span>{item.major}</span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </section>
 
         <section className="pt-5">
           <h2 className={sectionTitleClass}>{content.sectionTitles.summary}</h2>
-          <div className="mt-2 rounded-sm border border-outline px-4 py-2.5">
-            <ul className="list-disc space-y-1 pl-5">
-              {content.summary.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            {content.summary.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </section>
       </div>
     </Layout>

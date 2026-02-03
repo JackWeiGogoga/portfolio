@@ -13,7 +13,7 @@
       "personal": "个人信息",
       "education": "教育经历",
       "work": "工作经历",
-      "projects": "个人项目",
+      "projects": "开源项目",
       "skills": "专业技能",
       "summary": "个人总结"
     },
@@ -23,7 +23,8 @@
       "tech": "主要技术",
       "responsibilities": "主要职责",
       "impact": "收益",
-      "highlights": "要点"
+      "highlights": "项目介绍",
+      "present": "至今"
     },
     "education": [
       {
@@ -42,7 +43,7 @@
     "workExperience": [
       {
         "project": "审核大模型微调",
-        "time": "2025.06-2026.01",
+        "time": "2025.06-2026.02",
         "role": "项目负责人",
         "company": "网易",
         "tech": ["Python", "SFT", "LlamaFactory"],
@@ -98,9 +99,6 @@
           "负责内容分发平台开发，涉及知否问答、推荐系统对接与双 feed 发布。",
           "优化发布流程，统一视频上传 ID 与处理流程，降低业务复杂度。",
           "引入 Sentinel 与 Hystrix 完成流量控制与熔断，保障系统稳定性。"
-        ],
-        "impact": [
-          "使用 CompletableFuture 并发优化推荐聚合，接口延迟下降 20%。"
         ]
       },
       {
@@ -113,10 +111,10 @@
           "支持直播产品 PK、短视频、回放、答题、任务等功能，覆盖移动端 SDK、PC OBS、第三方转推。",
           "建设核心后台服务，设计直播流程并对接第三方服务，交付实名认证、简历直播、推拉流切换、录制转码与复用。",
           "基于 RabbitMQ 死信队列实现延迟队列，搭建机器人与红包服务。",
-          "主导 Winner 直播答题项目，设计结算算法并推进端到端流程，保障无重大事故。"
+          "主导直播答题项目，设计结算算法并推进端到端流程，保障无重大事故。"
         ],
         "impact": [
-          "从 0 到 1 搭建直播后台，Winner 项目在 3 天内完成结算设计、2 周内落地上线。"
+          "从 0 到 1 搭建直播后台，直播答题项目在 3 天内完成结算设计、2 周内落地上线。"
         ]
       },
       {
@@ -128,9 +126,6 @@
         "responsibilities": [
           "开发 TTS 系统对接供应商流程，覆盖下单表单、订单提交与详情展示，完善业务闭环。",
           "优化订单中心数据同步，修复丢单问题，支持线上故障排查与维护。"
-        ],
-        "impact": [
-          "构建低耦合管道与热更新配置体系，实现功能开关与运维成本下降。"
         ]
       }
     ],
@@ -148,7 +143,7 @@
         ]
       },
       {
-        "project": "Flowlet",
+        "project": "Flowlet 流程编排",
         "time": "2025.12-2026.01",
         "tech": ["Java", "Python", "React Flow"],
         "url": "https://flowlet.gogoga.top/",
@@ -161,27 +156,19 @@
     "skills": [
       {
         "category": "Web3",
-        "items": ["Hardhat", "Wagmi", "IPFS", "Openzeppelin"]
-      },
-      {
-        "category": "编程语言",
-        "items": ["Java", "Solidity", "TypeScript", "Python"]
+        "items": ["Solidity", "Hardhat", "Wagmi", "IPFS", "Openzeppelin"]
       },
       {
         "category": "后端",
-        "items": ["Spring Boot", "Redis", "Kafka", "MySQL"]
+        "items": ["Java", "Spring Boot", "Redis", "Kafka", "MySQL"]
       },
       {
         "category": "前端",
         "items": ["React", "Vite", "Tailwind", "Ant Design"]
       },
       {
-        "category": "AI / 机器学习",
-        "items": ["LLM 微调", "AI Agent", "Langchain", "Dify"]
-      },
-      {
-        "category": "工程工具",
-        "items": ["Git", "Codex", "Docker"]
+        "category": "AI",
+        "items": ["Python", "LLM 微调", "AI Agent", "Langchain", "Dify"]
       }
     ],
     "summary": [

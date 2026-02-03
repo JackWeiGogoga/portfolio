@@ -23,7 +23,8 @@
       "tech": "Tech Stack",
       "responsibilities": "Responsibilities",
       "impact": "Impact",
-      "highlights": "Highlights"
+      "highlights": "Project Overview",
+      "present": "Present"
     },
     "education": [
       {
@@ -42,7 +43,7 @@
     "workExperience": [
       {
         "project": "Content Moderation LLM Fine-tuning",
-        "time": "2025.06-2026.01",
+        "time": "2025.06-2026.02",
         "role": "Project Lead",
         "company": "NetEase",
         "tech": ["Python", "SFT", "LlamaFactory"],
@@ -180,10 +181,6 @@
       {
         "category": "AI / Machine Learning",
         "items": ["LLM Fine-tuning", "AI Agent", "Langchain", "Dify"]
-      },
-      {
-        "category": "Tooling",
-        "items": ["Git", "Codex", "Docker"]
       }
     ],
     "summary": [
