@@ -65,9 +65,10 @@ type ResumeContent = {
 };
 
 const sectionTitleClass = "text-graytext font-mono uppercase";
-const timelineLineClass = "absolute left-3 top-2 bottom-2 w-px bg-outline";
+const timelineLineClass =
+  "absolute left-3 top-2 bottom-2 w-px bg-outline print:bg-transparent print:border-l print:border-outline";
 const timelineDotClass =
-  "absolute left-3 top-[5px] h-2 w-2 -translate-x-1/2 rounded-full bg-text";
+  "absolute left-3 top-[5px] h-2 w-2 -translate-x-1/2 rounded-full bg-text border border-text print:bg-transparent";
 const timelineTimeClass =
   "text-graytext font-mono whitespace-nowrap text-[10px] tracking-wide";
 
